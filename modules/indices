@@ -1,0 +1,282 @@
+/*
+
+This is the indices module, which is part of the BVC MMM v4.0 library.
+It is used to support the generation of spectral indices for the selected 
+image data seers
+
+Last update: 12-05-2020
+
+*/
+
+exports.doc = 'The indices module is a collection of functions to support index additoin to datasets.' +
+    '\n The indcluded funtions let the user select the indices that they would like to use. ' +
+    '\n The othe funtion calculates the selected indices and adds them to the dataset.'+
+    '\n It includes .' +
+    '\n' +
+    '\n index_list():' +
+    '\n   @param {ee.List} indx: an empty list.'+
+    '\n   @return {ee.List} A user generated list which will be used in the index_add.' +
+    '\n addIndex_simple(list, mosaic):'+
+    '\n   @ param {ee.List} A list of indices to add to the mosaic as bands'+
+    '\n   @ moasic {ee.Image} The image from which the indices are to be calculated and added'+
+    '\n' +
+    '\n graph:' +
+    '\n   a graph of the various membership for each of the buffered distances.';
+
+
+exports.index_list = function(){
+  
+  var indx = ee.List([]);
+
+  var SR = ui.Checkbox('SR', false);
+  SR.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('SR');
+    return indx;});
+
+  var NDVI = ui.Checkbox('NDVI', false);
+  NDVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('NDVI');
+    return indx;});
+
+  var NDWI = ui.Checkbox('NDWI', false);
+  NDWI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('NDWI');
+    return indx;});
+
+  var MNDWI = ui.Checkbox('MNDWI', false);
+  MNDWI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('MNDWI');
+    return indx;});
+  
+  var CMRI = ui.Checkbox('CMRI', false);
+  CMRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('CMRI');
+    return indx;});
+
+  var MMRI = ui.Checkbox('MMRI', false);
+  MMRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('MMRI');
+    return indx;});
+
+  var SAVI = ui.Checkbox('SAVI', false);
+  SAVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('SAVI');
+    return indx;});
+
+  var OSAVI = ui.Checkbox('OSAVI', false);
+  OSAVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('OSAVI');
+    return indx;});
+
+  var EVI = ui.Checkbox('EVI', false);
+  EVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('EVI');
+    return indx;});
+  
+  var MRI = ui.Checkbox('MRI', false);
+  MRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('MRI');
+    return indx;});
+
+  var SMRI = ui.Checkbox('SMRI', false);
+  SMRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('SMRI');
+    return indx;});
+    
+
+  print(SR);
+  print(NDVI);
+  print(NDWI);
+  print(MNDWI);
+  print(CMRI);
+  print(MMRI);
+  print(SAVI);
+  print(OSAVI);
+  print(EVI);
+  print(MRI);
+  print(SMRI);
+
+  var button = ui.Button({
+  label: 'Print Index List',
+  onClick: function() {
+    print('Index List', indx.distinct());
+    return indx.distinct();
+    }
+  });
+  print(button);
+  
+  return indx.distinct();
+};
+
+
+
+exports.addIndex_simple = function(indx_list, image){
+  
+  var SR_func = function(img){
+                        var SR = img.select('B4').divide(img.select('B3'))
+                        .rename(['SR']);
+                        return img.addBands(SR);
+                        };
+  
+  var NDVI_func = function(img){
+                        var NDVI = img.normalizedDifference(['B4','B3'])
+                        .rename(['NDVI']);
+                        return img.addBands(NDVI);
+                        };
+                      
+  var NDWI_func = function(img){
+                        var NDWI = img.normalizedDifference(['B2', 'B4'])
+                        .rename(['NDWI']);
+                        return img.addBands(NDWI);
+                        };
+                      
+  var MNDWI_func = function(img){
+                        var MNDWI = img.normalizedDifference(['B2', 'B5'])
+                        .rename(['MNDWI']);
+                        return img.addBands(MNDWI);
+                        };
+
+  var CMRI_func = function(img){
+                        var NDVI = img.normalizedDifference(['B4','B3']);
+                        var CMRI = NDVI.subtract(img.normalizedDifference(['B4','B2']))
+                                 .rename(['CMRI']);
+                        return img.addBands(CMRI);
+                        };   
+                        
+  var MMRI_func = function(img){
+                        var NDVI = img.normalizedDifference(['B4','B3']).abs();
+                        var MNDWI = img.normalizedDifference(['B5','B2']).abs();
+                        var MMRI = ee.Image(MNDWI.subtract(NDVI))
+                                 .divide(ee.Image(MNDWI.add(NDVI)))
+                                 .rename(['MMRI']);
+                        return img.addBands(MMRI);
+                        };   
+                        
+  var SAVI_func = function(img){
+                        var SAVI = ee.Image(img.select('B4').subtract(img.select('B3'))
+                                   .divide(img.select('B4').add(img.select('B3')).add(0.5)))
+                                   .multiply(1.5).rename(['SAVI']);
+                        return img.addBands(SAVI);
+                        };      
+                        
+  var OSAVI_func = function(img){
+                        var OSAVI = ee.Image(img.select('B4').subtract(img.select('B3'))
+                                   .divide(img.select('B4').add(img.select('B3')).add(0.16)))
+                                   .rename(['OSAVI']);
+                        return img.addBands(OSAVI);
+                        };  
+                        
+  var EVI_func = function(img){
+                        //EVI = 2.5 * ((Band 4 – Band 3) / (Band 4 + 6 * Band 3 – 7.5 * Band 1 + 1)).
+                        var p1 = img.select('B4').add(img.select('B3').multiply(6))
+                                    .subtract(img.select('B1').multiply(7.5)).add(1);
+                        var p2 = ee.Image(img.select('B4').subtract(img.select('B3')))
+                                  .divide(p1);
+                        var EVI = p2.multiply(2.5)
+                                  .rename(['EVI']);
+                        return img.addBands(EVI);
+                        };    
+
+  // add SR if in list
+  ee.Algorithms.If(indx_list.contains('SR'), image = SR_func(image));
+
+  // add NDVI if in list
+  ee.Algorithms.If(indx_list.contains('NDVI'), image = NDVI_func(image));
+  
+  // add NDWI if in list
+  ee.Algorithms.If(indx_list.contains('NDWI'), image = NDWI_func(image));
+  
+  // add MNDWI if in list
+  ee.Algorithms.If(indx_list.contains('MNDWI'), image = MNDWI_func(image));
+  
+  // add CMRI if in list
+  ee.Algorithms.If(indx_list.contains('CMRI'), image = CMRI_func(image));
+  
+  // add MMRI if in list
+  ee.Algorithms.If(indx_list.contains('MMRI'), image = MMRI_func(image));
+  
+  // add SAVI if in list
+  ee.Algorithms.If(indx_list.contains('SAVI'), image = SAVI_func(image));
+  
+  // add OSAVI if in list
+  ee.Algorithms.If(indx_list.contains('OSAVI'), image = OSAVI_func(image));
+  
+  // add EVI if in list
+  ee.Algorithms.If(indx_list.contains('EVI'), image = EVI_func(image));
+  
+  
+  return image;
+  };
+
+
+
+exports.addIndex_complex = function(indx_list, lot, hot){
+
+  // SMRI function
+  var SMRI_func = function(lot, hot){
+                      var NDVIh = hot.normalizedDifference(['B4','B3']);
+                      var NDVIl = lot.normalizedDifference(['B4','B3']);
+                      var SMRI = ee.Image(NDVIl.subtract(NDVIh))
+                                 .multiply(ee.Image(lot.select('B4').subtract(hot.select('B4'))
+                                 .divide(hot.select('B4')))).rename(['SMRI']);
+                      return SMRI;
+                      };
+                  
+  // MRI function
+  var MRI_func = function(lot, hot){
+                      var GVIl = ee.Image(lot.select('B1').multiply(-0.1603))
+                                 .add(lot.select('B2').multiply(-0.2819))
+                                 .add(lot.select('B3').multiply(-0.4939))
+                                 .add(lot.select('B4').multiply(0.7940))
+                                 .add(lot.select('B5').multiply(-0.0002))
+                                 .add(lot.select('B7').multiply(-0.1446));
+                      var GVIh = ee.Image(hot.select('B1').multiply(-0.1603))
+                                 .add(hot.select('B2').multiply(-0.2819))
+                                 .add(hot.select('B3').multiply(-0.4939))
+                                 .add(hot.select('B4').multiply(0.7940))
+                                 .add(hot.select('B5').multiply(-0.0002))
+                                 .add(hot.select('B7').multiply(-0.1446));
+                      var WIl = ee.Image(lot.select('B1').multiply(0.0315))
+                                 .add(lot.select('B2').multiply(0.2021))
+                                 .add(lot.select('B3').multiply(0.3102))
+                                 .add(lot.select('B4').multiply(0.1594))
+                                 .add(lot.select('B5').multiply(-0.6806))
+                                 .add(lot.select('B7').multiply(-0.6109));
+                      var WIh = ee.Image(hot.select('B1').multiply(0.0315))
+                                 .add(hot.select('B2').multiply(0.2021))
+                                 .add(hot.select('B3').multiply(0.3102))
+                                 .add(hot.select('B4').multiply(0.1594))
+                                 .add(hot.select('B5').multiply(-0.6806))
+                                 .add(hot.select('B7').multiply(-0.6109));
+                      var p1 = GVIl.subtract(GVIh).abs();
+                      var MRI = p1.multiply(GVIh).multiply(WIl.add(WIh))
+                                 .rename(['MRI']);
+                      return MRI;
+                      };
+
+  
+  var image = ee.Image.cat(lot,hot);
+  
+  // add SMRI if in list
+  ee.Algorithms.If(indx_list.contains('SMRI'), image = image.addBands(SMRI_func(lot, hot)));
+  
+  // add MRI if in list
+  ee.Algorithms.If(indx_list.contains('MRI'), image = image.addBands(MRI_func(lot, hot)));
+  
+  
+  return ee.Image(image);
+  };
+
+
+

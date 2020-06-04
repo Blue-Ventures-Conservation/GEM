@@ -1,0 +1,69 @@
+
+
+exports.coarseROI = function(){
+  var drawingTools = Map.drawingTools();
+  
+  drawingTools.setShown(false);
+  
+  while (drawingTools.layers().length() > 0) {
+   var layer = drawingTools.layers().get(0);
+    drawingTools.layers().remove(layer);
+  }
+
+  var dummyGeometry =
+      ui.Map.GeometryLayer({geometries: null, name: 'coarse_roi', color: '23cba7'});
+
+
+  drawingTools.layers().add(dummyGeometry);
+
+  function clearGeometry() {
+    var layers = drawingTools.layers();
+    layers.get(0).geometries().remove(layers.get(0).geometries().get(0));
+  }
+
+
+
+  function drawRectangle() {
+    clearGeometry();
+    drawingTools.setShape('rectangle');
+    drawingTools.draw();
+  }
+
+  function drawPolygon() {
+    clearGeometry();
+    drawingTools.setShape('polygon');
+    drawingTools.draw();
+  }
+
+  var symbol = {
+    rectangle: '⬛',
+    polygon: '🔺'
+  };
+
+
+
+
+  var controlPanel = ui.Panel({
+    widgets: [
+      ui.Label('1. Select a drawing mode.'),
+      ui.Button({
+        label: symbol.rectangle + ' Rectangle',
+        onClick: drawRectangle,
+        style: {stretch: 'horizontal'}
+      }),
+      ui.Button({
+        label: symbol.polygon + ' Polygon',
+        onClick: drawPolygon,
+        style: {stretch: 'horizontal'}
+      }),
+
+      ui.Label('2. Draw a geometry.'),
+
+    ],
+    style: {position: 'bottom-left'},
+    layout: null,
+  });
+
+  Map.add(controlPanel);
+
+};

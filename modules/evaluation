@@ -1,0 +1,138 @@
+
+exports.Chot_display = function(Chot_class, centre){ 
+  Chot_class = ee.Image(Chot_class);
+  var tf = Chot_class.select('classification').eq(1).selfMask();
+  var cc = Chot_class.select('classification').eq(11).selfMask();
+  var co = Chot_class.select('classification').eq(15).selfMask();
+  var eb = Chot_class.select('classification').eq(19).selfMask();
+  var vo = Chot_class.select('classification').eq(22).selfMask();
+  var ub = Chot_class.select('classification').eq(38).selfMask();
+  var rw = Chot_class.select('classification').eq(43).selfMask();
+  var nf = Chot_class.select('classification').eq(70).selfMask();            
+            
+ //Adding three mangrove classes - some issues in this code leading to masking errors
+            
+ centre.addLayer(tf, {palette: ['#E69800']}, 'Cont. HOT Terrestrial Forest',false);
+ centre.addLayer(cc, {palette: ['#267300']}, 'Cont. HOT Closed-Canopy Mangrove',false);
+ centre.addLayer(co, {palette: ['#4CE600']}, 'Cont. HOT Open-Canopy Mangrove I',false);
+ centre.addLayer(eb, {palette: ['#8400A8']}, 'Cont. HOT Exposed / Barren',false);
+ centre.addLayer(vo, {palette: ['#CDF57A']}, 'Cont. HOT Open-Canopy Mangrove II',false);
+ centre.addLayer(ub, { palette: ['#00FFC5']}, 'Cont. HOT Urban / Built',false);
+ centre.addLayer(rw, {palette: ['#004DA8']}, 'Cont. HOT Residual Water',false);
+ centre.addLayer(nf, { palette: ['#FFFF00']}, 'Cont. HOT Non-Forest Vegetation',false);
+};           
+
+exports.Clot_display = function(Clot_class, centre){ 
+  Clot_class = ee.Image(Clot_class);
+  var tf = Clot_class.select('classification').eq(1).selfMask();
+  var cc = Clot_class.select('classification').eq(11).selfMask();
+  var co = Clot_class.select('classification').eq(15).selfMask();
+  var eb = Clot_class.select('classification').eq(19).selfMask();
+  var vo = Clot_class.select('classification').eq(22).selfMask();
+  var ub = Clot_class.select('classification').eq(38).selfMask();
+  var rw = Clot_class.select('classification').eq(43).selfMask();
+  var nf = Clot_class.select('classification').eq(70).selfMask();            
+            
+ //Adding three mangrove classes - some issues in this code leading to masking errors
+            
+ centre.addLayer(tf, {palette: ['#E69800']}, 'Cont. LOT Terrestrial Forest',false);
+ centre.addLayer(cc, {palette: ['#267300']}, 'Cont. LOT Closed-Canopy Mangrove',false);
+ centre.addLayer(co, {palette: ['#4CE600']}, 'Cont. LOT Open-Canopy Mangrove I',false);
+ centre.addLayer(eb, {palette: ['#8400A8']}, 'Cont. LOT Exposed / Barren',false);
+ centre.addLayer(vo, {palette: ['#CDF57A']}, 'Cont. LOT Open-Canopy Mangrove II',false);
+ centre.addLayer(ub, { palette: ['#00FFC5']}, 'Cont. LOT Urban / Built',false);
+ centre.addLayer(rw, {palette: ['#004DA8']}, 'Cont. LOT Residual Water',false);
+ centre.addLayer(nf, { palette: ['#FFFF00']}, 'Cont. LOT Non-Forest Vegetation',false);
+};           
+
+exports.Ccom_display = function(Ccom_class, centre){ 
+  Ccom_class = ee.Image(Ccom_class);
+  var tf = Ccom_class.select('classification').eq(1).selfMask();
+  var cc = Ccom_class.select('classification').eq(11).selfMask();
+  var co = Ccom_class.select('classification').eq(15).selfMask();
+  var eb = Ccom_class.select('classification').eq(19).selfMask();
+  var vo = Ccom_class.select('classification').eq(22).selfMask();
+  var ub = Ccom_class.select('classification').eq(38).selfMask();
+  var rw = Ccom_class.select('classification').eq(43).selfMask();
+  var nf = Ccom_class.select('classification').eq(70).selfMask();            
+            
+ //Adding three mangrove classes - some issues in this code leading to masking errors
+            
+ centre.addLayer(tf, {palette: ['#E69800']}, 'Cont. Combo Terrestrial Forest',false);
+ centre.addLayer(cc, {palette: ['#267300']}, 'Cont. Combo Closed-Canopy Mangrove',false);
+ centre.addLayer(co, {palette: ['#4CE600']}, 'Cont. Combo Open-Canopy Mangrove I',false);
+ centre.addLayer(eb, {palette: ['#8400A8']}, 'Cont. Combo Exposed / Barren',false);
+ centre.addLayer(vo, {palette: ['#CDF57A']}, 'Cont. Combo Open-Canopy Mangrove II',false);
+ centre.addLayer(ub, { palette: ['#00FFC5']}, 'Cont. Combo Urban / Built',false);
+ centre.addLayer(rw, {palette: ['#004DA8']}, 'Cont. Combo Residual Water',false);
+ centre.addLayer(nf, { palette: ['#FFFF00']}, 'Cont. Combo Non-Forest Vegetation',false);
+}; 
+
+exports.Hhot_display = function(Hhot_class, centre){ 
+  Hhot_class = ee.Image(Hhot_class);
+  var tf = Hhot_class.select('classification').eq(1).selfMask();
+  var cc = Hhot_class.select('classification').eq(11).selfMask();
+  var co = Hhot_class.select('classification').eq(15).selfMask();
+  var eb = Hhot_class.select('classification').eq(19).selfMask();
+  var vo = Hhot_class.select('classification').eq(22).selfMask();
+  var ub = Hhot_class.select('classification').eq(38).selfMask();
+  var rw = Hhot_class.select('classification').eq(43).selfMask();
+  var nf = Hhot_class.select('classification').eq(70).selfMask();            
+            
+ //Adding three mangrove classes - some issues in this code leading to masking errors
+            
+ centre.addLayer(tf, {palette: ['#E69800']}, 'Hist. HOT Terrestrial Forest',false);
+ centre.addLayer(cc, {palette: ['#267300']}, 'Hist. HOT Closed-Canopy Mangrove',false);
+ centre.addLayer(co, {palette: ['#4CE600']}, 'Hist. HOT Open-Canopy Mangrove I',false);
+ centre.addLayer(eb, {palette: ['#8400A8']}, 'Hist. HOT Exposed / Barren',false);
+ centre.addLayer(vo, {palette: ['#CDF57A']}, 'Hist. HOT Open-Canopy Mangrove II',false);
+ centre.addLayer(ub, { palette: ['#00FFC5']}, 'Hist. HOT Urban / Built',false);
+ centre.addLayer(rw, {palette: ['#004DA8']}, 'Hist. HOT Residual Water',false);
+ centre.addLayer(nf, { palette: ['#FFFF00']}, 'Hist. HOT Non-Forest Vegetation',false);
+};           
+
+exports.Hlot_display = function(Hlot_class, centre){ 
+  Hlot_class = ee.Image(Hlot_class);
+  var tf = Hlot_class.select('classification').eq(1).selfMask();
+  var cc = Hlot_class.select('classification').eq(11).selfMask();
+  var co = Hlot_class.select('classification').eq(15).selfMask();
+  var eb = Hlot_class.select('classification').eq(19).selfMask();
+  var vo = Hlot_class.select('classification').eq(22).selfMask();
+  var ub = Hlot_class.select('classification').eq(38).selfMask();
+  var rw = Hlot_class.select('classification').eq(43).selfMask();
+  var nf = Hlot_class.select('classification').eq(70).selfMask();            
+            
+ //Adding three mangrove classes - some issues in this code leading to masking errors
+            
+ centre.addLayer(tf, {palette: ['#E69800']}, 'Hist. LOT Terrestrial Forest',false);
+ centre.addLayer(cc, {palette: ['#267300']}, 'Hist. LOT Closed-Canopy Mangrove',false);
+ centre.addLayer(co, {palette: ['#4CE600']}, 'Hist. LOT Open-Canopy Mangrove I',false);
+ centre.addLayer(eb, {palette: ['#8400A8']}, 'Hist. LOT Exposed / Barren',false);
+ centre.addLayer(vo, {palette: ['#CDF57A']}, 'Hist. LOT Open-Canopy Mangrove II',false);
+ centre.addLayer(ub, { palette: ['#00FFC5']}, 'Hist. LOT Urban / Built',false);
+ centre.addLayer(rw, {palette: ['#004DA8']}, 'Hist. LOT Residual Water',false);
+ centre.addLayer(nf, { palette: ['#FFFF00']}, 'Hist. LOT Non-Forest Vegetation',false);
+};           
+
+exports.Hcom_display = function(Hcom_class, centre){ 
+  Hcom_class = ee.Image(Hcom_class);
+  var tf = Hcom_class.select('classification').eq(1).selfMask();
+  var cc = Hcom_class.select('classification').eq(11).selfMask();
+  var co = Hcom_class.select('classification').eq(15).selfMask();
+  var eb = Hcom_class.select('classification').eq(19).selfMask();
+  var vo = Hcom_class.select('classification').eq(22).selfMask();
+  var ub = Hcom_class.select('classification').eq(38).selfMask();
+  var rw = Hcom_class.select('classification').eq(43).selfMask();
+  var nf = Hcom_class.select('classification').eq(70).selfMask();            
+            
+ //Adding three mangrove classes - some issues in this code leading to masking errors
+            
+ centre.addLayer(tf, {palette: ['#E69800']}, 'Hist. Combo Terrestrial Forest',false);
+ centre.addLayer(cc, {palette: ['#267300']}, 'Hist. Combo Closed-Canopy Mangrove',false);
+ centre.addLayer(co, {palette: ['#4CE600']}, 'Hist. Combo Open-Canopy Mangrove I',false);
+ centre.addLayer(eb, {palette: ['#8400A8']}, 'Hist. Combo Exposed / Barren',false);
+ centre.addLayer(vo, {palette: ['#CDF57A']}, 'Hist. Combo Open-Canopy Mangrove II',false);
+ centre.addLayer(ub, { palette: ['#00FFC5']}, 'Hist. Combo Urban / Built',false);
+ centre.addLayer(rw, {palette: ['#004DA8']}, 'Hist. Combo Residual Water',false);
+ centre.addLayer(nf, { palette: ['#FFFF00']}, 'Hist. Combo Non-Forest Vegetation',false);
+}; 

@@ -1,0 +1,19 @@
+
+
+
+exports.water_mask = function(hist_img, cont_img){
+
+  // create contemporary MNDWI Image
+  var MNDWI_cont = cont_img.normalizedDifference(['B5', 'B2']).gte(0.09);
+    // create historic MNDWI Image
+  var MNDWI_hist = hist_img.normalizedDifference(['B5', 'B2']).gte(0.09);
+  // unify the images, select values greater than 1
+  var h2o_mask = MNDWI_cont.add(MNDWI_hist).gte(1);
+  
+  // export
+  return h2o_mask;
+};
+
+
+
+
