@@ -1,0 +1,312 @@
+/*
+
+This is the contemporary imagery module, which is part of the BVC MMM v4.0 library.
+It is used to collect recent Landsat 8 imagery for the area of interest.
+
+Last update: 29-04-2020
+
+*/
+
+
+exports.doc = 'The contemporary imagery module is used to collect contemporary images for the ROI.' +
+    '\n The output is an image collection ready to be sorted into high and low tide groups. ' +
+    '\n It includes .' +
+    '\n' +
+    '\n mang_buff(geom, mang):' +
+    '\n   @param {ee.Geometry} geom: the coastline to be buffered' +
+    '\n   @param {ee.Image} mange: the currently recognized mangrove extent' +
+    '\n   @return {ee.Image} An image with the various buffered distances.' +
+    '\n' +
+    '\n graph:' +
+    '\n   a graph of the various membership for each of the buffered distances.';
+
+
+exports.histImagery = function(roi, hist_year1, hist_year2, cloudCoverLimit, month_1, month_2, cloud_mask){
+
+  // collect the LS4 imagery
+  var col4 =  ee.ImageCollection("LANDSAT/LT04/C01/T1_SR")
+    // filter to the path/row
+    .filterBounds(roi) 
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit) 
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected year range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'));
+  // collect the LS5 imagery
+  
+  var col5 =  ee.ImageCollection("LANDSAT/LT05/C01/T1_SR")
+    // filter to the path/row
+    .filterBounds(roi)
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit)
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected month range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'));
+    
+  // collect the LS7 imagery
+  var col7 =  ee.ImageCollection("LANDSAT/LE07/C01/T1_SR")
+    .filterBounds(roi)
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit)
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected month range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'));
+
+   //merge the collections 
+   var images = ee.ImageCollection(col7.merge(col5.merge(col4)));
+
+    if(cloud_mask === "none"){ images = images;}else{
+      if(cloud_mask === "mild"){ images = images.map(function(img){
+        // Bits 3 and 5 are cloud shadow and cloud, respectively.
+        var cloudShadowBitMask = (1 << 3);
+        var cloudsBitMask = (1 << 5);
+        // Get the pixel QA band.
+        var qa = img.select('pixel_qa');
+        // Both flags should be set to zero, indicating clear conditions.
+        var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+                     .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    
+        // Define a kernel.
+        var kernel = ee.Kernel.gaussian({radius: 10});
+    
+        // Perform an erosion followed by a dilation, display.
+        var opened = mask.focal_min({kernel: kernel, iterations: 1});
+  
+        return img.updateMask(opened);              
+      });
+      }else{
+        var masked_1 = images.map(function(img){
+          // Bits 3 and 5 are cloud shadow and cloud, respectively.
+          var cloudShadowBitMask = (1 << 3);
+          var cloudsBitMask = (1 << 5);
+          // Get the pixel QA band.
+          var qa = img.select('pixel_qa');
+          // Both flags should be set to zero, indicating clear conditions.
+          var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+                       .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    
+          // Define a kernel.
+          var kernel = ee.Kernel.gaussian({radius: 10});
+    
+          // Perform an erosion followed by a dilation, display.
+          var opened = mask.focal_min({kernel: kernel, iterations: 1});
+  
+          return img.updateMask(opened);              
+        });            
+
+        images = masked_1.map(function(image){
+            
+          var B1_wt = image.select('B1').gte(1850);
+          var B2_wt = image.select('B2').gte(1850);
+          var B3_wt = image.select('B3').gte(1850);
+          var B6_wt = image.select('B6').lte(2955);
+          var weight_mask = B2_wt.add(B3_wt).add(B2_wt).add(B6_wt).gte(4).eq(0);
+      
+          // Define a kernel.
+          var kernel = ee.Kernel.gaussian({radius: 3});
+    
+          // Perform an erosion followed by a dilation, display.
+          weight_mask = weight_mask
+                   .focal_min({kernel: kernel, iterations: 1});
+
+          return image.updateMask(weight_mask);
+        });
+      }}
+
+    return images;    
+  
+};
+
+exports.histImagery_45 = function(roi, hist_year1, hist_year2, cloudCoverLimit, month_1, month_2, cloud_mask){
+
+  // collect the LS4 imagery
+  var col4 =  ee.ImageCollection("LANDSAT/LT04/C01/T1_SR")
+    // filter to the path/row
+    .filterBounds(roi) 
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit) 
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected year range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month')).aside(print);
+  // collect the LS5 imagery
+  
+  var col5 =  ee.ImageCollection("LANDSAT/LT05/C01/T1_SR")
+    // filter to the path/row
+    .filterBounds(roi)
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit)
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected month range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month')).aside(print);
+    
+   //merge the collections 
+   var images = ee.ImageCollection(col5.merge(col4)).aside(print);
+   
+   if(cloud_mask === "none"){ images = images;}else{
+      if(cloud_mask === "mild"){ images = images.map(function(img){
+        // Bits 3 and 5 are cloud shadow and cloud, respectively.
+        var cloudShadowBitMask = (1 << 3);
+        var cloudsBitMask = (1 << 5);
+        // Get the pixel QA band.
+        var qa = img.select('pixel_qa');
+        // Both flags should be set to zero, indicating clear conditions.
+        var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+                     .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    
+        // Define a kernel.
+        var kernel = ee.Kernel.gaussian({radius: 10});
+    
+        // Perform an erosion followed by a dilation, display.
+        var opened = mask.focal_min({kernel: kernel, iterations: 1});
+  
+        return img.updateMask(opened);              
+      });
+      }else{
+        var masked_1 = images.map(function(img){
+          // Bits 3 and 5 are cloud shadow and cloud, respectively.
+          var cloudShadowBitMask = (1 << 3);
+          var cloudsBitMask = (1 << 5);
+          // Get the pixel QA band.
+          var qa = img.select('pixel_qa');
+          // Both flags should be set to zero, indicating clear conditions.
+          var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+                       .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    
+          // Define a kernel.
+          var kernel = ee.Kernel.gaussian({radius: 10});
+    
+          // Perform an erosion followed by a dilation, display.
+          var opened = mask.focal_min({kernel: kernel, iterations: 1});
+  
+          return img.updateMask(opened);              
+        });            
+
+        images = masked_1.map(function(image){
+            
+          var B1_wt = image.select('B1').gte(1850);
+          var B2_wt = image.select('B2').gte(1850);
+          var B3_wt = image.select('B3').gte(1850);
+          var B6_wt = image.select('B6').lte(2955);
+          var weight_mask = B2_wt.add(B3_wt).add(B2_wt).add(B6_wt).gte(4).eq(0);
+      
+          // Define a kernel.
+          var kernel = ee.Kernel.gaussian({radius: 3});
+    
+          // Perform an erosion followed by a dilation, display.
+          weight_mask = weight_mask
+                   .focal_min({kernel: kernel, iterations: 1});
+
+          return image.updateMask(weight_mask);
+        });
+      }}
+
+    return images;  
+};
+
+exports.histImagery_specific = function(roi, hist_year1, hist_year2, cloudCoverLimit, month_1, month_2, day_1, day_2, cloud_mask){
+
+  // collect the LS4 imagery
+  var col4 =  ee.ImageCollection("LANDSAT/LT04/C01/T1_SR")
+    // filter to the path/row
+    .filterBounds(roi) 
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit) 
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected year range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'))
+    .filter(ee.Filter.calendarRange(day_1, day_2,'day_of_month'));
+  // collect the LS5 imagery
+  
+  var col5 =  ee.ImageCollection("LANDSAT/LT05/C01/T1_SR")
+    // filter to the path/row
+    .filterBounds(roi)
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit)
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected month range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'))
+    .filter(ee.Filter.calendarRange(day_1, day_2,'day_of_month'));
+    
+  // collect the LS7 imagery
+  var col7 =  ee.ImageCollection("LANDSAT/LE07/C01/T1_SR")
+    .filterBounds(roi)
+    // filter to the set cloud cover
+    .filterMetadata('CLOUD_COVER', 'not_greater_than', cloudCoverLimit)
+    // filter for selected year range
+    .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
+    // filter for selected month range
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'))
+    .filter(ee.Filter.calendarRange(day_1, day_2,'day_of_month'));
+
+   //merge the collections 
+   var images = ee.ImageCollection(col7.merge(col5.merge(col4)));
+
+    if(cloud_mask === "none"){ images = images;}else{
+      if(cloud_mask === "mild"){ images = images.map(function(img){
+        // Bits 3 and 5 are cloud shadow and cloud, respectively.
+        var cloudShadowBitMask = (1 << 3);
+        var cloudsBitMask = (1 << 5);
+        // Get the pixel QA band.
+        var qa = img.select('pixel_qa');
+        // Both flags should be set to zero, indicating clear conditions.
+        var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+                     .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    
+        // Define a kernel.
+        var kernel = ee.Kernel.gaussian({radius: 10});
+    
+        // Perform an erosion followed by a dilation, display.
+        var opened = mask.focal_min({kernel: kernel, iterations: 1});
+  
+        return img.updateMask(opened);              
+      });
+      }else{
+        var masked_1 = images.map(function(img){
+          // Bits 3 and 5 are cloud shadow and cloud, respectively.
+          var cloudShadowBitMask = (1 << 3);
+          var cloudsBitMask = (1 << 5);
+          // Get the pixel QA band.
+          var qa = img.select('pixel_qa');
+          // Both flags should be set to zero, indicating clear conditions.
+          var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+                       .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    
+          // Define a kernel.
+          var kernel = ee.Kernel.gaussian({radius: 10});
+    
+          // Perform an erosion followed by a dilation, display.
+          var opened = mask.focal_min({kernel: kernel, iterations: 1});
+  
+          return img.updateMask(opened);              
+        });            
+
+        images = masked_1.map(function(image){
+            
+          var B1_wt = image.select('B1').gte(1850);
+          var B2_wt = image.select('B2').gte(1850);
+          var B3_wt = image.select('B3').gte(1850);
+          var B6_wt = image.select('B6').lte(2955);
+          var weight_mask = B2_wt.add(B3_wt).add(B2_wt).add(B6_wt).gte(4).eq(0);
+      
+          // Define a kernel.
+          var kernel = ee.Kernel.gaussian({radius: 3});
+    
+          // Perform an erosion followed by a dilation, display.
+          weight_mask = weight_mask
+                   .focal_min({kernel: kernel, iterations: 1});
+
+          return image.updateMask(weight_mask);
+        });
+      }}
+
+    return images;    
+  
+};
+

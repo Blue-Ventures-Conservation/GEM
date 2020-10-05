@@ -1,0 +1,153 @@
+exports.ls_candles = function(sample, label, label2, name){
+
+  var bands =  ['B1','B2','B3','B4','B5','B7'];
+  
+  var l1 = sample.distinct(label).aggregate_array(label).getInfo();
+  var l2 = sample.distinct(label2).aggregate_array(label2);
+  var lab_zip = ee.List(l1).zip(l2).sort(l1);
+  var IDs_int = sample.distinct(label).aggregate_array(label).sort();
+  var IDs_str =  IDs_int.map(function(i){
+                  return ee.String(ee.Number(i).toFloat());
+                  });
+ 
+  var rep_func = function(n){
+  
+    var feat2 = sample.filterMetadata(label, 'equals', n);
+
+    var mins = ee.Number(feat2.reduceColumns(ee.Reducer.min().forEach(bands), bands));
+    var maxs = ee.Number(feat2.reduceColumns(ee.Reducer.max().forEach(bands), bands));
+    var mean = ee.Number(feat2.reduceColumns(ee.Reducer.mean().forEach(bands), bands));
+    var std = ee.Number(feat2.reduceColumns(ee.Reducer.stdDev().forEach(bands), bands));
+
+    mins = ee.Dictionary(mins).toArray();
+    maxs = ee.Dictionary(maxs).toArray();
+    mean = ee.Dictionary(mean).toArray();
+    std = ee.Dictionary(std).toArray();
+  
+    var s1 = mean.subtract(std);
+    var s2 = mean.add(std);
+
+    return ee.Array.cat([mins.getInfo(), s1.getInfo(), s2.getInfo(), maxs.getInfo()], 1);
+ 
+  };
+
+  var out_ar = ee.Array.cat(l1.map(rep_func), 1);
+
+  
+  var lst = ee.List([]);
+  var v = ee.List.sequence(0, IDs_str.length().subtract(1)).getInfo();
+  var n = ee.Number(IDs_str.length()).subtract(1).getInfo();
+
+  for (var i = 0; i < n; i++){
+    var in_1 = ee.String(ee.List(v).get(i)).slice(0,1).getInfo();
+    var in_2 = ee.String(ee.List(bands).get(i)).getInfo();
+    lst = lst.add(ee.Dictionary({v: in_1,
+                                f: in_2})); 
+  }
+  
+  var lst2 = ee.List([]);
+  for (var q = 0; q < n; q++){
+    lst2 = lst2.add(ee.Dictionary({labelInLegend: l2.get(q)}));
+  }
+
+  // Prepare the chart.
+  var chart =
+  ui.Chart.array.values({
+      array: out_ar,
+      axis: 0,})
+    .setChartType('CandlestickChart')
+    .setOptions({
+      title: name + " "+ " Values by Landcover",
+      hAxis: {
+        title: 'Landsat Bands',
+        ticks: lst.getInfo()
+                },
+        vAxis: {
+        title: 'Refeclance (dn)'
+      },
+      series: lst2.getInfo(),
+      lineWidth: 1,
+      pointSize: 3
+      });
+  print(chart);
+};
+
+
+
+exports.whiskerCharts2 = function(sample, label, label2, band, name){
+
+  var l1 = sample.distinct(label).aggregate_array(label);
+  var l2 = sample.distinct(label2).aggregate_array(label2);
+  var lab_zip = l1.zip(l2).sort(l1);
+  var IDs_int = sample.distinct(label).aggregate_array(label).sort();
+  var IDs_str =  IDs_int.map(function(i){
+                  return ee.String(ee.Number(i).toFloat());
+                  });
+ // print(IDs_str);
+  var collector = function(num){
+  
+    var feat2 = sample.filterMetadata(label, 'equals', num);
+  
+    var mins = ee.Number(feat2.reduceColumns(ee.Reducer.min(), [band]).get('min'));
+    var maxs = ee.Number(feat2.reduceColumns(ee.Reducer.max(), [band]).get('max'));
+    var mean = ee.Number(feat2.reduceColumns(ee.Reducer.mean(), [band]).get('mean'));
+    var std = ee.Number(feat2.reduceColumns(ee.Reducer.stdDev(), [band]).get('stdDev'));
+    var s1 = mean.subtract(std);
+    var s2 = mean.add(std);
+  
+    return ee.List([mins, s1, s2, maxs]);
+  
+  };
+    
+  var values = IDs_int.map(collector);
+  var keys = ee.List(IDs_str);
+  var dict = ee.Dictionary.fromLists(keys, values);
+
+
+
+  var lst = ee.List([]);
+  var v = ee.List.sequence(0, IDs_str.length().subtract(1));
+  var n = ee.Number(IDs_str.length()).getInfo();
+
+  for (var i = 0; i < n; i++){
+  
+    var in_1 = ee.String(v.get(i)).slice(0,1).getInfo();
+    var in_2 = ee.String(ee.List(lab_zip.get(i)).get(1)).getInfo();
+    lst = lst.add(ee.Dictionary({v: in_1,
+                                f: in_2})); 
+  }
+
+  // Prepare the chart.
+  var chart =
+  ui.Chart.array.values({
+      array: dict.values(),
+      axis: 0,})
+    .setChartType('CandlestickChart')
+    .setOptions({
+      title: name + " " + band + " Values by Landcover",
+      hAxis: {
+        title: 'Land Cover Class',
+        ticks: lst.getInfo()
+                },
+        vAxis: {
+        title: band
+      },
+      lineWidth: 1,
+      pointSize: 3
+      });
+  print(chart);
+};
+  
+
+exports.scatter = function(sample, bandX, bandY, label){
+  var data = ee.List(sample).get(1);
+  var title = ee.List(sample).get(0);
+  
+  var chart =    ui.Chart.feature.groups(sample, bandX, bandY, label)
+    .setChartType('ScatterChart')
+    .setOptions({ title: title + " " + bandX + " v. " + bandY});
+  print(chart);
+};
+
+
+
