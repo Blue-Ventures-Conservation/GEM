@@ -1,0 +1,165 @@
+
+
+exports.pearson_cor_mat = function(img, bands, geom){
+
+
+var mat = bands.map(function(band){
+        
+        var outList = ee.List([band]);
+        var base = img.select([band]).rename(['base']);
+      
+
+       var B2cor = ee.Algorithms.If(bands.contains('B2'), img.select(['B2']).addBands(base).reduceRegion({
+            reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+        var B3cor = ee.Algorithms.If(bands.contains('B3'),img.select(['B3']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+        var B4cor = ee.Algorithms.If(bands.contains('B4'),img.select(['B4']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+        var B5cor = ee.Algorithms.If(bands.contains('B5'),img.select(['B5']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+        var B6cor = ee.Algorithms.If(bands.contains('B6'),img.select(['B6']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+        var B7cor = ee.Algorithms.If(bands.contains('B7'),img.select(['B7']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+        var SRcor = ee.Algorithms.If(bands.contains('SR'),img.select(['SR']).addBands(base).reduceRegion({
+           reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+            tileScale: 4
+              }).get('correlation'));
+      var NDVIcor = ee.Algorithms.If(bands.contains('NDVI'),img.select(['NDVI']).addBands(base).reduceRegion({
+           reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+            tileScale: 4
+              }).get('correlation'));
+      var NDWIcor = ee.Algorithms.If(bands.contains('NDWI'),img.select(['NDWI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var MNDWIcor = ee.Algorithms.If(bands.contains('MNDWI'),img.select(['MNDWI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var CMRIcor = ee.Algorithms.If(bands.contains('CMRI'),img.select(['CMRI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var MMRIcor = ee.Algorithms.If(bands.contains('MMRI'),img.select(['MMRI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var SAVIcor = ee.Algorithms.If(bands.contains('SAVI'),img.select(['SAVI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var OSAVIcor = ee.Algorithms.If(bands.contains('OSAVI'),img.select(['OSAVI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var EVIcor = ee.Algorithms.If(bands.contains('EVI'),img.select(['EVI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var MRIcor = ee.Algorithms.If(bands.contains('MRI'),img.select(['MRI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var SMRIcor = ee.Algorithms.If(bands.contains('SMRI'),img.select(['SMRI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var LSWIcor = ee.Algorithms.If(bands.contains('LSWI'),img.select(['LSWI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var NDTIcor = ee.Algorithms.If(bands.contains('NDTI'),img.select(['NDTI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+      var EBBIcor = ee.Algorithms.If(bands.contains('EBBI'),img.select(['EBBI']).addBands(base).reduceRegion({
+              reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
+
+var row = outList.cat(ee.List([B2cor, B3cor, B4cor,
+                  B5cor, B6cor, B7cor, SRcor, NDVIcor, NDWIcor,
+                  MNDWIcor, CMRIcor, MMRIcor, SAVIcor, 
+                  OSAVIcor, EVIcor, MRIcor, SMRIcor,
+                  LSWIcor, NDTIcor, EBBIcor]).removeAll([null])).map(function(i){
+                    return ee.String(i).slice(0,5);
+                  }).join(' ');
+
+return row;
+});
+print(mat);
+};
+
