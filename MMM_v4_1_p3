@@ -1,0 +1,625 @@
+///////////////////////////////////////////////////////////
+//////////      Mangrove Mapping Methodology     //////////
+/////////////////////////////////////////////////////////// 
+
+/* 
+
+This code was developed for Blue Ventures Conservation, by Max Yancho.
+Questions about the project and the appliction of the script(s) should be 
+directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Advisor 
+(trevor@blueventures.org). Questions about the code can be directed to 
+Mr. Max Yancho (yanchojo@gmail.com).
+
+Developed: June 3, 2020
+Last Modified: July 13, 2020
+
+////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////
+//////////////      Step 1       //////////////
+///////////////////////////////////////////////
+
+
+This portion of the script requires slightly more input from the user. The user
+will be required to add a color palette, the landcover class names, and the 
+landcover class values to the script as lists.
+
+As in MMM Part 2, bring in Imagery and Masks exported from Step one. Name as follows:
+
+  Chot_image = high tide, contemporary imagery, exported in step 1
+  Clot_image = low tide, contemporary imagery, exported in step 1
+
+  Hhot_image = high tide, historic imagery, exported in step 1
+  Hlot_image = low tide, historic imagery, exported in step 1
+
+  final_mask = final mask, exported in step 1
+  
+  ROI = region of interest, exported in step 1
+
+This can be done by selecting the assets from the 'Asset' tab and clicking the 
+arrow to import the asset to this script. The name can be changed by double clicking 
+the automatic 'image' name.
+
+
+The next step is for the user to bring in the classification results and determine which
+data they would like to view in the QAA process. By switching the boolean 'cont_view' &
+'hist_view' on and off (true and false), the historic or contemporary results are displayed.
+Please note that only one or the other should be true/false at any given time. 
+*/
+
+var cont_view = true;
+var hist_view = false;
+
+/*
+Additionally, the user must define the inputs historic and contemporary classicfications as 
+below:
+
+
+  cont_class =  **The contemporary classification**, exported in step 2
+  hist_class = **The historic classification**, exported in step 2 
+
+
+Just like the imagery, this can be done by selecting the assets from the 'Asset' tab 
+and clicking the arrow to import the asset to this script. The name can be changed by 
+double clicking the automatic 'image' name.
+
+Lastly, just like before, the the training reference data needs to be added to accurately
+label the various layers and classification inputs.
+*/
+
+
+var class_ref = "users/yanchojo/crd_update_0724_multi";
+// Landcover labels for the classifier
+var label = 'ID';          //<<<------<<<< Numerice Column
+var label2 = 'Classname';  //<<<------<<<< Text Column
+var dyno = 6;
+
+
+
+/*
+Define your color palette
+
+This is not a slightly more abstract parameter than the others in this tool, however it will
+aide in the QAA portion of step 3. The number of colors you choose must be equal to of greater 
+than the number of land cover classes you included in your classification maps. For example,
+if you had just 2 classes, mangrove and non-mangrove, you only need to have two colors 'green'
+and 'red'. Enter the colors in the square brackets and in quoatations, matching the example 
+below. The color will match the numerical order of the land cover classes, so, to extend our 
+example, the mangrove class would be green and the non-mangrove pixels would be red.
+
+The user may write colors as 'red', 'cyan', 'yellow' or as six-digit hex triplet color 
+codes; e.g.'#267300'. (https://en.wikipedia.org/wiki/Web_colors#Hex_triplet). It is recommened
+that the user employ the hex code colors, there are only limited variations of 'string-colors'
+available which can be used, and, if a 'string-color' is not available an error may be occur.
+
+Example:
+
+var colors = ee.List(['red',
+                      '#267300',
+                      'green',
+                      '#8400A8', 
+                      '#CDF57A',
+                      'yellow',
+                      '#004DA8',
+                      '#FFFF00']);
+
+*/
+
+// A color palette to use to ID the layers
+var colors = ee.List(['#E69800',
+                      '#267300',
+                      '#4CE600',
+                      '#8400A8', 
+                      '#CDF57A',
+                      '#00FFC5',
+                      '#004DA8',
+                      '#FFFF00']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Country Selection 
+print('Select the Country');
+var dataset = ee.FeatureCollection('USDOS/LSIB/2017');
+var dataset2 = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017');
+var name_list = ee.List([]); //set up empty list
+
+//Create a list of the names
+for (var i = 1; i < 277; i++){
+  var country = dataset.filterMetadata('OBJECTID', 'equals', i).first();
+  var nm = country.get('COUNTRY_NA');
+  name_list = name_list.add(nm);
+}
+
+var countryName = 'name';
+var country_selector = ui.Select({
+  items: name_list.getInfo(),
+  placeholder: 'Choose Country',
+  onChange: function(x){
+  countryName = x;
+  }
+});
+print(country_selector);
+
+
+
+//create the QAA button
+var dyn_button = ui.Button('Click to View Dynamics');
+dyn_button.onClick(function(){
+
+  var c1 = ee.Feature(dataset2.filterMetadata('country_na', 'equals', countryName).first().getInfo());
+  var styleParams = {
+    fillColor: '00FFFFFF',
+    color: '00909F',
+   width: 3.0,
+  };
+  var c2 = dataset2.filterMetadata('country_na', 'equals', countryName).style(styleParams); 
+  //Map.addLayer(c2, {opacity:0.2}, countryName);
+
+
+// training polygons
+var t_poly = ee.FeatureCollection(class_ref);
+
+//Extract the LC class names and values and make list
+var values = t_poly.distinct(label).aggregate_array(label).getInfo();
+var names = t_poly.distinct(label2).aggregate_array(label2);
+
+// A color palette to use to ID the layers
+var colors = ee.List(['#E69800', '#267300', '#4CE600', '#8400A8', '#CDF57A', '#00FFC5', '#004DA8', '#FFFF00']);
+
+// Redefine the ROI
+var ROI_dis = ROI; 
+
+
+var cont_res = cont_class;
+var hist_res = hist_class;
+
+
+// Define the layers of interest
+  //Contemporary
+  if(cont_view === true){ 
+    var class_res = cont_res;
+    }
+  if( hist_view === true){ 
+    var class_res = hist_res;
+    }
+    
+var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
+Map.addLayer(Chot_image.updateMask(final_mask).clip(c1), vis, 'Contemporary High Tide');
+Map.addLayer(Clot_image.updateMask(final_mask).clip(c1), vis, 'Contemporary Low Tide', false);
+Map.addLayer(Hhot_image.updateMask(final_mask).clip(c1), vis, 'Historic High Tide', false);
+Map.addLayer(Hlot_image.updateMask(final_mask).clip(c1), vis, 'Historic Low Tide', false);
+Map.centerObject(Chot_image);
+
+//cont mangrove
+var cmang = cont_res.eq(dyno).clip(c1);
+var hmang = hist_res.eq(dyno).clip(c1); 
+
+// Gain
+var mang_gain = cmang.subtract(hmang).eq(1).selfMask();
+Map.addLayer(mang_gain.clip(ROI), {palette: 'E1DD7B'}, 'gain');
+var area_gain = ee.Image.pixelArea().updateMask(mang_gain);
+var gain = area_gain.reduceRegion({
+                                     reducer: ee.Reducer.sum(),
+                                     geometry: ROI, 
+                                     scale: 30,
+                                     maxPixels: 1e13,
+                                     bestEffort: true
+                                     });
+print('Area(km²) of Mangrove gain: ', ee.Number(gain.get('area')).divide(1e6));                                     
+// Loss
+var mang_loss = hmang.subtract(cmang).eq(1).selfMask();
+Map.addLayer(mang_loss.clip(ROI), {palette: 'red'}, 'loss');
+var area_loss = ee.Image.pixelArea().updateMask(mang_loss);
+var loss = area_loss.reduceRegion({
+                                     reducer: ee.Reducer.sum(),
+                                     geometry: ROI, 
+                                     scale: 30,
+                                     maxPixels: 1e13,
+                                     bestEffort: true
+                                     });
+print('Area(km²) of Mangrove loss: ', ee.Number(loss.get('area')).divide(1e6));
+// Persistence
+var mang_per = hmang.eq(1).and(cmang.eq(1)).selfMask();
+Map.addLayer(mang_per.clip(ROI), {palette: '20592A'}, 'persistence');
+var area_per = ee.Image.pixelArea().updateMask(mang_per);
+var per = area_per.reduceRegion({
+                                     reducer: ee.Reducer.sum(),
+                                     geometry: ROI, 
+                                     scale: 30,
+                                     maxPixels: 1e13,
+                                     bestEffort: true
+                                     });
+print('Area(km²) of Mangrove persistence: ', ee.Number(per.get('area')).divide(1e6));
+Export.image.toDrive({
+            image: mang_per.clip(ROI),
+            description: 'persistence',
+            region: ROI,
+            scale: 30,
+            maxPixels:1e13
+           });
+Export.image.toDrive({
+            image: mang_loss.clip(ROI),
+            description: 'loss',
+            region: ROI,
+            scale: 30,
+            maxPixels:1e13
+           });
+Export.image.toDrive({
+            image: mang_gain.clip(ROI),
+            description: 'gain',
+            region: ROI,
+            scale: 30,
+            maxPixels:1e13
+           });
+print('Historic Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(loss.get('area')).divide(1e6)).getInfo());
+print('Contemporary Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(gain.get('area')).divide(1e6)).getInfo());
+
+
+
+
+
+
+//create the QAA button
+var QAA_button = ui.Button('Click to Proceed to QAA');
+QAA_button.onClick(function(){
+
+
+var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
+
+
+// Add three maps to the screen.
+var left = ui.Map();
+var right = ui.Map();
+var centre = ui.Map();
+ui.Map.Linker([left,right,centre]);  
+
+// add maps to the imagery
+ui.root.clear();
+ui.root.add(left);
+ui.root.add(centre);
+ui.root.add(right);
+left.setOptions("SATELLITE");
+
+
+//Add the Landsat imagery to the map
+right.addLayer(Chot_image.updateMask(final_mask), vis, 'Contemporary High Tide');
+right.addLayer(Clot_image.updateMask(final_mask), vis, 'Contemporary Low Tide', false);
+right.addLayer(Hhot_image.updateMask(final_mask), vis, 'Historic High Tide', false);
+right.addLayer(Hlot_image.updateMask(final_mask), vis, 'Historic Low Tide', false);
+
+
+//ADD ROI
+//Add the ROI to the all maps, in red outline with no fill
+right.addLayer(ROI_dis, {palette: 'black'}, 'ROI', false);
+centre.addLayer(ROI_dis, {palette: 'black'}, 'ROI', false);
+left.addLayer(ROI_dis, {palette: 'black'}, 'ROI', false);
+left.centerObject(ROI_dis);
+
+//get the size of the list
+var n = ee.List(values).size().getInfo();
+
+//add classified layers to central map
+for (var i = 0; i < n; i++) {
+  var val = ee.List(values).get(i).getInfo();
+  var exp = class_res.select('classification').eq(val).selfMask();
+  var nm = ee.List(names).get(i).getInfo();
+  var cl = colors.get(i).getInfo();
+  //Adding three mangrove classes - some issues in this code leading to masking errors
+  centre.addLayer(exp, {palette: [cl]}, nm, false);
+}
+
+
+function makeGrid(geometry, scale) {
+  // pixelLonLat returns an image with each pixel labeled with longitude and
+  // latitude values.
+  var lonLat = ee.Image.pixelLonLat();
+
+  // Select the longitude and latitude bands, multiply by a large number then
+  // truncate them to integers.
+  var lonGrid = lonLat
+    .select('longitude')
+    .multiply(10000000)
+    .toInt();
+
+  var latGrid = lonLat
+    .select('latitude')
+    .multiply(10000000)
+    .toInt();
+
+  // To produce the grid, multiply the latitude and longitude images and then use
+  // reduce to vectors at the 10km resolution to group the grid into vectors.
+  return lonGrid
+    .multiply(latGrid)
+    .reduceToVectors({
+      geometry: geometry, // This is undefined until you draw a geometry.
+      scale: scale,
+      geometryType: 'polygon',
+    });
+}
+
+// Create larger 100x100 km grid
+var grid = makeGrid(ROI.geometry(), 100000);
+var new_grid = grid.randomColumn().filter(ee.Filter.lte('random', 0.5));
+
+// create the smaller cells
+var mini_cells = new_grid.map(function(x){
+  var mini_grid = makeGrid(ee.Feature(x).geometry(), 10000); 
+  mini_grid = mini_grid.randomColumn().filter(ee.Filter.lte('random', 0.20));
+  mini_grid = mini_grid.map(function(feat){
+    var geom =feat.geometry().coordinates().flatten();
+    return ee.Feature(ee.Geometry.LinearRing(geom));
+  });
+  
+  return mini_grid;
+});
+
+// add small cells to the maps
+centre.addLayer(ee.FeatureCollection(mini_cells).flatten(), {color:'yellow'}, " AOIs");
+right.addLayer(ee.FeatureCollection(mini_cells).flatten(), {color:'yellow'}, " AOIs");
+left.addLayer(ee.FeatureCollection(mini_cells).flatten(), {color:'yellow'}, " AOIs");
+
+
+//correct the geometry of the original grid so that it looks good to display
+new_grid = new_grid.map(function(feat){
+    var geom =feat.geometry().coordinates().flatten();
+    return ee.Feature(ee.Geometry.LinearRing(geom));
+  });
+//add the grid to the maps
+centre.addLayer(ee.FeatureCollection(new_grid), {}, 'grid');
+right.addLayer(ee.FeatureCollection(new_grid), {}, 'grid');
+left.addLayer(ee.FeatureCollection(new_grid), {}, 'grid');
+
+
+// Use a DateSlider to create annual composites of this collection.
+var collection = ee.ImageCollection('LANDSAT/LC08/C01/T1');
+// Use the start of the collection and now to bound the slider.
+var start = ee.Image(collection.first()).date().get('year').format();
+var now = Date.now();
+var end = ee.Date(now).format();
+
+// Run this function on a change of the dateSlider.
+var showMosaic = function(range) {
+  var mosaic = ee.Algorithms.Landsat.simpleComposite({
+    collection: collection.filterDate(range.start(), range.end())
+  });
+  // Asynchronously compute the name of the composite.  Display it.
+  range.start().get('year').evaluate(function(name) {
+    var visParams = {bands: ['B4', 'B3', 'B2'], max: 100};
+    var layer = ui.Map.Layer(mosaic, visParams, name + ' composite');
+    left.layers().set(0, layer);
+  });
+};
+
+// Asynchronously compute the date range and show the slider.
+var dateRange = ee.DateRange(start, end).evaluate(function(range) {
+  var dateSlider = ui.DateSlider({
+    start: range['dates'][0],
+    end: range['dates'][1],
+    value: null,
+    period: 365,
+    onChange: showMosaic,
+    style: {
+      position: 'bottom-right'
+    }
+  });
+  left.add(dateSlider.setValue(now));
+});
+
+
+//Creat and Print title
+var title = ui.Label('GEE QAA INTERFACE');
+title.style().set('fontWeight', 'bold');
+title.style().set({
+    fontSize: '20px',
+    padding: '5px'
+    });
+print(title);
+
+//Print instructions to the console
+var instructions = ui.Label('Use the left map for viewing GE '+
+'imagery\nthe centre map for viewing classification outputs'+
+'\nand the right map for viewing Landsat Composite imagery');
+instructions.style().set('fontWeight', 'bold');
+print(instructions);
+
+//Creat Panels
+var under_panel = ui.Panel({
+  layout: ui.Panel.Layout.flow('vertical'),
+  style: {width: '200px'}
+});
+var well_panel = ui.Panel({
+  layout: ui.Panel.Layout.flow('vertical'),
+  style: {width: '200px'}
+});
+var over_panel = ui.Panel({
+  layout: ui.Panel.Layout.flow('vertical'),
+  style: {width: '200px'}
+});
+
+//Create labels
+under_panel.add(ui.Label('Under Represented',
+                         {fontWeight: 'bold'}));
+well_panel.add(ui.Label('Well Represented',
+                         {fontWeight: 'bold'}));
+over_panel.add(ui.Label('Over Represented',
+                         {fontWeight: 'bold'}));
+
+
+// create empty list of '0's to fill in by user clicks
+var under = ee.List.repeat(0, names.length());
+var well = ee.List.repeat(0, names.length());
+var over = ee.List.repeat(0, names.length());
+//creat a list with the postion for each name
+var v = ee.List.sequence(0, names.length().subtract(1));
+
+//create an active list that combines the names and postition information 
+var l2 = names.zip(v);
+l2 = ui.data.ActiveList(l2.getInfo());
+
+//create buttons for under list
+l2.forEach(function(x){
+  var lab = ee.List(x).get(0).getInfo(); //get the label
+  var spot = ee.List(x).get(1).getInfo(); //get the position
+  var but = ui.Button({label: lab, onClick: function(){ //create the button for each name
+    under = under.set(spot, ee.Number(ee.List(under).getNumber(ee.List(x).get(1).getInfo()).add(1)));
+  }
+  });
+  under_panel.add(but); //add to the panel
+});
+//create buttons for well list
+l2.forEach(function(x){
+  var lab = ee.List(x).get(0).getInfo(); //get the label
+  var spot = ee.List(x).get(1).getInfo(); //get the position
+  var but = ui.Button({label: lab, onClick: function(){ //create the button for each name
+    well = well.set(spot, ee.Number(ee.List(well).getNumber(ee.List(x).get(1).getInfo()).add(1)));
+  }
+  });
+  well_panel.add(but); //add to the panel
+});
+//Create buttons for over list
+l2.forEach(function(x){
+  var lab = ee.List(x).get(0).getInfo(); //get the label
+  var spot = ee.List(x).get(1).getInfo(); //get the position
+  var but = ui.Button({label: lab, onClick: function(){ //create the button for each name
+    over = over.set(spot, ee.Number(ee.List(over).getNumber(ee.List(x).get(1).getInfo()).add(1)));
+  }
+  });
+  over_panel.add(but); //add to the panel
+});
+
+
+// Create list print buttons
+var print_un = ui.Button({label: 'Print Under Rep. List', onClick: function(){
+  var l3 = names.zip(under);
+  print('Under Represented', l3);}});
+under_panel.add(print_un);
+var print_we = ui.Button({label: 'Print Well Rep. List', onClick: function(){
+  var l3 = names.zip(well);
+  print('Well Represented', l3);}});
+well_panel.add(print_we);
+var print_ov = ui.Button({label: 'Print Over Rep. List', onClick: function(){
+  var l3 = names.zip(over);
+  print('Over Represented', l3);}});
+over_panel.add(print_ov);
+
+//Create List reset buttons
+var reset_un = ui.Button({label: 'Reset Under Rep. List', onClick: function(){
+  under = ee.List.repeat(0, names.length());
+  print('Under Represented List Reset');}});
+under_panel.add(reset_un);
+var reset_we = ui.Button({label: 'Reset Well Rep. List', onClick: function(){
+  well = ee.List.repeat(0, names.length());
+  print('Well Represented List Reset');}});
+well_panel.add(reset_we);
+var reset_ov = ui.Button({label: 'Reset Over Rep. List', onClick: function(){
+  over = ee.List.repeat(0, names.length());
+  print('Over Represented List Reset');}});
+over_panel.add(reset_ov);
+
+
+ui.root.add(under_panel);
+ui.root.add(well_panel);
+ui.root.add(over_panel);
+
+var mini_poly = mini_cells.flatten().map(function(feat){
+      return feat.set({'id': feat.id()});
+});
+
+var n2 = ee.Number(0);
+
+var cycle_button = ui.Button({label:'Next Cell', onClick: function(){
+  n2 = ee.Number(n2).add(1);
+  var name = ee.String('Cell ' + ee.Number.parse(n2).getInfo()).getInfo();
+  print(name);
+  var cell = ee.Feature(mini_poly.first()).getInfo();
+  centre.addLayer(ee.Feature(cell), {color:'red'}, name);
+  left.addLayer(ee.Feature(cell), {color:'red'}, name);
+  right.addLayer(ee.Feature(cell), {color:'red'}, name);
+  centre.centerObject(ee.Feature(cell));
+  mini_poly = mini_poly.filter(ee.Filter.neq('id', ee.Feature(mini_poly.first()).id()));
+  
+}});
+print(cycle_button);
+
+
+var combo_button = ui.Button({label: 'Print Dictionary', onClick: function(){
+var dict = ee.Dictionary({
+  names: names,
+  under_rep: under,
+  well_rep: well,
+  over_rep: over,
+  comments: comments
+});
+print(dict);
+}});
+print(combo_button);
+
+
+
+var export_button = ui.Button({label: 'Export Dictionary', onClick: function(){
+var dict = ee.Dictionary({
+  names: names,
+  under_rep: under,
+  well_rep: well,
+  over_rep: over,
+  comments: comments
+});
+var feat = ee.Feature(null, dict);
+Export.table.toDrive(ee.FeatureCollection(feat));
+}});
+print(export_button);
+
+var comments = ee.List([]);
+
+
+var comment_button = ui.Button({label: 'Add Comment', onClick: function(){
+  print('Comments on Cell ' + ee.Number.parse(n2).getInfo());
+  var text = ui.Textbox({
+    placeholder: 'Comments on cell condition',
+    onChange: function(text){
+      var x = ee.String('Cell ' + ee.Number.parse(n2).getInfo() + ": " + text);
+      comments = comments.add(x);
+    }
+  });
+  print(text);
+}});
+print(comment_button);
+
+Export.table.toDrive({collection:new_grid,
+                      description: '100km_x_100km_grid'
+});
+Export.table.toDrive({collection:mini_cells,
+                      description: '10km_x_10km_Cells'
+});
+});
+
+print(QAA_button);
+});
+print(dyn_button);

@@ -1,0 +1,545 @@
+///////////////////////////////////////////////////////////
+//////////      Mangrove Mapping Methodology     //////////
+/////////////////////////////////////////////////////////// 
+
+
+/* 
+
+This code was developed for Blue Ventures Conservation, by Max Yancho.
+Questions about the project and the appliction of the script(s) should be 
+directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Advisor 
+(trevor@blueventures.org). Questions about the code can be directed to 
+Mr. Max Yancho (yanchojo@gmail.com).
+
+Developed: June 3, 2020
+Last Modified: October 2, 2020
+
+////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////
+//////////////      Step 1       //////////////
+///////////////////////////////////////////////
+
+0.0)
+
+!
+
+Bring in Imagery and Masks exported from Step one. Name as follows:
+
+  Chot = high tide, contemporary imagery
+  Clot = low tide, contemporary imagery
+
+  Hhot = high tide, historic imagery
+  Hlot = low tide, historic imagery
+
+  final_mask = final mask
+
+This can be done by selecting the assets from the 'Asset' tab and clicking the 
+arrow to import the asset to this script. The name can be changed by double clicking 
+the automatic 'image' name.
+
+
+1.A) Classification Reference Data 
+     The most significant input for the classification data is the 
+     classification reference data. This data set must be created by the user. 
+     This can be done within the GEE environment or externally and uploaded as 
+     GEE user asset. To execute the classification, the user will be asked below 
+     about several important parameters associated with the classification
+     process, but at this time the user must simply identify the classification 
+     reference data that will be used to determine the output landcover classes.
+     This is a vector dataset. It can be multipoint or multipolygon geometry. 
+     It is also imporant that the user declare what field the unique class 
+     'label' is recorded in. It should be a unique numeric number.
+     
+     Enter:
+          var class_ref = **PATH**; (Path to the Classification Reference Data)
+*/
+
+var class_ref_cont = "users/yanchojo/reference_data/cont_CRD_0914";
+var class_ref_hist = "users/yanchojo/reference_data/hist_CRD_0914";
+// Landcover labels for the classifier
+var label = 'ID';
+var label2 = 'Classname';
+
+
+
+/*
+1.B) Classification Reference Data Type
+     Record type of classification reference data. It is important for the MMM 
+     that the user distinguishes their classification reference data as either
+     spatio-temporally invariant across the time-period (historic and
+     contemporary imagery) or derived from just contemporary sources. 
+     
+     1.) Spatio-temporally invariant: The land cover class has not change 
+                                      between the historic years of interest
+                                      and the contemporary years of interest.
+     2.) Contemporary Data: The land cover classes were determined by using just 
+                            contemporary sources (i.e. high resolution imagery
+                            that was recently acquired)
+                            
+     These are important distinctions to make. If just contemporary sources are 
+     used, the spectral values from the contemporary data will be used to
+     classify the historic. If the data is spatio-temporally invariant, the 
+     classifier will be retrained for each data set. Spatio-temporally invariant
+     classification reference data will provide more accurate classification 
+     results. However, it is harder to generate accurately.
+     
+     Enter:
+          var class_ref_type = true; (true, the Reference Data is Spatio-
+                                            temporally invariant)
+          var class_ref_type = false; (false, the Reference Data is NOT Spatio-
+                                            temporally invariant)
+*/
+
+var class_ref_type = true;
+
+/*
+1.C) Classifier
+     GEE offers a variety of classifiers. These come in both supervised and 
+     unsupervised classifier choices. At this time however, the MMM is built to
+     only run the Random Forest Classifier, a supervised decision tree classifier.
+     Future versions will offer more classification options.
+
+     Enter:
+          var classifier = 'RF'; (To use the Random Forest Classifier)
+*/
+
+var classifier = 'RF';
+var trees = 200;
+
+/*
+
+1.D) Output Structure
+     The outputs from the MMM methodology can be fashioned in either a combined
+     (where the high and low tide data are combined in to a single collection) 
+     or seperate (individual high and low) classifications. Outputs below can 
+     be turned on and off by adding a 'true'/'false' to the corresponding 
+     variable input. The historic and contemporary data is seperable into LOT
+     and HOT components. (HOT: Highest Observable Tide; LOT: Lowest Observable
+     Tide) These outputs can also be combined into single data outputs where the
+     
+     Enter:
+          var XXX_out = true; (true, Classify and export this composite)
+          var XXX_out = false; (false, No action)
+*/
+var HOT_cont_out = false;        // High tide comtemporary Imagery
+var LOT_cont_out = true;        // Low tide comtemporary Imagery
+var combo_cont_out = false;     // Combination comtemporary Imagery
+var HOT_hist_out = false;        // High tide historic Imagery
+var LOT_hist_out = true;        // Low tide historic Imagery
+var combo_hist_out = false;     // Combination historic Imagery
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Required Modules
+
+var RFclass = require('users/yanchojo/GEEMMM_v4_1/:modules/rf_classer');
+var InCor = require('users/yanchojo/GEEMMM_v4_1/:modules/input_correlation');
+var specSp = require('users/yanchojo/GEEMMM_v4_1/:modules/spec_area');
+
+print('Re-select the indices that were calculated in Step 1.');
+
+//1.B.k Generate the index list
+  var indx = ee.List([]);
+  var SR = ui.Checkbox('SR', false);
+  SR.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('SR');
+    return indx;});
+
+  var NDVI = ui.Checkbox('NDVI', false);
+  NDVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('NDVI');
+    return indx;});
+
+  var NDWI = ui.Checkbox('NDWI', false);
+  NDWI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('NDWI');
+    return indx;});
+
+  var MNDWI = ui.Checkbox('MNDWI', false);
+  MNDWI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('MNDWI');
+    return indx;});
+  
+  var CMRI = ui.Checkbox('CMRI', false);
+  CMRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('CMRI');
+    return indx;});
+
+  var MMRI = ui.Checkbox('MMRI', false);
+  MMRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('MMRI');
+    return indx;});
+
+  var SAVI = ui.Checkbox('SAVI', false);
+  SAVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('SAVI');
+    return indx;});
+
+  var OSAVI = ui.Checkbox('OSAVI', false);
+  OSAVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('OSAVI');
+    return indx;});
+
+  var EVI = ui.Checkbox('EVI', false);
+  EVI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('EVI');
+    return indx;});
+  
+  var MRI = ui.Checkbox('MRI', false);
+  MRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('MRI');
+    return indx;});
+
+  var SMRI = ui.Checkbox('SMRI', false);
+  SMRI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('SMRI');
+    return indx;});
+
+  var LSWI = ui.Checkbox('LSWI', false);
+  LSWI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('LSWI');
+    return indx;});    
+
+  var NDTI = ui.Checkbox('NDTI', false);
+  NDTI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('NDTI');
+    return indx;});    
+
+  var EBBI = ui.Checkbox('EBBI', false);
+  EBBI.onChange(function() {
+    // Add the index to the list.
+    indx = indx.add('EBBI');
+    return indx;});    
+
+    
+
+  print(SR);
+  print(NDVI);
+  print(NDWI);
+  print(MNDWI);
+  print(CMRI);
+  print(MMRI);
+  print(SAVI);
+  print(OSAVI);
+  print(EVI);
+  print(MRI);
+  print(SMRI);
+  print(LSWI);
+  print(NDTI);
+  print(EBBI);
+  
+  var button = ui.Button({
+  label: 'Print Index List',
+  onClick: function() {
+    print('Index List', indx.distinct());
+    return ee.List(indx.distinct());
+    }
+  });
+  print(button);
+  
+
+
+////////////
+// Step 1 //
+////////////
+// Image Stats
+var step_1_button = ui.Button('1.) Veiw Spectral Space \n and Ref. Data Relationships');
+step_1_button.onClick(function(){
+
+  var bands = Chot.bandNames();
+  var h_bands = Hhot.bandNames();
+
+  // training polygons
+  var t_poly_c = ee.FeatureCollection(class_ref_cont);
+  var t_poly_h = ee.FeatureCollection(class_ref_hist);
+
+  // Overlay the points on the imagery to get training for HOT
+  var sample_CHOT = Chot.select(bands).sampleRegions({
+    collection: t_poly_c,
+    properties: [label, label2],
+    scale: 30, 
+    tileScale: 16
+  });
+
+
+  // Overlay the points on the imagery to get training for HOT
+  var sample_CLOT = Clot.select(bands).sampleRegions({
+    collection: t_poly_c,
+    properties: [label, label2],
+    scale: 30, 
+    tileScale: 16
+  });
+  // Overlay the points on the imagery to get training for HOT
+  var sample_HHOT = Hhot.select(bands).sampleRegions({
+    collection: t_poly_h,
+    properties: [label, label2],
+    scale: 30, 
+    tileScale: 16
+  });
+  // Overlay the points on the imagery to get training for HOT
+  var sample_HLOT = Hlot.select(bands).sampleRegions({
+    collection: t_poly_h,
+    properties: [label, label2],
+    scale: 30, 
+    tileScale: 16
+    });
+
+  //create correlation buttons
+  var chot_cor_but = ui.Button('Veiw CHOT Index Band Correlation');
+  chot_cor_but.onClick(function(){
+    print('Cont. HOT Index Band Correlation');
+    InCor.pearson_cor_mat(Chot, indx, t_poly_c);});
+  var clot_cor_but = ui.Button('Veiw CLOT Index Band Correlation');
+  clot_cor_but.onClick(function(){
+    print('Cont. LOT Index Band Correlation');
+    InCor.pearson_cor_mat(Clot, indx, t_poly_c);
+    });
+  var hhot_cor_but = ui.Button('Veiw HHOT Index Band Correlation');
+  hhot_cor_but.onClick(function(){
+    print('Hist. HOT Index Band Correlation');
+    InCor.pearson_cor_mat(Hhot, indx, t_poly_h);});
+  var hlot_cor_but = ui.Button('Veiw HLOT Index Band Correlation');
+  hlot_cor_but.onClick(function(){
+    print('Hist. LOT Index Band Correlation');
+    InCor.pearson_cor_mat(Hlot, indx, t_poly_h);});
+  //create correlation panel
+  var cor_panel = ui.Panel({layout: ui.Panel.Layout.flow('horizontal')});
+  cor_panel.add(chot_cor_but).add(clot_cor_but).add(hhot_cor_but).add(hlot_cor_but);
+  print(cor_panel);
+  
+  var bandDict = {'B1': 'B1', 'B2': 'B2', 'B3': 'B3', 'B4': 'B4', 'B5': 'B5', 'B6': 'B6', 'B7': 'B7',
+                  'SR': 'SR', 'NDVI': 'NDVI', 'NDWI': 'NDWI', 'MNDWI': 'MNDWI',
+                  'CMRI': 'CMRI', 'MMRI': 'MMRI', 'SAVI': 'SAVI', 'OSAVI': 'OSAVI',
+                  'EVI': 'EVI', 'MRI': 'MRI', 'SMRI': 'SMRI', 'LSWI': 'LSWI', 'NDTI': 'NDTI', 'EBBI': 'EBBI'};
+  // Create drop-down menu to select CHOT Band
+  var Chot_band_charts = ui.Select({
+                            placeholder: "Select Cont. HOT Band",
+                            items: Object.keys(bandDict),
+                            onChange: function(key) {
+                            specSp.whiskerCharts2(sample_CHOT, label, label2, key, "Cont. HOT");
+                            },
+                              style: {position: 'top-left'}
+                            });
+  // Create drop-down menu to select CLOT Band
+  var Clot_band_charts = ui.Select({
+                            placeholder: "Select Cont. LOT Band",
+                            items: Object.keys(bandDict),
+                            onChange: function(key) {
+                            specSp.whiskerCharts2(sample_CLOT, label, label2, key, "Cont. LOT");
+                            },
+                              style: {position: 'top-right'}
+                          });
+  // Create drop-down menu to select HHOT Band
+  var Hhot_band_charts = ui.Select({
+        placeholder: "Select Hist. HOT Band",
+        items: Object.keys(bandDict),
+        onChange: function(key) {
+                              specSp.whiskerCharts2(sample_HHOT, label, label2, key, "Hist. HOT");
+                              },
+                              style: {position: 'top-left'}
+                          });
+  // Create drop-down menu to select HLOT Band
+  var Hlot_band_charts = ui.Select({
+                              placeholder: "Select Hist. LOT Band",
+                              items: Object.keys(bandDict),
+                              onChange: function(key) {
+                              specSp.whiskerCharts2(sample_HLOT, label, label2, key, "Hist. LOT");
+                              },
+                            style: {position: 'top-right'}
+                            });
+                          
+  var header = ui.Label({
+                          value: 'View the Spectral Relationships of the Reference Data',
+                          style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '24px',
+                                    textAlign: 'center'
+                                  }
+                        });   
+  print(header);
+  print('The first set of charts below shows the single band'+
+    '\n relationships betweeen the difference land cover classes.'+
+    '\n To view a graph, select a band from each of the drop-down'+
+    '\n menus, corresponding to the various image composites.');
+               
+  var cont_lab = ui.Label({
+                            value: 'Contemporary Refernce Data',
+                            style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '16px',
+                                    textAlign: 'center'
+                                    }
+                          });      
+  var hist_lab = ui.Label({
+                          value: 'Historic Refernce Data',
+                          style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '16px',
+                                    textAlign: 'center'
+                                    }
+                          });   
+  var cont_panel = ui.Panel({
+                          layout: ui.Panel.Layout.flow('horizontal'),
+                          style: {textAlign: 'center'
+                          }
+                        });
+  var hist_panel = ui.Panel({
+                            layout: ui.Panel.Layout.flow('horizontal'),
+                            style: {textAlign: 'center'
+                          }
+                      });
+  var sub_lab_chot = ui.Label({value: 'CHOT: '});   
+  var sub_lab_clot = ui.Label({value: 'CLOT: '});   
+  var sub_lab_hhot = ui.Label({value: 'HHOT: '});   
+  var sub_lab_hlot = ui.Label({value: 'HLOT: '});   
+                                
+
+  /// Spectral Scatter plots
+          
+  var ref_samp = {
+                  "Cont. HOT": ["Cont. HOT", sample_CHOT],
+                  "Cont. LOT": ["Cont. LOT", sample_CLOT],
+                  "Hist. HOT": ["Hist. HOT", sample_HHOT],
+                  "Hist. LOT": ["Hist. LOT", sample_HLOT]
+                  };
+  var bandX = 'B3';
+  var bandY = 'B4';
+  var scat_samp = ["Cont. HOT", sample_CHOT];
+  // Create drop-down menu to select X Band
+  var bandX_drop = ui.Select({
+                              placeholder: "Select X-Axis Band",
+                              items: Object.keys(bandDict),
+                              onChange: function(key) {
+                              bandX = key;
+                              }});
+  // Create drop-down menu to select Y Band
+  var bandY_drop = ui.Select({
+                              placeholder: "Select Y-Axis Band",
+                              items: Object.keys(bandDict),
+                              onChange: function(key) {
+                              bandY = key;
+                              }});
+  // Create drop-down menu to select sample
+  var Sample_scat = ui.Select({
+                              placeholder: "Select Refence Data Sample",
+                              items: Object.keys(ref_samp),
+                              onChange: function(key) {
+                              scat_samp = ee.Dictionary(ref_samp).values([key]).flatten();
+                              }});
+  var scat_button = ui.Button('Veiw Scatter Plot');
+  scat_button.onClick(function(){
+    var data = ee.List(scat_samp).get(1);
+    var samp_title = ee.List(scat_samp).get(0).getInfo();
+
+    var Sc_chart =  ui.Chart.feature.groups(data, bandX, bandY, label2)
+                    .setChartType('ScatterChart')
+                    .setOptions({title: 'Spectral Area of ' + samp_title});
+    print(Sc_chart);
+  });
+            
+            
+  var scatter_panel = ui.Panel({
+                    layout: ui.Panel.Layout.flow('horizontal'),
+                    style: {textAlign: 'center'
+                      }
+                    });
+                                
+                                
+  var samp_lab = ui.Label({value: 'Reference Sample: '});   
+  var x_lab = ui.Label({value: 'X Band: '});   
+  var y_lab = ui.Label({value: 'Y Band: '});
+  var scat_lab = ui.Label({
+                        value: 'Spectral Distribution for Refernce Data',
+                        style: {
+                                  fontWeight: 'bold',
+                                  fontSize: '18px',
+                                  textAlign: 'center'
+                              }
+                  });
+
+  var chot_bands = ui.Button('Veiw LS Bands');
+  chot_bands.onClick(function(){specSp.ls_candles(sample_CHOT, label, label2, "Cont. HOT")});
+  var clot_bands = ui.Button('Veiw LS Bands');
+  clot_bands.onClick(function(){specSp.ls_candles(sample_CLOT, label, label2, "Cont. LOT")});
+  var hhot_bands = ui.Button('Veiw LS Bands');
+  hhot_bands.onClick(function(){specSp.ls_candles(sample_HHOT, label, label2, "Hist. HOT")});
+  var hlot_bands = ui.Button('Veiw LS Bands');
+  hlot_bands.onClick(function(){specSp.ls_candles(sample_HLOT, label, label2, "Hist. LOT")});
+
+
+  print(cont_lab);
+  print(cont_panel.add(sub_lab_chot).add(chot_bands).add(Chot_band_charts)
+                  .add(sub_lab_clot).add(clot_bands).add(Clot_band_charts));
+  print(hist_lab);
+  print(hist_panel.add(sub_lab_hhot).add(hhot_bands).add(Hhot_band_charts)
+                  .add(sub_lab_hlot).add(hlot_bands).add(Hlot_band_charts));
+  print(scat_lab);
+  print("Select any two bands from any sampled composite to view"+
+        "\nthe spectral relationships between landcover classes.");
+  print(scatter_panel.add(samp_lab).add(Sample_scat).add(x_lab).add(bandX_drop)
+                     .add(y_lab).add(bandY_drop).add(scat_button));
+});
+print(step_1_button);
+
+
+
+////////////
+// Step 2 //
+////////////
+// Image Classification
+var step_2_button = ui.Button('2.) Begin Classification');
+step_2_button.onClick(function(){
+  
+
+  
+  // Update the image masks
+  Chot = Chot.updateMask(final_mask);
+  Clot = Clot.updateMask(final_mask);
+  Hhot = Hhot.updateMask(final_mask);
+  Hlot = Hlot.updateMask(final_mask);
+        
+  // training polygons
+  var t_poly_c = ee.FeatureCollection(class_ref_cont);
+  var t_poly_h = ee.FeatureCollection(class_ref_hist);
+  //Isolate the bands to use in the classification
+  var bands = ee.List(['B1', 'B2', 'B3', 'B4', 'B5', 'B7']).cat(indx);
+  //Classification using RF
+  //Contemporary
+  if(HOT_cont_out === true){ var Chot_class = RFclass.ChotClassify(Chot, 
+                                    t_poly_c, label, bands, ROI, trees);}
+  if( LOT_cont_out === true){ var CLot_class = RFclass.ClotClassify(Clot, 
+                                        t_poly_c, label, bands, ROI, trees);}
+  if(combo_cont_out === true){ var Ccom_class = RFclass.CcomClassify(Chot, 
+                                  Clot, t_poly_c, label, bands, ROI, trees);}
+  //Historic
+  if( HOT_hist_out === true){ var Hhot_class = RFclass.HhotClassify(Hhot, 
+                  class_ref_type, Chot, t_poly_h, label, bands, ROI, trees);}
+  if(LOT_hist_out === true){ var Hlot_class = RFclass.HlotClassify(Hlot, 
+                  class_ref_type, Clot, t_poly_h, label, bands, ROI, trees);}
+  if(combo_hist_out === true){var Hcom_class = RFclass.HcomClassify(Hhot,
+      Hlot, class_ref_type, Chot, Clot, t_poly_h, label, bands, ROI, trees);}
+        
+                                                    
+  });
+print(step_2_button);
+
+////////////////////////////////////////////////////////////////////////////////  
