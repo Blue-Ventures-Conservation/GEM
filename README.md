@@ -10,8 +10,7 @@ program imagery, the random forest classifier, and user-derived classification
 reference data. The Google Earth Engine Mangrove Mapping Methodology was 
 developed with funding from Blue Ventures Conservation 
 (https://blueventures.org/), with a pilot study currently under reveiw to be 
-published in the Journal of Remote Sensing
-(https://www.mdpi.com/journal/remotesensing).
+published in the Journal of Remote Sensing (https://www.mdpi.com/journal/remotesensing).
 
 CONTACT
 
