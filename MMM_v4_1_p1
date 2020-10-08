@@ -119,7 +119,7 @@ var topo_path = 'users/yanchojo/topo';
 */
 
 var contemporary_start_year = 2018;
-var Contemporary_end_year = 2020;
+var contemporary_end_year = 2020;
 
 /*
 1.B.b) Historic Years
