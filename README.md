@@ -72,7 +72,6 @@ coastal tidal zone, are very location specific. The code is well commented to
 help aide in the determination of the best parameters to set before running, 
 but it is important to remember how the default parameters were selected.
 
-
 OPERATION
 
 There are two methods to run the GEEMMM, follow the links below and run 
@@ -92,6 +91,7 @@ https://code.earthengine.google.com/3eefa4622f0f223d4ae66d2645dbadaf?noload=true
 
 Module 3:
 https://code.earthengine.google.com/668243c548c1e7cb75954a416da1d249?noload=true
+
 The other option for running the GEEMMM code is to copy each of the three
 Module scripts, and each of the function scripts into individual scripts saved 
 To you Earth Engine script library. The complicated part in this method is
@@ -139,10 +139,6 @@ CONTACT
 If there are discovered bugs or issues with the code, or with the directions
 on how to use is, you can contact Dr. Trevor Jones:
     trevor@blueventures.org
-
-
-
-
     
 LICENSING
 
