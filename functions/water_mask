@@ -1,8 +1,10 @@
 
 
 
-exports.water_mask = function(hist_img, cont_img){
+exports.water_mask = function(hist_img, cont_img, combo_water_mask){
 
+
+if (combo_water_mask === true){
   // create contemporary MNDWI Image
   var MNDWI_cont = cont_img.normalizedDifference(['B5', 'B2']).gte(0.09);
     // create historic MNDWI Image
@@ -12,8 +14,11 @@ exports.water_mask = function(hist_img, cont_img){
   
   // export
   return h2o_mask;
+} else {
+  var single_water = hist_img.normalizedDifference(['B5', 'B2']).gte(0.09);
+
+  // export
+  return single_water;
+}
 };
-
-
-
 
