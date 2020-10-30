@@ -2,16 +2,8 @@
   
 exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
   
-  var clPalette = [
-  'E69800', // Terrestrial Forest
-  '267300', // Closed-Canopy Mangrove
-  '4CE600', // Open-Canopy Mangrove I
-  '8400A8', // Exposed / Barren
-  'CDF57A', // Open-Canopy Mangrove II
-  '00FFC5', // Urban / Built
-  '004DA8', // Residual Water
-  'FFFF00', // Non-Forest Vegetation
-  ];
+  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
+                    '00FFC5', '004DA8', 'FFFF00'];
   
   
   // Overlay the points on the imagery to get training for HOT
@@ -54,7 +46,23 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
               
   classified_CHOT.evaluate(function(){
               
-              Map.addLayer(classified_CHOT.clip(ROI), {min:1, max:6, palette: clPalette}, 'HOT_Classification_contemporary');
+              var min_no = classified_CHOT.reduceRegion({
+                                 reducer: ee.Reducer.min(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              var max_no = classified_CHOT.reduceRegion({
+                                 reducer: ee.Reducer.max(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              
+              Map.addLayer(classified_CHOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+                          palette: clPalette}, 'HOT_Classification_contemporary');
               
               // Get a confusion matrix resubstitution accuracy.
               var CHOT_trainAccuracy = CHOT_trained_classifier.confusionMatrix();
@@ -76,16 +84,8 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
 
 exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
   
-  var clPalette = [
-  'E69800', // Terrestrial Forest
-  '267300', // Closed-Canopy Mangrove
-  '4CE600', // Open-Canopy Mangrove I
-  '8400A8', // Exposed / Barren
-  'CDF57A', // Open-Canopy Mangrove II
-  '00FFC5', // Urban / Built
-  '004DA8', // Residual Water
-  'FFFF00', // Non-Forest Vegetation
-  ];
+  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
+                    '00FFC5', '004DA8', 'FFFF00'];
   
   // Overlay the points on the imagery to get training for LOT
   var sample_CLOT = Clot.select(bands).sampleRegions({
@@ -122,8 +122,25 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
             });
   
   classified_CLOT.evaluate(function(){
+    
+              var min_no = classified_CLOT.reduceRegion({
+                                 reducer: ee.Reducer.min(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              var max_no = classified_CLOT.reduceRegion({
+                                 reducer: ee.Reducer.max(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
               
-              Map.addLayer(classified_CLOT.clip(ROI), {min:1, max:6, palette: clPalette}, 'LOT_Classification_contemporary');
+              
+              Map.addLayer(classified_CLOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+                          palette: clPalette}, 'LOT_Classification_contemporary');
               
               // Get a confusion matrix resubstitution accuracy.
               var CLOT_trainAccuracy = CLOT_trained_classifier.confusionMatrix();
@@ -146,16 +163,9 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
 
 exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
 
-  var clPalette = [
-  'E69800', // Terrestrial Forest
-  '267300', // Closed-Canopy Mangrove
-  '4CE600', // Open-Canopy Mangrove I
-  '8400A8', // Exposed / Barren
-  'CDF57A', // Open-Canopy Mangrove II
-  '00FFC5', // Urban / Built
-  '004DA8', // Residual Water
-  'FFFF00', // Non-Forest Vegetation
-  ];
+  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
+                    '00FFC5', '004DA8', 'FFFF00'];
+  
   Chot = Chot.select(bands);
   Clot = Clot.select(bands);
   var Ccom = Chot.addBands(Clot);
@@ -196,7 +206,23 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
   
   classified_CCOM.evaluate(function(){
               
-              Map.addLayer(classified_CCOM.clip(ROI), {min:1, max:6, palette: clPalette}, 'Combine_Classification_contemporary');
+              var min_no = classified_CCOM.reduceRegion({
+                                 reducer: ee.Reducer.min(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              var max_no = classified_CCOM.reduceRegion({
+                                 reducer: ee.Reducer.max(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              
+              Map.addLayer(classified_CCOM.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+                          palette: clPalette}, 'Combine_Classification_contemporary');
     
               // Get a confusion matrix resubstitution accuracy.
               var CCOM_trainAccuracy = CCOM_trained_classifier.confusionMatrix();
@@ -219,16 +245,8 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
   
 exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands, ROI, trees){
 
-  var clPalette = [
-  'E69800', // Terrestrial Forest
-  '267300', // Closed-Canopy Mangrove
-  '4CE600', // Open-Canopy Mangrove I
-  '8400A8', // Exposed / Barren
-  'CDF57A', // Open-Canopy Mangrove II
-  '00FFC5', // Urban / Built
-  '004DA8', // Residual Water
-  'FFFF00', // Non-Forest Vegetation
-  ];  
+  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
+                    '00FFC5', '004DA8', 'FFFF00'];
   
   var non_STI = function(){
     // Overlay the points on the imagery to get training for HOT
@@ -284,8 +302,24 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
               });
   
   classified_HHOT.evaluate(function(){
+    
+              var min_no = classified_HHOT.reduceRegion({
+                                 reducer: ee.Reducer.min(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              var max_no = classified_HHOT.reduceRegion({
+                                 reducer: ee.Reducer.max(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
               
-              Map.addLayer(classified_HHOT.clip(ROI), {min:1, max:6, palette: clPalette}, 'HOT_Classification_Historic');
+              Map.addLayer(classified_HHOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+                          palette: clPalette}, 'HOT_Classification_Historic');
     
               // Get a confusion matrix resubstitution accuracy.
               var HHOT_trainAccuracy = HHOT_trained_classifier.confusionMatrix();
@@ -308,16 +342,8 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
 
 exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands, ROI, trees){
 
-  var clPalette = [
-  'E69800', // Terrestrial Forest
-  '267300', // Closed-Canopy Mangrove
-  '4CE600', // Open-Canopy Mangrove I
-  '8400A8', // Exposed / Barren
-  'CDF57A', // Open-Canopy Mangrove II
-  '00FFC5', // Urban / Built
-  '004DA8', // Residual Water
-  'FFFF00', // Non-Forest Vegetation
-  ];  
+  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
+                    '00FFC5', '004DA8', 'FFFF00'];
   
   var non_STI = function(){
     // Overlay the points on the imagery to get training for HOT
@@ -374,7 +400,23 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
 
   classified_HLOT.evaluate(function(){
               
-              Map.addLayer(classified_HLOT.clip(ROI), {min:1, max:6, palette: clPalette}, 'LOT_Classification_Historic');
+              var min_no = classified_HLOT.reduceRegion({
+                                 reducer: ee.Reducer.min(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              var max_no = classified_HLOT.reduceRegion({
+                                 reducer: ee.Reducer.max(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              
+              Map.addLayer(classified_HLOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+                          palette: clPalette}, 'LOT_Classification_Historic');
     
               // Get a confusion matrix resubstitution accuracy.
               var HLOT_trainAccuracy = HLOT_trained_classifier.confusionMatrix();
@@ -397,16 +439,8 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
 
 exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, label, bands, ROI, trees){
 
-  var clPalette = [
-  'E69800', // Terrestrial Forest
-  '267300', // Closed-Canopy Mangrove
-  '4CE600', // Open-Canopy Mangrove I
-  '8400A8', // Exposed / Barren
-  'CDF57A', // Open-Canopy Mangrove II
-  '00FFC5', // Urban / Built
-  '004DA8', // Residual Water
-  'FFFF00', // Non-Forest Vegetation
-  ];
+  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
+                    '00FFC5', '004DA8', 'FFFF00'];
 
   Hhot = Hhot.select(bands);
   Hlot = Hlot.select(bands);  
@@ -475,8 +509,24 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
               });
               
   classified_HCOM.evaluate(function(){
+    
+              var min_no = classified_HCOM.reduceRegion({
+                                 reducer: ee.Reducer.min(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
+              var max_no = classified_HCOM.reduceRegion({
+                                 reducer: ee.Reducer.max(),
+                                 geometry: ROI.geometry(),
+                                 scale: 30,
+                                 maxPixels: 1e13,
+                                 tileScale: 4
+                                 }).get('classification');
               
-             Map.addLayer(classified_HCOM.clip(ROI), {min:1, max:6, palette: clPalette}, 'Combine_Classification_Historic');
+             Map.addLayer(classified_HCOM.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+                          palette: clPalette}, 'Combine_Classification_Historic');
             
               // Get a confusion matrix resubstitution accuracy.
               var HCOM_trainAccuracy = HCOM_trained_classifier.confusionMatrix();
