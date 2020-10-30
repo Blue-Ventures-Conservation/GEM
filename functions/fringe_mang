@@ -1,8 +1,8 @@
 
 
 exports.fringMangrove = function(dsm, buff_dist, roi){
-  
-  var aoi = ee.Geometry(roi).buffer(ee.Number(buff_dist));
+
+  var aoi = ee.Geometry(roi.geometry()).buffer(ee.Number(buff_dist));
   var pot_fringe = dsm.clip(aoi).select('elev').lte(10);
   
   return pot_fringe;
