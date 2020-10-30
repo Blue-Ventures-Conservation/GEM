@@ -46,22 +46,15 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
               
   classified_CHOT.evaluate(function(){
               
-              var min_no = classified_CHOT.reduceRegion({
+              var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
-              var max_no = classified_CHOT.reduceRegion({
+                                 selectors: [label]}).get('min').aside(print);
+              var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
+                                 selectors: [label]}).get('max').aside(print);
               
-              Map.addLayer(classified_CHOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+              
+              Map.addLayer(classified_CHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'HOT_Classification_contemporary');
               
               // Get a confusion matrix resubstitution accuracy.
@@ -123,23 +116,15 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
   
   classified_CLOT.evaluate(function(){
     
-              var min_no = classified_CLOT.reduceRegion({
+              var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
-              var max_no = classified_CLOT.reduceRegion({
+                                 selectors: [label]}).get('min').aside(print);
+              var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
+                                 selectors: [label]}).get('max').aside(print);
               
               
-              Map.addLayer(classified_CLOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+              Map.addLayer(classified_CLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'LOT_Classification_contemporary');
               
               // Get a confusion matrix resubstitution accuracy.
@@ -206,22 +191,14 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
   
   classified_CCOM.evaluate(function(){
               
-              var min_no = classified_CCOM.reduceRegion({
+              var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
-              var max_no = classified_CCOM.reduceRegion({
+                                 selectors: [label]}).get('min').aside(print);
+              var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
+                                 selectors: [label]}).get('max').aside(print);
               
-              Map.addLayer(classified_CCOM.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+              Map.addLayer(classified_CCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'Combine_Classification_contemporary');
     
               // Get a confusion matrix resubstitution accuracy.
@@ -303,22 +280,14 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
   
   classified_HHOT.evaluate(function(){
     
-              var min_no = classified_HHOT.reduceRegion({
+              var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
-              var max_no = classified_HHOT.reduceRegion({
+                                 selectors: [label]}).get('min').aside(print);
+              var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
+                                 selectors: [label]}).get('max').aside(print);
               
-              Map.addLayer(classified_HHOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+              Map.addLayer(classified_HHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'HOT_Classification_Historic');
     
               // Get a confusion matrix resubstitution accuracy.
@@ -400,22 +369,14 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
 
   classified_HLOT.evaluate(function(){
               
-              var min_no = classified_HLOT.reduceRegion({
+              var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
-              var max_no = classified_HLOT.reduceRegion({
+                                 selectors: [label]}).get('min').aside(print);
+              var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
+                                 selectors: [label]}).get('max').aside(print);
               
-              Map.addLayer(classified_HLOT.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+              Map.addLayer(classified_HLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'LOT_Classification_Historic');
     
               // Get a confusion matrix resubstitution accuracy.
@@ -510,22 +471,14 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
               
   classified_HCOM.evaluate(function(){
     
-              var min_no = classified_HCOM.reduceRegion({
+              var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
-              var max_no = classified_HCOM.reduceRegion({
+                                 selectors: [label]}).get('min').aside(print);
+              var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 geometry: ROI.geometry(),
-                                 scale: 30,
-                                 maxPixels: 1e13,
-                                 tileScale: 4
-                                 }).get('classification');
+                                 selectors: [label]}).get('max').aside(print);
               
-             Map.addLayer(classified_HCOM.clip(ROI), {min:ee.Number(min_no), max:ee.Number(max_no),
+             Map.addLayer(classified_HCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'Combine_Classification_Historic');
             
               // Get a confusion matrix resubstitution accuracy.
