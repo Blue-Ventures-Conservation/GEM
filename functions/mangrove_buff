@@ -1,0 +1,120 @@
+/*
+
+This is the mangrove buffer module, which is part of the BVC MMM v4.0 library.
+It is used to support decsions made around how to automatically select a shoreline
+buffer. 
+
+Last update: 28-04-2020
+
+*/
+
+
+
+exports.doc = 'The mangrove_buff module is a function to buffer the mangrove raster layer.' +
+    '\n It is used to create a temporary layer for the user to view the outputs of various buffers. ' +
+    '\n It includes .' +
+    '\n' +
+    '\n mang_buff(geom, mang):' +
+    '\n   @param {ee.Geometry} geom: the coastline to be buffered' +
+    '\n   @param {ee.Image} mange: the currently recognized mangrove extent' +
+    '\n   @return {ee.Image} An image with the various buffered distances.' +
+    '\n' +
+    '\n graph:' +
+    '\n   a graph of the various membership for each of the buffered distances.';
+
+
+exports.mang_buff = function(geom, mang){
+ 
+  // simplify the coastline geometry
+  var coast = geom.simplify(1000);
+  // create an image collection of various buffered mangroves, using the distance list
+  var mangrove_buff = ee.Image(mang)
+                      .addBands(mang.clip(coast.buffer(5000)).rename(['05_km']))
+                      .addBands(mang.clip(coast.buffer(10000)).rename(['10_km']))
+                      .addBands(mang.clip(coast.buffer(15000)).rename(['15_km']))
+                      .addBands(mang.clip(coast.buffer(20000)).rename(['20_km']))
+                      .addBands(mang.clip(coast.buffer(25000)).rename(['25_km']))
+                      .addBands(mang.clip(coast.buffer(30000)).rename(['30_km']))
+                      .addBands(mang.clip(coast.buffer(35000)).rename(['35_km']));
+
+  var bands = mangrove_buff.bandNames().slice(1,8);
+  mangrove_buff = mangrove_buff.select(bands);
+
+  return mangrove_buff;
+};
+
+exports.areaTable = function(img, geom){
+  
+  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,8);
+  var proc_img = img.select(bands);
+
+  var dict_sum = proc_img.reduceRegion({
+    reducer: ee.Reducer.sum(),
+    geometry: geom, 
+    scale: 30,
+    maxPixels: 1e13,
+    bestEffort: true
+    });  
+    
+
+  return dict_sum;
+
+};
+
+exports.areaChart = function(img, geom){
+  
+  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,8);
+  var proc_img = img.select(bands);
+
+  var dict_sum = proc_img.reduceRegion({
+    reducer: ee.Reducer.sum(),
+    geometry: geom, 
+    scale: 30,
+    maxPixels: 1e13,
+    bestEffort: true
+    });  
+    
+  var chart = ui.Chart.array.values({
+      array: dict_sum.values(),
+      axis: 0,
+      xLabels: dict_sum.keys()
+    }).setChartType('ColumnChart')
+    .setOptions({
+      title: 'Mangrove Area by Buffer',
+      hAxis: {title: 'Shoreline Buffer'},
+      vAxis: {title: 'Area (square meters)'},
+      legend: { position: "none" },
+      lineWidth: 1,
+      pointSize: 3
+    });
+    
+  return chart;
+};
+
+
+
+exports.setROI = function(coast){
+  
+  var buff_in_func = function(){
+    // the user has chosen to upload thier own mangrove extent raster
+    var coastline_textbox = ui.Textbox({
+    placeholder: 'Enter Coastline Buffer (KM)',
+    onChange: function(buff_dist) {
+      print('This is the entered coastline buffer: ' +
+            '\n' + buff_dist + ' Km');
+      var buff_in = ee.Number.parse(buff_dist).multiply(1000);
+      return buff_in;
+      }
+    });
+    print('Enter the desired distance to buffer the coastline');
+    print(coastline_textbox);
+    return buff_in;
+  };
+  
+  var buff_in = buff_in_func();
+  //var ROI = ee.Geometry(coast).buffer(buff_in);
+  return buff_in;
+};
+  
+
+
