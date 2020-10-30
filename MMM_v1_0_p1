@@ -741,8 +741,12 @@ step_1_button.onClick(function(){
                                     mang_topo, elevation, slope);
           
           // Use low tide images to create water mask
-          var waterMask = water.water_mask(Hlot3, Clot3);
           
+          if(remove_water === true){
+              var waterMask = water.water_mask(Hlot3, Clot3, combo_water_mask);
+            }else{
+              var waterMask = ee.Image(1);
+            }
           // combine the topo and water masks
           var combo_masked = waterMask.multiply(topo_mask).eq(1);
           
@@ -788,11 +792,11 @@ step_1_button.onClick(function(){
           // prep ROI for export
           var ROI_out = ee.FeatureCollection(ee.Feature(ROI, {name: 'ROI'}));
           // export ROI
-          Export.table.toDrive({
+          Export.table.toAsset({
             collection: ROI_out,
             description: "ROI",
-            folder: 'EE_outputs',
-            fileFormat: 'SHP'});
+            assetId: 'ROI'
+            });
           
           // Create Final Mask Button
           var final_mask_butt = ui.Button('View final Mask?');
