@@ -71,7 +71,8 @@ users is the ‘JavaScript and Python Guides’ provided by the Google Earth
 Engine team (https://developers.google.com/earth-engine/guides). These
 guides walk the user through all of the basic aspects of Earth Engine. The 
 Earth Engine API documents also provide further information on the Earth
-Engine specific functions and their associated variables and inputs (https://developers.google.com/earth-engine/apidocs). Earth Engine also
+Engine specific functions and their associated variables and inputs 
+(https://developers.google.com/earth-engine/apidocs). Earth Engine also
 has a large spatial data library available to its users. Here users may be able
 to find specific datasets that they would like to use in the GEEMMM or, if 
 they are interest, to learn more about some of the default datasets that are
@@ -120,13 +121,16 @@ discussed above. Run them in order, and save the exports for each script
 (ideally to your personal Earth Engine ‘Asset’ folder).
 
 Module 1:
-https://code.earthengine.google.com/497c195237c019e8ccea6cc46f477544?noload=true
+
+    https://code.earthengine.google.com/497c195237c019e8ccea6cc46f477544?noload=true
 
 Module 2:
-https://code.earthengine.google.com/3eefa4622f0f223d4ae66d2645dbadaf?noload=true
+
+    https://code.earthengine.google.com/3eefa4622f0f223d4ae66d2645dbadaf?noload=true
 
 Module 3:
-https://code.earthengine.google.com/668243c548c1e7cb75954a416da1d249?noload=true
+
+    https://code.earthengine.google.com/668243c548c1e7cb75954a416da1d249?noload=true
 
 The other option for running the GEEMMM code is to copy each of the three
 Module scripts, and each of the function scripts into individual scripts saved 
@@ -138,15 +142,15 @@ module’s script.
 
 Example: 
 
-//The code will look like this
-var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
-var coastline =  require('users/yanchojo/GEEMMM_v4_1/:modules/coastline');
+    //The code will look like this
+    var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
+    var coastline =  require('users/yanchojo/GEEMMM_v4_1/:modules/coastline');
 
-//Once you have copied and saved your version of the GEEMMM code
-// It will look like this
+    //Once you have copied and saved your version of the GEEMMM code
+    // It will look like this
 
-var known_ext =  require('users/**YourUserName**/**TheNameYouSavedItAs1**');
-var coastline =  require('users/**YourUserName**/**TheNameYouSavedItAs2**');
+    var known_ext =  require('users/**YourUserName**/**TheNameYouSavedItAs1**');
+    var coastline =  require('users/**YourUserName**/**TheNameYouSavedItAs2**');
 
 It will be important that you do not change the variable name and that you 
 associate the correct script path with the corresponding variable. If this is
@@ -174,8 +178,8 @@ Can often be overridden by zooming in/out and/or panning the frame slightly
 to reload the map layers. The visualization errors are typically non-critical errors.
 Below is a short list of common server side errors:
 
-“Tile Error: Too many concurrent aggregations”
-“Tile Error: Earth Engine Capacity Exceeded”
+    “Tile Error: Too many concurrent aggregations”
+    “Tile Error: Earth Engine Capacity Exceeded”
 
 Anecdotally, the issues that produce these errors are usually associated with 
 processing large areas. While developing the GEEMMM it was determined that
@@ -185,7 +189,7 @@ large areas it is possible that the user may run into a 12-hour timeout limit. I
 this happens, the exporting task will fail at 12 hours and produce an error 
 message stating:
 
-“Error: Computation timed out” 
+    “Error: Computation timed out” 
 
 
 FUNDING
