@@ -121,12 +121,15 @@ discussed above. Run them in order, and save the exports for each script
 (ideally to your personal Earth Engine ‘Asset’ folder).
 
 Module 1:
+
  https://code.earthengine.google.com/497c195237c019e8ccea6cc46f477544?noload=true
 
 Module 2:
+
  https://code.earthengine.google.com/3eefa4622f0f223d4ae66d2645dbadaf?noload=true
 
 Module 3:
+
  https://code.earthengine.google.com/668243c548c1e7cb75954a416da1d249?noload=true
 
 The other option for running the GEEMMM code is to copy each of the three
@@ -140,12 +143,14 @@ module’s script.
 Example: 
 
  //The code will look like this
+ 
  var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
  
  var coastline =  require('users/yanchojo/GEEMMM_v4_1/:modules/coastline');
 
  //Once you have copied and saved your version of the GEEMMM code
  // It will look like this
+ 
 
  var known_ext =  require('users/**YourUserName**/**TheNameYouSavedItAs1**');
  
