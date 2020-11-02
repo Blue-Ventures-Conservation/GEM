@@ -141,12 +141,14 @@ Example:
 
  //The code will look like this
  var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
+ 
  var coastline =  require('users/yanchojo/GEEMMM_v4_1/:modules/coastline');
 
  //Once you have copied and saved your version of the GEEMMM code
  // It will look like this
 
  var known_ext =  require('users/**YourUserName**/**TheNameYouSavedItAs1**');
+ 
  var coastline =  require('users/**YourUserName**/**TheNameYouSavedItAs2**');
 
 It will be important that you do not change the variable name and that you 
