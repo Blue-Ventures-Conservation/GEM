@@ -7,7 +7,7 @@
 
 The Google Earth Engine Mangrove Mapping Methodology (GEEMMM)
 tool is an intuitive, accessible and replicable approach which caters to a
-wide audience of non-specialist coastal managers and decision makers.  
+wide audience of non-specialist coastal managers and decision makers. 
 The GEEMMM was developed based on a thorough review and
 incorporation of relevant mangrove remote sensing literature, and
 harnesses the power of cloud computing including a simplified image-
