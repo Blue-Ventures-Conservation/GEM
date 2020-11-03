@@ -1,22 +1,22 @@
-///////////////////////////////////////////////////////////
-//////////      Mangrove Mapping Methodology     //////////
-/////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////////
+//////////      Google Earth Engine Mangrove Mapping Methodology     ///////////
+////////////////////////////////////////////////////////////////////////////////
 
 /* 
 
 This code was developed for Blue Ventures Conservation, by Max Yancho.
-Questions about the project and the appliction of the script(s) should be 
-directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Advisor 
+Questions about the project and the application of the script(s) should be 
+directed to Dr. Trevor Jones, Geospatial & Blue Forests Science adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
 Mr. Max Yancho (yanchojo@gmail.com).
 
-Developed in June 3, 2020
-Last Updated October 2nd, 2020
+Developed on June 3, 2020
+Last updated November 2, 2020
 
-You will find throughout this tool references to a user name 'yanchojo'. This 
-is Mr. Yancho's, the primary developer's, personal Google account. Future 
-iterations of the GEEMMM tool will be based from a Blue Ventures Conservation
-Google account.
+Throughout this tool you will find references to the user name 'yanchojo'. This 
+is Mr. Yancho's (the primary developer) personal Google account. Future 
+iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM) tool
+will be hosted by a Blue Ventures Conservation Google account.
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,33 +28,36 @@ Google account.
 
 1.A) USER DEFINED DATA SETS
      In this first sub-section the user must determine what data they would 
-     like to use within the Mangrove Mapping Methodology (MMM). The options
-     mostly fall into one of two options: use GEE data or upload user owned
+     like to use within the Mangrove Mapping Methodology (MMM). For each, 
+     two options are usually presented: use GEE data or upload user-owned
      data. Additionally, if the user would like, they may file a request to
      Google to add a specific data set into the 'Earth Engine Data Catalog'
      To submit a data request follow the below link:
-          https://issuetracker.google.com/issues?q=componentid:184426%2B
-          
+          https://developers.google.com/earth-engine/help#dataset_requests
+          Note: This will likely not be a very quick service/response.   
 
-1.A.a) Set Coare ROI
+1.A.a) Set Coarse ROI
      The user must first coarsely define their region of interest (ROI). To 
      do so, please use the drawing tools located in the upper left corner of
-     the 'Map' to roughly define the part of the world to further investigate
-     Note: this is not going to be the ROI used in the data processing, this 
-     coarse ROI is to simply help select the target data. The geometry that 
-     you create must be renames to "coarse_roi". 
+     the 'Map' to roughly define the part of the world to further investigate.
+     The current methodology only supports the use of the ‘Draw a shape’ or 
+     ‘Draw a rectangle’ drawing tools at this time. Note: this is not going to 
+     be the ROI used in the data processing, this coarse ROI is to simply help 
+     select the target data. The geometry that you create must be renamed to 
+     "coarse_roi"; this can be done by double-clicking the newly drawn geometry
+     in the script's 'Imports' (located at the top of the script).
 
 1.A.b) Known Mangrove Extent
      The currently known mangrove extent for the study area will play a key role
      in the further identification of methodological variables (such as slope 
-     and elevation thresholds). At this time, the user must identify whether MMM 
-     will use the GEE provided Global Mangrove Forests Distribution, v1 (2000) or
-     if there is an 'known mangrove' asset which has been upload to the user's 
+     and elevation thresholds). At this time, the user must identify whether GEEEMMM 
+     will use the GEE provided Global Mangrove Forests Distribution, v1 (2000), or 
+     an alternative ‘known mangrove’ asset which has been uploaded to the user’s 
      account.
      
      Enter:
           var kmx = true; (to use the GEE Global Mangrove Forests Distribution)
-          var kmx = false; (to map to the user's 'known mangrove extent' assest)
+          var kmx = false; (to map to the user's 'known mangrove extent' asset)
 */
 
 var kmx = true;
@@ -64,9 +67,9 @@ var kmx = true;
      The coastline is a very important data set for this workflow. It will be 
      used to define the actual ROI, as well as to aid in the determination of the
      tidal conditions for each of the landsat images which are to be processed. 
-     The GEE layer which is available to use is the Large Scale International 
-     Boundary Polygons. Alternatively, like the known mangrove extent, the user 
-     may upload their own data as an asset and bring that into the workflow by 
+     The coastline layer available in GEE is the Large Scale International 
+     Boundary Polygons. Alternatively, as per the known mangrove extent, the user 
+     may upload their own data as an asset and bring it into the workflow by 
      copying in the asset path into the 'cst_path' variable below.
      
      Enter:
@@ -82,14 +85,14 @@ var cst_path = 'users/yanchojo/gadm36_mmr_0_shore';
 1.A.d) Topographic Data 
      Another important variable is that of the topographic data. The topographic 
      data will be used to set elevation and slope thresholds before the 
-     classification is executed. The default GEE data is from the JAXA-ALOS 
-     satellite radar DSM (30 m). As is the case with the other important data 
-     inputs, the user has the choice to upload their own data by filling in the
-     'topo_path' variable below.
+     classification is executed. The default GEEMMM topographic data is from the
+     JAXA-ALOS satellite radar DSM (30 m). As is the case with the other important
+     data inputs, the user has the choice to upload their own data by filling in 
+     the 'topo_path' variable below.
      
      Enter:
           var topo = true; (to use the GEE JAXA-ALOS satellite radar DSM (30 m))
-          var topo = false; (to map to the user's uploaded 'topographic' assest)
+          var topo = false; (to map to the user's uploaded 'topographic' asset)
                               ^--- Must enter an asset path
 */
 
@@ -101,21 +104,21 @@ var topo_path = 'users/yanchojo/topo';
 /*
 1.B) USER DEFINED VARIABLE
     In this sub-section, the user will have to define some variables about how 
-    the MMM will run. These variables include the historic and contemporary year
+    the GEEMMM will run. These variables include the historic and contemporary year
     windows, topographic thresholds, cloud cover limits, etc. Each variable will
     be described thoroughly, and helpful resources provided for further insight.
 
 
 1.B.a) Contemporary Years
      Define the contemporary year window. These years will bookend the data 
-     selected. The years selected is completely up to the user's discretion. Be 
+     selected. The years selected are completely up to the user's discretion. Be 
      sure that the two dates are entered in the correct order. See example 
      below. Note: If a single year is desired, put the same year for both 
      variables.
      
      Enter:
-          var contemporary_start_year = 2014; (Older Contemporary year)
-          var Contemporary_end_year = 2018; (Recent Contemporary year)
+          var contemporary_start_year = 2014; (Later Contemporary year)
+          var Contemporary_end_year = 2018; (Earlier Contemporary year)
 */
 
 var contemporary_start_year = 2018;
@@ -124,13 +127,13 @@ var contemporary_end_year = 2020;
 /*
 1.B.b) Historic Years
      Define the historic year window. These years will bookend the data 
-     selected. The years selected is completely up to the user's discretion. Be 
+     selected. The years selected are completely up to the user's discretion. Be 
      sure that the two dates are entered in the correct order. See example below.
      Note: If a single year is desired, put the same year for both variables.
   
      Enter:
-          var historic_start_year = 2004; (Older Historic year)
-          var historic_end_year = 2008; (Recent Historic year)
+          var historic_start_year = 2004; (Later Historic year)
+          var historic_end_year = 2008; (Earlier Historic year)
 
 */
 
@@ -143,12 +146,13 @@ var historic_end_year = 2008;
      months of interest entered by the user will be used to filter both of the
      imagery sets (contemporary and historic). Two months are required to be 
      input by the user. If they wish to cover the entire year, ‘1’ and ‘12’ 
-     should be selected (for January and December). 
+     should be selected (for January and December). Importantly, the months may
+     overlap the new year; e.g.  “11” (Nov.) to “2” (Feb.).
      
      The time of year selected should focus on a few key environmental variables
      that will impact the imagery. These include:
       1.) The contrast of mangrove vegetation from surrounding land cover.
-      2.) The persistence of clouds in the region. (dry or wet seasons)
+      2.) The persistence of clouds in the region (e.g. dry or wet seasons).
      
      Region-specific knowledge of the study area should be used to support the 
      decision around the selection of seasonal month range. If the user needs to
@@ -173,8 +177,8 @@ var month_end = 12;
 1.B.d) Cloud Cover limit  
      The cloud cover limit is a whole number percentage that will be used to 
      filter the Landsat image collection. The cloud cover limit will filter the
-     metadata of each image, using the USGS calculated  cloud cover claculated 
-     in the Tier 1 products. 
+     metadata of each image, using the USGS calculated  cloud cover in the Tier
+     1 products. 
      (https://www.usgs.gov/core-science-systems/nli/landsat/cfmask-algorithm)
     
      Enter:
@@ -186,7 +190,7 @@ var cloud_cover = 5;
 
 /*
 1.B.e) Tidal Zone  
-     The tidal zone is a user defined parameter that is used to help the MMM 
+     The tidal zone is a user-defined parameter that is used to help the GEEMMM 
      determine the tidal condition for each image, in both the historic and the
      contemporary image sets. The tidal zone is functionally a shoreline buffer
      which extends seawards from the shore. The distance should be the tidally 
@@ -205,27 +209,27 @@ var tidal_zone = 1000;
 
 
 /*
-1.B.g) Water Mask
-     The MMM offers the option to mask out water pixels using the MNDWI index.
+1.B.f) Water Mask
+     The GEEMMM offers the option to mask out water pixels using the MNDWI index.
      The MNDWI is calculated for the entire ROI and water pixels are removed 
      based on a threshold established in the original paper by Dr. H. Xu (2006).
      If water pixels are not masked, the reference training data must take this 
      into account in some fashion (e.g. "water_class").
 
      Enter:
-          var remove_water = true; (true, mask out the water pixels using MNDWI)
-          var remove_water = false; (Water pixels will NOT be masked)
+          var remove_water = true; (mask out the water pixels using MNDWI)
+          var remove_water = false; (water pixels will NOT be masked)
     
     If the water pixels are to be masked, the user has the option to either mask
     pixels which are water in both the historic and contemporary imagery, or to
     just mask pixels that were identified as water in the historic imagery. If 
     the coastline has changed dramatically during the time period of interest, a
-    combined maske will be best not to erroneously mask non-water pixels. 
+    combined mask will be best, to not erroneously mask non-water pixels. 
     
     Enter:
-          var combo_water_mask = true; (true, mask only pixels identified as 
+          var combo_water_mask = true; (mask only pixels identified as 
                                         water in historic and contemporary data)
-          var combo_water_mask = false;  (false, mask only pixels identified as 
+          var combo_water_mask = false;  (mask only pixels identified as 
                                           water in historic data)
 */
 
@@ -233,12 +237,13 @@ var remove_water = true;
 var combo_water_mask = true;
 
 /*
-1.B.h) Inland Fringing Mangroves
-     Studies have shown that inland stands of mangroves may be found at low
-     laying elevations which are far from the coatline. For a comprehensive 
-     investigation, these exclaves must attempt to be captured. To do so, the 
-     ROI can be expanded to 2x for elevations beyond the initial determination.
-     Example: If the ROI is determined to be a 25km buffer of the coastline, if 
+1.B.g) Inland Fringing Mangroves
+     Studies have shown that inland stands of mangroves may be found at low-lying
+     elevations which are far from the coastline. For a comprehensive investigation,
+     these exclaves must attempt to be captured. To do so, the ROI can be expanded 
+     to 2x to account for low-lying elevations beyond the initial determination.
+     
+     Example: If the ROI is determined to be a 25 km buffer of the coastline, if 
               'true', the ROI will be expanded to include all pixels between 25 
               and 50 km which also fall at or below 5 m a.s.l.
 
@@ -251,28 +256,28 @@ var inland_mang = false;
 
 /*
 
-1.B.i) Topographic Thresholds
-     To threshold the data, the user has several options. 1.) The known mangrove
-     extent can be used to extract the 99th percentile for slope and elevation
-     and use that to generate a topographic mask for the input data. OR 2.) The
-     user may enter their own thresholds for both slope and elevation at this 
-     time. NOTE: If the user elects to have the data automatically thresholded 
-     ('true') then the numbers enter here for the slope and elevation threshold 
-     will have no impact on the generation of the topographic mask.
+1.B.h) Topographic Thresholds
+     To threshold the data, the user has several options: 1.) The known mangrove
+     extent can be used to extract the 99th percentile for slope and elevation,
+     this then used to generate a topographic mask for the input data. OR 2.) The
+     user may enter their own thresholds for both slope and elevation. NOTE: If
+     the user elects to have the data automatically thresholded ('true') then the
+     numbers entered here for the slope and elevation threshold will have no impact
+     on the generation of the topographic mask.
 
      Enter:
-          var mang_topo = true; (true, use the known mangrove extent to determine
+          var mang_topo = true; (use the known mangrove extent to determine
                                  the 99th percentiles for slope and elevation, 
-                                 and use them to automatically generate a 
+                                 and use these to automatically generate a 
                                  topographic mask.)
-          var mang_topo = false; (false, use the user defined thresholds to 
+          var mang_topo = false; (use the user defined thresholds to 
                                   generate the topographic mask.)
      
-     The user defined topographic thresholds. (discarded if mang_topo = true)
+     The user defined topographic thresholds: (discarded if mang_topo = true)
      
      Enter:
           var elevation = 39; (meters, meters above sea level)
-          var slope = 16; (%, percent chance in slope)
+          var slope = 16; (%, percent change in slope)
 */
 
 var mang_topo = true;
@@ -280,19 +285,19 @@ var elevation = 39;
 var slope = 16;
 
 /*
-1.B.j) Cloud Mask
+1.B.i) Cloud Mask
      There are three options available to mask out clouds. First, clouds can be
      left as is. This may be ideal if the imagery is known to be very free of 
-     cloud contamination -- This may correspond with a lower cloud cover limit
+     cloud contamination - this may correspond with a lower cloud cover limit
      threshold (i.e. >= 5%). Next, there is a mild cloud masking options where 
      the clouds are removed using the USGS/NASA bit classification quality band
-     and a mild spectral errosion to remove cloud artefacts. Finally, there is an
+     and a mild spectral erosion to remove cloud artefacts. Finally, there is an
      aggressive cloud masking option. This method removes pixels based on how 'white'
      they are in the visible spectrum bands. The thermal band also plays a role in 
-     removing residual clouds. These identified clouds are also spectrally erroded. 
+     removing residual clouds. These identified clouds are also spectrally eroded. 
      
      Enter Below:
-        var cloud_mask = 'none';        (To not mask clouds)
+        var cloud_mask = 'none';        (No cloud mask applied)
         var cloud_mask = 'mild';        (To apply a mild cloud mask)
         var cloud_mask = 'aggressive';  (To apply an aggressive cloud mask)
 
@@ -301,13 +306,13 @@ var slope = 16;
 var cloud_mask = 'none';
 
 /*
-1.B.k) Spectral Indices
-     There are numerous mangrove specific, vegetation specific, and 
-     environmental indices which can be used to aid the classification. 
-     Below, is the included list of indices which the user may select from. 
-     The user will be prompted in the console to select any index which they 
-     would like to include for each dataset moving forward. Note: Some indices,
-     like the submerged mangrove recognition index require both high and low tide
+1.B.j) Spectral Indices
+     There are numerous mangrove-specific, vegetation-specific, and 
+     environmental indices which can be used to aid the classification. Below is
+     the included list of indices which the user may select from. The user will 
+     be prompted in the console to select any index which they would like to 
+     include for each dataset moving forward. Note: Some indices, like the 
+     submerged mangrove recognition index (SMRI) require both high and low tide 
      imagery. This will be indicated with (l) for low and (h) for high inputs.
      
      
@@ -334,7 +339,7 @@ var cloud_mask = 'none';
     #   EVI         = 2.5*((NIR–red)/                    Huete et al. 1999     #
     #                       (NIR+6*Red–7.5*Blue+1))                            #
     #                                                                          #
-    #   MRI         =  |GVI(l) – GVI(h)|*GVI(l)*        Zhang and Tian 2013    #
+    #   MRI         = |GVI(l) – GVI(h)|*GVI(l)*         Zhang and Tian 2013    #
     #                                 (WI(l)+WI(h))                            #
     #                                                                          #
     #   SMRI        = (NDVI(l)-NDVI(h))*                Xia et al. 2018        #
@@ -347,6 +352,16 @@ var cloud_mask = 'none';
     #   EBBI        = (SWIR1-NIR)/(10*√( SWIR1+LWIR))   As-syakur et al. 2012  #
     #                                                                          # 
     ############################################################################
+    
+    
+    
+    ****************************************************************************
+    **********************   Click 'Begin Workflow' Now   **********************
+    ****************************************************************************
+    
+    
+    
+      ** This line marks the end of the user defined inputs and variables. **
 */
 
 
@@ -569,7 +584,7 @@ step_1_button.onClick(function(){
     });
 
     // Set a place holder for the drop down
-    select_ROI.setPlaceholder('Choose a ROI Buffer...');
+    select_ROI.setPlaceholder('Choose an ROI Buffer...');
     // add drop down to console
     print(select_ROI);
     
@@ -579,10 +594,13 @@ step_1_button.onClick(function(){
     // Prepare the imagery
     var step_3_button = ui.Button('Prepare Imagery for Processing');
     step_3_button.onClick(function(){
-      print(' When the imagery has been prepared, '+
-            '\nbuttons will appear to display the imagery.'+
-            '\nDo not proceed before these bottons populate'+
-            '\nthe console. Click buttons to view imagery.');
+      print('When the imagery has been prepared, '+
+            '\nbuttons will appear to display the imagery;'+
+            '\nindicating to add either the contemporary'+
+            '\nand/or historic imagery to the map.'+
+            '\nDo not proceed before these buttons populate'+
+            '\nthe console. Click the buttons to view the '+
+            '\nimagery.');
       Map.clear(); // resset the map
       Map.addLayer(ROI, {color: '1E266F'}, "ROI"); //add ROI to map
       
@@ -648,10 +666,10 @@ step_1_button.onClick(function(){
       // Calculation of the spectral indices
       var step_4_button = ui.Button('Calculate the Spectral Indices');
       step_4_button.onClick(function(){
-        print(' When the indices have been calculated'+
-            '\nthe imagery and indices will be prepared to export.'+
+        print('When the indices have been calculated'+
+            '\nthe imagery and indices will be prepared for export.'+
             '\nThen, an alert will appear in the console when the '+
-            '\nindices are calcualted. The task tab will turn yellow.');
+            '\nindices are calculated. The task tab will turn yellow.');
 
         // Add single-image indices     
         var Chot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Chot));
@@ -730,10 +748,15 @@ step_1_button.onClick(function(){
         // creating image masks and finalizing images
         var step_5_button = ui.Button('Prepare Image Mask');
         step_5_button.onClick(function(){
-          print(' When the final mask has been prepared the task tab'+
+          print('When the final mask has been prepared the task tab'+
               '\nwill turn yellow, prompting for export. The final mask'+
               '\nand the other intermediary outputs can be viewed in the'+
-              '\npanel by clicking on the corresponding button.');
+              '\npanel by clicking on the corresponding button.'+
+              '\n'+
+              '\nOnce all hte of intermediary outputs have begun to export'+
+              '\nGEEMMM Module 1 is complete. Proceed to GEEMMM Module 2'+
+              '\nafter all outputs have successfully been exported and'+
+              '\nadded to the asset GEE asset folder.');
         
           // bring in topo data and create the mask
           var dsm = topography.dsm_id(topo, topo_path);
@@ -819,7 +842,7 @@ step_1_button.onClick(function(){
 
         });
         test.evaluate(function(){ // Safety to not proceed until ready
-          print('ALERT: Indices Successfully Calculated');
+          print('ALERT: Spectral Indices Successfully Calculated');
           print(step_5_button);});
       });
       print(step_4_button);
