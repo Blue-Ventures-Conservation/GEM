@@ -1,5 +1,84 @@
+/*
 
-  
+This is the Random Forest image classification module, which is part 
+of the BVC GEEMMM v1.0 library. It is used to classify the composite
+imagery for the area of interest.
+
+Last update: Novemver 3, 2020
+
+*/
+
+
+exports.doc = 'The Random Forest Classification module is used'+
+    '\n to classify the GEEMMM composite images for the identified ROI.' +
+    '\n The output is a single band image containing the pre-determined' +
+    '\n land cover classes from the training data. This module includes' +
+    '\n six unique functions.'+
+    '\n' +
+    '\n ChotClassify(Chot, t_poly, label, bands, ROI, trees):' +
+    '\n   @param {ee.Image} Chot: contemporary high-tide composite' +
+    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
+    '\n   @param {ee.Geometry} ROI: region of interest' +
+    '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
+    '\n   @return {ee.Image} Single band raster image' +
+    '\n' +
+    '\n ClotClassify(Clot, t_poly, label, bands, ROI, trees):' +
+    '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
+    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
+    '\n   @param {ee.Geometry} ROI: region of interest' +
+    '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
+    '\n   @return {ee.Image} Single band raster image' +
+    '\n' +
+    '\n CcomClassify(Chot, Clot, t_poly, label, bands, ROI, trees):' +
+    '\n   @param {ee.Image} Chot: contemporary high-tide composite' +    
+    '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
+    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
+    '\n   @param {ee.Geometry} ROI: region of interest' +
+    '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
+    '\n   @return {ee.Image} Single band raster image' +
+    '\n'+
+    '\n HhotClassify(Hhot, class_ref_type, Chot, t_poly, label, bands, ROI, trees):' +
+    '\n   @param {ee.Image} Hhot: historic high-tide composite' +
+    '\n   @param {boolean} class_ref_type: type of classification reference data being used' +
+    '\n   @param {ee.Image} Chot: contemporary high-tide composite' +
+    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
+    '\n   @param {ee.Geometry} ROI: region of interest' +
+    '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
+    '\n   @return {ee.Image} Single band raster image' +
+    '\n'+
+    '\n HlotClassify(Hlot, class_ref_type, Clot, t_poly, label, bands, ROI, trees):' +
+    '\n   @param {ee.Image} Hlot: historic low-tide composite' +
+    '\n   @param {boolean} class_ref_type: type of classification reference data being used' +
+    '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
+    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
+    '\n   @param {ee.Geometry} ROI: region of interest' +
+    '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
+    '\n   @return {ee.Image} Single band raster image' +
+    '\n'+
+    '\n HcomClassify(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, label, bands, ROI, trees):' +
+    '\n   @param {ee.Image} Hhot: historic high-tide composite' +
+    '\n   @param {ee.Image} Hlot: historic low-tide composite' +
+    '\n   @param {boolean} class_ref_type: type of classification reference data being used' +
+    '\n   @param {ee.Image} Chot: contemporary high-tide composite' +
+    '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
+    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
+    '\n   @param {ee.Geometry} ROI: region of interest' +
+    '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
+    '\n   @return {ee.Image} Single band raster image';
+
+// Contemporary High-tide Classification  
 exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
   
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
@@ -33,15 +112,14 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
   // Classify the HOT image.
   var classified_CHOT = Chot.classify(CHOT_trained_classifier);
             
-  Export.image.toDrive({
+  Export.image.toAsset({
               image: classified_CHOT.clip(ROI),
               description: 'HOT_Classification_contemporary',
+              assetID: 'HOT_Classification_contemporary',
               region: ROI,
               scale: 30,
-              //folder: 'EE_outputs',
               maxPixels:1e13,
-              dimensions: 512,
-              skipEmptyTiles: true
+              dimensions: 512
               });
               
   classified_CHOT.evaluate(function(){
@@ -75,6 +153,7 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
   return classified_CHOT;
 };
 
+// Contemporary Low-tide Classification
 exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
   
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
@@ -103,17 +182,16 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
   // Classify the LOT image.
   var classified_CLOT = Clot.classify(CLOT_trained_classifier);
   
-  Export.image.toDrive({
+  Export.image.toAsset({
               image: classified_CLOT.clip(ROI),
               description: 'LOT_Classification_contemporary',
+              assetID: 'LOT_Classification_contemporary',
               region: ROI,
               scale: 30,
-              //folder: 'EE_outputs',
               maxPixels:1e13,
-              dimensions: 512,
-              skipEmptyTiles: true
-            });
-  
+              dimensions: 512
+              });
+              
   classified_CLOT.evaluate(function(){
     
               var min_no = t_poly.reduceColumns({
@@ -145,7 +223,7 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
 };
 
 
-
+// Contemporary Combine Classification
 exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
@@ -178,17 +256,16 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
   // Classify the LOT image.
   var classified_CCOM = Ccom.classify(CCOM_trained_classifier);
   
-  Export.image.toDrive({
+  Export.image.toAsset({
               image: classified_CCOM.clip(ROI),
               description: 'Combine_Classification_contemporary',
+              assetID: 'Combine_Classification_contemporary',
               region: ROI,
               scale: 30,
-              //folder: 'EE_outputs',
               maxPixels:1e13,
-              dimensions: 512,
-              skipEmptyTiles: true
-            });
-  
+              dimensions: 512
+              });  
+              
   classified_CCOM.evaluate(function(){
               
               var min_no = t_poly.reduceColumns({
@@ -219,7 +296,7 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
   
 };
 
-  
+// Historic High-tide Classification 
 exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands, ROI, trees){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
@@ -266,18 +343,17 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
 
   // Classify the HOT image.
   var classified_HHOT = Hhot.classify(HHOT_trained_classifier);
-            
-  Export.image.toDrive({
+
+  Export.image.toAsset({
               image: classified_HHOT.clip(ROI),
               description: 'HOT_Classification_historic',
+              assetID: 'HOT_Classification_historic',
               region: ROI,
               scale: 30,
-              //folder: 'EE_outputs',
               maxPixels:1e13,
-              dimensions: 512,
-              skipEmptyTiles: true
-              });
-  
+              dimensions: 512
+              });  
+                
   classified_HHOT.evaluate(function(){
     
               var min_no = t_poly.reduceColumns({
@@ -309,6 +385,7 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
 
 };
 
+// Historic Low-tide Classification
 exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands, ROI, trees){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
@@ -356,17 +433,16 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
   // Classify the HOT image.
   var classified_HLOT = Hlot.classify(HLOT_trained_classifier);
             
-  Export.image.toDrive({
+  Export.image.toAsset({
               image: classified_HLOT.clip(ROI),
               description: 'LOT_Classification_Historic',
+              assetID: 'LOT_Classification_Historic',
               region: ROI,
               scale: 30,
-              //folder: 'EE_outputs',
               maxPixels:1e13,
-              dimensions: 512,
-              skipEmptyTiles: true
-              });
-
+              dimensions: 512
+              });  
+              
   classified_HLOT.evaluate(function(){
               
               var min_no = t_poly.reduceColumns({
@@ -398,6 +474,7 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
  
 };
 
+// Historic Combined Classification
 exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, label, bands, ROI, trees){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
@@ -439,11 +516,11 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
                              }else{
                                var sample_HCOM = non_STI();}
   
-  //add random column to training data
+  // Add random column to training data
   sample_HCOM = sample_HCOM.randomColumn({ seed: 1 });
-  // select 70% to train
+  // Select 70% to train
   var HCOM_training = sample_HCOM.filter(ee.Filter.lt('random', 0.7));
-  // reserve 30% to validate
+  // Reserve 30% to validate
   var HCOM_validation = sample_HCOM.filter(ee.Filter.gte('random', 0.7));
 
   // Train a RF classifier for the HOT image
@@ -458,16 +535,15 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
   // Classify the HOT image.
   var classified_HCOM = Hcom.classify(HCOM_trained_classifier);
             
-  Export.image.toDrive({
+  Export.image.toAsset({
               image: classified_HCOM.clip(ROI),
               description: 'Combine_Classification_historic',
+              assetID: 'Combine_Classification_historic',
               region: ROI,
               scale: 30,
-              //folder: 'EE_outputs',
               maxPixels:1e13,
-              dimensions: 512,
-              skipEmptyTiles: true
-              });
+              dimensions: 512
+              });              
               
   classified_HCOM.evaluate(function(){
     
