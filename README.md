@@ -7,7 +7,7 @@
 
 The Google Earth Engine Mangrove Mapping Methodology (GEEMMM)
 tool is an intuitive, accessible and replicable approach which caters to a
-wide audience of non-specialist coastal managers and decision makers. 
+wide audience of non-specialist coastal managers and decision makers.
 The GEEMMM was developed based on a thorough review and
 incorporation of relevant mangrove remote sensing literature, and
 harnesses the power of cloud computing including a simplified image-based
@@ -62,22 +62,22 @@ scripts in your own personal Google Earth Engine script library. The later
 of these two options is more complicated, but would allow the user to
 better understand the GEEMMM functionality.
 
-For new users to Google Earth Engine, there are several tools available to 
+For new users to Google Earth Engine, there are several tools available to
 learn how the service works. The GEEMMM has been designed to
 minimize knowledge requirements for coding as much as possible, but
 it may be useful to familiarize oneself with the Earth Engine Javascript
 interface before using the GEEMMM. The best resources available to new
-users are the ‘JavaScript and Python Guides’ provided by the Google Earth
-Engine team (https://developers.google.com/earth-engine/guides). These
-guides walk the user through the basic elements of Earth Engine. The
-Earth Engine API documents also provide further information on the Earth
-Engine specific functions, and their associated variables and inputs
-(https://developers.google.com/earth-engine/apidocs). Earth Engine also
-has a large spatial data library available to users. Here users can find 
-specific datasets they wish to use in the GEEMMM, or learn more about
- default datasets available to GEEMMM users (https://developers.google.com/earth-engine/datasets).
+users are the [‘JavaScript and Python Guides’](https://developers.google.com/earth-engine/guides) 
+provided by the Google Earth Engine team. These guides walk the user 
+through the basic elements of Earth Engine. The
+[Earth Engine API](https://developers.google.com/earth-engine/apidocs) 
+documents also provide further information on the Earth Engine specific 
+functions, and their associated variables and inputs. Earth Engine also
+has a [large spatial data library](https://developers.google.com/earth-engine/datasets) 
+available to users. Here users can find specific datasets they wish to use 
+in the GEEMMM, or learn more about default datasets available to GEEMMM users.
 Another valuable resource for Earth Engine users, new or experienced,
-is the Google Earth Engine group, “Google Earth Engine Developers”
+is the Google Earth Engine group, [“Google Earth Engine Developers”]
 (https://groups.google.com/g/google-earth-engine-developers). It is likely
 that most casual users of the GEEMMM will not encounter issues that
 require the Earth Engine community’s support, but the Google group is
@@ -86,9 +86,9 @@ several common server-side errors which users may encounter while
 using the GEEMMM. Please read the KNOWN ISSUES section of this
 document before contacting the developers.
 
-The development of the GEEMMM tool was undertaken using the latest 
-versions of both Google Chrome (v86.0.4240.111) and Mozilla Firefox 
-(v82.0.2) web browsers, on both macOS (v10.13.6) and Windows 
+The development of the GEEMMM tool was undertaken using the latest
+versions of both Google Chrome (v86.0.4240.111) and Mozilla Firefox
+(v82.0.2) web browsers, on both macOS (v10.13.6) and Windows
 (v10.0.19042.610) operating systems. The functionality of the GEEMMM
 tool on Linux systems or other web browsers is unknown at this time,
 but no compatibility issues are currently known or expected.
@@ -106,14 +106,22 @@ but it is important to remember how the default parameters were selected.
 
 <h2>OPERATION</h2>
 
+Before a the GEEMMM tool can be used, the user must request developer access to 
+Google Earth Engine. This can be done by following this [link] (https://signup.earthengine.google.com/) and filling out a simple
+request form. Approval typically takes one or two business days. Google 
+Earth Engine is free to use for academic and not for profit enterprises, 
+commercial applications will require special permission. Once your Google
+account has been granted access to Earth Engine, you can now use the 
+GEEMMM tool.  
+
 There are two methods to run the GEEMMM:
 1) Click on the links below and run the scripts. Clear instructions are
 provided in the comments within each script; or
 2) Copy the entire tool into your personal Google Earth Engine Script
 library.
 
-The first option is the easiest to execute, and least likely to generate any
- errors.
+The first option is the easiest to execute, and least likely to generate any 
+errors.
  
 The three links below are associated with each of the three modules
 discussed above. Run them in order, and save the exports for each script
@@ -158,12 +166,20 @@ likely producing errors. The names of each function script are close to the
 variable names that they were written for. If there is a mix up, look back at
 the Github page and reference the three module scripts.
 
+After you have opened the links or saved the GEEMMM locally, there are detailed 
+code-comment instructions at the beginning of each script. Be sure to carefully read,
+in full, the instructions for each module. It is in these instructions where the user must
+identify the input dataset, determine impactful variables, and understand how certain
+functions within the GEEMMM will operate. There is a note at the end of each introduction
+section identifying the end of the user inputs/instruction.
+
 The data inputs for the GEEMMM have both internal and external source options,
 however, to perform the classification in Module 2, classification reference
-data must be provided. Because of the unique nature of land cover
-classifications, this must be provided by the user. A process to create CRD
-in Earth Engine is provided here by Google:
-    https://developers.google.com/earth-engine/tutorials/community/drawing-tools#example_classification_with_user-drawn_geometries
+data (CRD) must be provided. CRD are points or polygon areas that represent 
+unique land cover classes across the region of interest, offering a representative
+ sample of how the user  would like the classifier to sort the input imagery’s pixels 
+into land cover map classes. For example, a typical mangrove land cover map would contain, water, mangroves, bare soil, and non-mangrove vegetation. The input CRD should select 
+points or small polygon areas that represent each of these classes in the input imagery, which will then be used as training (and validation) data for the land cover classification. Because of the unique nature of land cover classifications, CRD must be provided by the user. A process to create CRD in Earth Engine is provided [here](https://developers.google.com/earth-engine/tutorials/community/drawing-tools#example_classification_with_user-drawn_geometries) by Google.    
 
 
 <h2>KNOWN ISSUES</h2>
@@ -214,3 +230,4 @@ contacting the developers.
 
 The included software in this package is distributed under the GNU General
 Public License v3.0. See License document included in this package.
+
