@@ -6,12 +6,12 @@
 
 This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
-directed to Dr. Trevor Jones, Geospatial & Blue Forests Science adviser 
+directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
 Mr. Max Yancho (yanchojo@gmail.com).
 
-Developed on June 3, 2020
-Last updated November 2, 2020
+Developed on: June 3, 2020
+Last updated: November 2, 2020
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -44,7 +44,7 @@ will be hosted by a Blue Ventures Conservation Google account.
      ‘Draw a rectangle’ drawing tools at this time. Note: this is not going to 
      be the ROI used in the data processing, this coarse ROI is to simply help 
      select the target data. The geometry that you create must be renamed to 
-     "coarse_roi"; this can be done by double-clicking the newly drawn geometry
+     "coarse_roi"; this can be done by clicking the newly drawn geometry
      in the script's 'Imports' (located at the top of the script).
 
 1.A.b) Known Mangrove Extent
@@ -361,7 +361,7 @@ var cloud_mask = 'none';
     
     
     
-      ** This line marks the end of the user defined inputs and variables. **
+      ** This line marks the end of the user-defined inputs and variables. **
 */
 
 
@@ -409,103 +409,103 @@ var fringe = require('users/yanchojo/GEEMMM_v4_1/:modules/fringe_mang');
 ////////////
 var step_1_button = ui.Button('Begin Workflow');
 step_1_button.onClick(function(){
-  //1.A.a
-  //Map.clear(); 
+  // 1.A.a
+  // Map.clear(); 
 
-  //1.A.b Ingest the known mangrove extent
+  // 1.A.b Ingest the known mangrove extent
   var mang_img = known_ext.known_mang(kmx);
-  //1.A.c Ingest the topographic data (DSM)
+  // 1.A.c Ingest the topographic data (DSM)
   var dsm = topography.dsm_id(topo);
-  //1.A.d Create the coastline from the coarse ROI
+  // 1.A.d Create the coastline from the coarse ROI
   var coast = coastline.coast_In(cst, cst_path, coarse_roi);
   Map.centerObject(coarse_roi);
   
-  //Aside: in the meantime create the tidal area buffer
+  // Aside: in the meantime create the tidal area buffer
   var tidalArea = coast.simplify(500).buffer(tidal_zone).simplify(500);
   
-  //1.B.k Generate the index list
+  // 1.B.k Generate the index list
   var indx = ee.List([]);
   var SR = ui.Checkbox('SR', false);
   SR.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('SR');
     return indx;});
 
   var NDVI = ui.Checkbox('NDVI', false);
   NDVI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('NDVI');
     return indx;});
 
   var NDWI = ui.Checkbox('NDWI', false);
   NDWI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('NDWI');
     return indx;});
 
   var MNDWI = ui.Checkbox('MNDWI', false);
   MNDWI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('MNDWI');
     return indx;});
   
   var CMRI = ui.Checkbox('CMRI', false);
   CMRI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('CMRI');
     return indx;});
 
   var MMRI = ui.Checkbox('MMRI', false);
   MMRI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('MMRI');
     return indx;});
 
   var SAVI = ui.Checkbox('SAVI', false);
   SAVI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('SAVI');
     return indx;});
 
   var OSAVI = ui.Checkbox('OSAVI', false);
   OSAVI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('OSAVI');
     return indx;});
 
   var EVI = ui.Checkbox('EVI', false);
   EVI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('EVI');
     return indx;});
   
   var MRI = ui.Checkbox('MRI', false);
   MRI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('MRI');
     return indx;});
 
   var SMRI = ui.Checkbox('SMRI', false);
   SMRI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('SMRI');
     return indx;});
 
   var LSWI = ui.Checkbox('LSWI', false);
   LSWI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('LSWI');
     return indx;});    
 
   var NDTI = ui.Checkbox('NDTI', false);
   NDTI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('NDTI');
     return indx;});    
 
   var EBBI = ui.Checkbox('EBBI', false);
   EBBI.onChange(function() {
-    // Add the index to the list.
+    // Add the index to the list
     indx = indx.add('EBBI');
     return indx;});    
 
@@ -543,16 +543,16 @@ step_1_button.onClick(function(){
   step_2_button.onClick(function(){
     var indx_list = indx;
 
-    //Buffer the known mangrove extent using the coastline
+    // Buffer the known mangrove extent using the coastline
     var mang_buff_img = mangrove_buff.mang_buff(coast, mang_img);
 
-    //Create a table of the mangrove area
+    // Create a table of the mangrove area
     var buffer_table = mangrove_buff.areaTable(mang_buff_img, coarse_roi);
 
-    //Graphically display mangrove area table
+    // Graphically display mangrove area table
     var buffer_chart = mangrove_buff.areaChart(mang_buff_img, coarse_roi); 
     
-    //Add the mangrove buffer layers to the map
+    // Add the mangrove buffer layers to the map
     Map.addLayer(mang_buff_img.select('35_km'), {palette: ['CC0000']}, '35km_buffer');
     Map.addLayer(mang_buff_img.select('30_km'), {palette: ['FF780A']}, '20km_buffer');
     Map.addLayer(mang_buff_img.select('25_km'), {palette: ['FC9F0D']}, '25km_buffer');
@@ -560,13 +560,13 @@ step_1_button.onClick(function(){
     Map.addLayer(mang_buff_img.select('15_km'), {palette: ['74B800']}, '15km_buffer');
     Map.addLayer(mang_buff_img.select('10_km'), {palette: ['3E8F00']}, '10km_buffer');
     Map.addLayer(mang_buff_img.select('05_km'), {palette: ['006600']}, '05km_buffer');
-    //Print the chart and table to the console
+    // Print the chart and table to the console
     print("Mangrove Area by Buffer", buffer_table);
     print(buffer_chart);
-    //Have the user set the buffer distance and create ROI.
+    // Have the user set the buffer distance and create ROI
     var ROI = ee.Geometry(coast);
     var buff_dist = ee.Number(0);
-    // list of buffers to choose from
+    // List of buffers to choose from
     var buffers = {
      '01_km': [1000], '02.5_km': [2500], '05_km': [5000], '07.5_km': [7500],
      '10_km': [10000], '12.5_km': [12500], '15_km': [15000], '17.5_km': [17500],
@@ -585,7 +585,7 @@ step_1_button.onClick(function(){
 
     // Set a place holder for the drop down
     select_ROI.setPlaceholder('Choose an ROI Buffer...');
-    // add drop down to console
+    // Add drop down to console
     print(select_ROI);
     
     ////////////
@@ -601,10 +601,10 @@ step_1_button.onClick(function(){
             '\nDo not proceed before these buttons populate'+
             '\nthe console. Click the buttons to view the '+
             '\nimagery.');
-      Map.clear(); // resset the map
-      Map.addLayer(ROI, {color: '1E266F'}, "ROI"); //add ROI to map
+      Map.clear(); // Reset the map
+      Map.addLayer(ROI, {color: '1E266F'}, "ROI"); // Add ROI to map
       
-      // clip the known mangrove extent
+      // Clip the known mangrove extent
       var kn_mang_ext = mang_img.clip(ROI);
       
       // Create hist./cont. image collections
@@ -612,20 +612,20 @@ step_1_button.onClick(function(){
                                               cloud_cover, month_start, month_end, cloud_mask);
       var hist_imagery = h_imagery.histImagery(ROI, historic_start_year, historic_end_year,
                                               cloud_cover, month_start, month_end, cloud_mask).aside(print);
-      //Calculate tidal conditions
+      // Calculate tidal conditions
       cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI);
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
       
-      // build the contemporary BAP composites
+      // Build the contemporary BAP composites
       var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI');
       var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').aside(print);
 
 
-      // add the contemporary imagery once it has finished processing 
+      // Add the contemporary imagery once it has finished processing 
       Clot.evaluate(function(){
         var add_c_imagery = ui.Button('Add Contemporary Imagery');
         add_c_imagery.onClick(function(){
-        //Add to Map
+        // Add to Map
           var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
           Map.addLayer(Chot, vis, 'Contemporary High Tide');
           Map.addLayer(Clot, vis, 'Contemporary Low Tide');
@@ -633,20 +633,20 @@ step_1_button.onClick(function(){
         print(add_c_imagery);
       });
       
-      // determing tidal conditions
+      // Determing tidal conditions
       hist_imagery = shoreRefl.shoreRefl(hist_imagery, tidalArea, ROI);
       hist_imagery = shoreRefl.tide_bands(hist_imagery);
       
-      //build the historic BAP composites
+      // Build the historic BAP composites
       var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic('MNDWI');
       var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic('inv_MNDWI');
 
 
-      // add the historic imagery once it has finished processing
+      // Add the historic imagery once it has finished processing
       Hlot.evaluate(function(result){
         var add_h_imagery = ui.Button('Add Historic Imagery');
         add_h_imagery.onClick(function(){
-          //Add to Map
+          // Add to Map
           var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
           Map.addLayer(Hhot, vis, 'Historic High Tide');
           Map.addLayer(Hlot, vis, 'Historic Low Tide');
@@ -677,7 +677,7 @@ step_1_button.onClick(function(){
         var Hhot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Hhot));
         var Hlot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Hlot));
         
-        // add SMRI if in list
+        // Add SMRI if in list
         var Chot2 = ee.Algorithms.If(indx_list.contains('SMRI'), 
         ee.Image(Chot1).addBands(indx_mod.SMRI(Chot1, Clot1)),  ee.Image(Chot1));
         var Clot2 = ee.Algorithms.If(indx_list.contains('SMRI'), 
@@ -687,7 +687,7 @@ step_1_button.onClick(function(){
         var Hlot2 = ee.Algorithms.If(indx_list.contains('SMRI'), 
         ee.Image(Hlot1).addBands(indx_mod.SMRI(Hhot1, Hlot1)),  ee.Image(Hlot1));
         
-        // add MRI if in list
+        // Add MRI if in list
         var Chot3 = ee.Algorithms.If(indx_list.contains('MRI'), 
         ee.Image(Chot2).addBands(indx_mod.MRI(Chot2, Clot2)),  ee.Image(Chot2));
         var Clot3 = ee.Algorithms.If(indx_list.contains('MRI'), 
@@ -745,7 +745,7 @@ step_1_button.onClick(function(){
         ////////////
         // Step 5 //
         ////////////
-        // creating image masks and finalizing images
+        // Creating image masks and finalizing images
         var step_5_button = ui.Button('Prepare Image Mask');
         step_5_button.onClick(function(){
           print('When the final mask has been prepared the task tab'+
@@ -758,7 +758,7 @@ step_1_button.onClick(function(){
               '\nafter all outputs have successfully been exported and'+
               '\nadded to the asset GEE asset folder.');
         
-          // bring in topo data and create the mask
+          // Bring in topo data and create the mask
           var dsm = topography.dsm_id(topo, topo_path);
           var topo_mask = topography.topo_mask_func(dsm, kn_mang_ext, 
                                     mang_topo, elevation, slope);
@@ -770,13 +770,13 @@ step_1_button.onClick(function(){
             }else{
               var waterMask = ee.Image(1);
             }
-          // combine the topo and water masks
+          // Combine the topo and water masks
           var combo_masked = waterMask.multiply(topo_mask).eq(1);
           
-          // create the fringe mangrove mask
+          // Create the fringe mangrove mask
           var fringe_mask = fringe.fringMangrove(dsm, buff_dist, ROI);
           
-          // add buttons to view the mask outputs
+          // Add buttons to view the mask outputs
           var topo_mask_butt = ui.Button('View Topo Mask?');
               topo_mask_butt.onClick(function(){
                 Map.addLayer(ee.Image(topo_mask), {}, 'Topographic Mask');});
@@ -787,7 +787,7 @@ step_1_button.onClick(function(){
               combo_mask_butt.onClick(function(){
                 Map.addLayer(ee.Image(combo_masked), {}, 'Combine Mask');});
           
-          // fringe mangrove addition to mask or not
+          // Fringe mangrove addition to mask or not
           var in_t = function(combo_masked, fringe_mask){
             var final_mask = ee.Image(combo_masked).add(fringe_mask);
             return final_mask;
@@ -812,9 +812,9 @@ step_1_button.onClick(function(){
               dimensions: 1024
             });
             
-          // prep ROI for export
+          // Prep ROI for export
           var ROI_out = ee.FeatureCollection(ee.Feature(ROI, {name: 'ROI'}));
-          // export ROI
+          // Export ROI
           Export.table.toAsset({
             collection: ROI_out,
             description: "ROI",
@@ -837,7 +837,7 @@ step_1_button.onClick(function(){
           mask_panel.add(combo_mask_butt);
           mask_panel.add(final_mask_butt);
           
-          //Add the panel to the map
+          // Add the panel to the map
           ui.root.add(mask_panel);
 
         });
