@@ -3,7 +3,7 @@
 
 
 ----------------------------------------------------------------------------------------------------------
-<h2>INTRODUCTION 2</h2>
+<h2>INTRODUCTION</h2>
 
 The Google Earth Engine Mangrove Mapping Methodology (GEEMMM)
 tool is an intuitive, accessible and replicable approach which caters to a
@@ -104,7 +104,7 @@ help aid in the determination of the optimal parameters to set before running,
 but it is important to remember how the default parameters were selected.
 
 
-<h2>OPERATION 2</h2>
+<h2>OPERATION</h2>
 
 There are two methods to run the GEEMMM:
 1) Click on the links below and run the scripts. Clear instructions are
@@ -119,15 +119,15 @@ The three links below are associated with each of the three modules
 discussed above. Run them in order, and save the exports for each script
 (ideally to your personal Earth Engine ‘Asset’ folder).
 
-<h3>Module 1: 3</h3>
+<h3>Module 1:</h3>
 
     https://code.earthengine.google.com/0b72921caeb0f34698c61e55743d955e?noload=true
 
-<h3>Module 2: 3</h3>
+<h3>Module 2:</h3>
 
     https://code.earthengine.google.com/da2c8eb2d490fe26cb6c76509398d1c4?noload=true
 
-<h3>Module 3: 3</h3>
+<h3>Module 3:</h3>
 
     https://code.earthengine.google.com/1c45d88a5fce2cf518dbd5c556693ce2?noload=true
 
@@ -139,7 +139,7 @@ run the GEEMMM tool in this manner, they will also need to change the
 paths for each of the ‘require()’ functions, located near the top of each
 module’s script.
 
-<h3>Example: 3</h3>
+<h3>Example:</h3>
 
     //The code will look like this
     var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
@@ -166,7 +166,7 @@ in Earth Engine is provided here by Google:
     https://developers.google.com/earth-engine/tutorials/community/drawing-tools#example_classification_with_user-drawn_geometries
 
 
-<h2>KNOWN ISSUES 2</h2>
+<h2>KNOWN ISSUES</h2>
 
 The most common errors that may occur (outside of user variable/input errors) are
 server side memory issues. While Google Earth Engine is a free service,
@@ -191,7 +191,7 @@ message stating:
     “Error: Computation timed out”
 
 
-<h2>FUNDING 2</h2>
+<h2>FUNDING</h2>
 
 GEEMMM was funded by Blue Ventures Conservation, with support from
 the UK Government’s International Climate Fund, part of the UK commitment
@@ -200,7 +200,7 @@ climate change and benefit from the opportunities. You may learn more about
 BVC at:    https://blueventures.org/
 
 
-<h2>CONTACT 2</h2>
+<h2>CONTACT</h2>
 
 If there are discovered bugs or issues with the code, or with the directions
 on how to use the tool, you can contact Dr. Trevor Jones:
@@ -210,7 +210,7 @@ Please be sure to read the KNOWN ISSUES section of this document before
 contacting the developers.
 
     
-<h2>LICENSING 2</h2>
+<h2>LICENSING</h2>
 
 The included software in this package is distributed under the GNU General
 Public License v3.0. See License document included in this package.
