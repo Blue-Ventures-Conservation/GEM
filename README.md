@@ -121,8 +121,8 @@ discussed above. Run them in order, and save the exports for each script
 
 Module 1:
 
-    https://code.earthengine.google.com/497c195237c019e8ccea6cc46f477544?noload=true
-
+    https://code.earthengine.google.com/23fcc8e1acecf919ebb8253e1777317b?noload=true
+    
 Module 2:
 
     https://code.earthengine.google.com/3eefa4622f0f223d4ae66d2645dbadaf?noload=true
