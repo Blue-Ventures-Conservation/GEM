@@ -10,8 +10,8 @@ tool is an intuitive, accessible and replicable approach which caters to a
 wide audience of non-specialist coastal managers and decision makers. 
 The GEEMMM was developed based on a thorough review and
 incorporation of relevant mangrove remote sensing literature, and
-harnesses the power of cloud computing including a simplified image-
-based tidal calibration approach. The GEEMMM has been designed
+harnesses the power of cloud computing including a simplified image-based
+tidal calibration approach. The GEEMMM has been designed
 specifically for the detection of mangroves in coastal environments, and
 offers the ability to explore mangrove dynamics through the generation
 of multiple yearly land cover maps. The GEEMMM tool is for anyone who is
