@@ -77,10 +77,9 @@ has a [large spatial data library](https://developers.google.com/earth-engine/da
 available to users. Here users can find specific datasets they wish to use 
 in the GEEMMM, or learn more about default datasets available to GEEMMM users.
 Another valuable resource for Earth Engine users, new or experienced,
-is the Google Earth Engine group, [“Google Earth Engine Developers”]
-(https://groups.google.com/g/google-earth-engine-developers). It is likely
-that most casual users of the GEEMMM will not encounter issues that
-require the Earth Engine community’s support, but the Google group is
+is the Google Earth Engine group, [“Google Earth Engine Developers”](https://groups.google.com/g/google-earth-engine-developers).
+It is likely that most casual users of the GEEMMM will not encounter issues 
+that require the Earth Engine community’s support, but the Google group is
 a useful resource as users begin to develop their own code. There are
 several common server-side errors which users may encounter while
 using the GEEMMM. Please read the KNOWN ISSUES section of this
