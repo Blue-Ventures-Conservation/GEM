@@ -121,15 +121,15 @@ discussed above. Run them in order, and save the exports for each script
 
 Module 1:
 
-    https://code.earthengine.google.com/23fcc8e1acecf919ebb8253e1777317b?noload=true
-    
+    https://code.earthengine.google.com/0b72921caeb0f34698c61e55743d955e?noload=true
+
 Module 2:
 
-    https://code.earthengine.google.com/3eefa4622f0f223d4ae66d2645dbadaf?noload=true
+    https://code.earthengine.google.com/da2c8eb2d490fe26cb6c76509398d1c4?noload=true
 
 Module 3:
 
-    https://code.earthengine.google.com/668243c548c1e7cb75954a416da1d249?noload=true
+    https://code.earthengine.google.com/1c45d88a5fce2cf518dbd5c556693ce2?noload=true
 
 The other option for running the GEEMMM code is to copy each of the three
 Module scripts, and each of the function scripts into individual scripts saved
