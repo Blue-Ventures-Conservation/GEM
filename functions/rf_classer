@@ -10,10 +10,10 @@ Last update: Novemver 3, 2020
 
 
 exports.doc = 'The Random Forest Classification module is used'+
-    '\n to classify the GEEMMM composite images for the identified ROI.' +
-    '\n The output is a single band image containing the pre-determined' +
-    '\n land cover classes from the training data. This module includes' +
-    '\n six unique functions.'+
+    '\nto classify the GEEMMM composite images for the identified ROI.' +
+    '\nThe output is a single band image containing the pre-determined' +
+    '\nland cover classes from the training data. This module includes' +
+    '\nsix unique functions.'+
     '\n' +
     '\n ChotClassify(Chot, t_poly, label, bands, ROI, trees):' +
     '\n   @param {ee.Image} Chot: contemporary high-tide composite' +
