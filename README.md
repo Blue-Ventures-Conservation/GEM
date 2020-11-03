@@ -119,15 +119,15 @@ The three links below are associated with each of the three modules
 discussed above. Run them in order, and save the exports for each script
 (ideally to your personal Earth Engine ‘Asset’ folder).
 
-<h3>Module 1:</h3>
+<h4>Module 1:</h4>
 
     https://code.earthengine.google.com/0b72921caeb0f34698c61e55743d955e?noload=true
 
-<h3>Module 2:</h3>
+<h4>Module 2:</h4>
 
     https://code.earthengine.google.com/da2c8eb2d490fe26cb6c76509398d1c4?noload=true
 
-<h3>Module 3:</h3>
+<h4>Module 3:</h4>
 
     https://code.earthengine.google.com/1c45d88a5fce2cf518dbd5c556693ce2?noload=true
 
@@ -139,7 +139,7 @@ run the GEEMMM tool in this manner, they will also need to change the
 paths for each of the ‘require()’ functions, located near the top of each
 module’s script.
 
-<h3>Example:</h3>
+<h4>Example:</h4>
 
     //The code will look like this
     var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
