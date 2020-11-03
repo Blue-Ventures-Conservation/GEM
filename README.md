@@ -106,7 +106,7 @@ but it is important to remember how the default parameters were selected.
 <h2>OPERATION</h2>
 
 Before a the GEEMMM tool can be used, the user must request developer access to 
-Google Earth Engine. This can be done by following this [link] (https://signup.earthengine.google.com/) and filling out a simple
+Google Earth Engine. This can be done by following this [link](https://signup.earthengine.google.com/) and filling out a simple
 request form. Approval typically takes one or two business days. Google 
 Earth Engine is free to use for academic and not for profit enterprises, 
 commercial applications will require special permission. Once your Google
