@@ -11,7 +11,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: November 2, 2020
+Last updated: November 3, 2020
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -297,6 +297,23 @@ print('Contemporary Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee
 var QAA_button = ui.Button('Click to Proceed to QAA');
 QAA_button.onClick(function(){
 
+alert('GEE QAA INTERFACE'+
+'\n'+
+'\nUse the left map for viewing GE '+
+'imagery, the centre\nmap for viewing classification outputs, and the right'+
+'\nmap for viewing Landsat Composite imagery'+
+'\n'+
+'\nWhen adding comments, pressing enter or clicking off from'+
+'\nthe text box will save the comment. To review saved comments'+
+'\nas well as the currently recorded qualitative analysis'+
+'\nclick on the Print Dictionary button.'+
+'\n'+
+'\nWhen satisfied with the current progress or at the completetion '+
+'\nof the QAA, the dictionary, along with all of the saved comments,'+
+'\ncan be exported to your Google Drive as a CSV file. Click on the '+
+'\nExport Dictionarty button to initiate this task.');
+
+
 var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
 
 // Add three maps to the screen.
@@ -444,8 +461,18 @@ print(title);
 
 // Print instructions to the console
 var instructions = ui.Label('Use the left map for viewing GE '+
-'imagery\nthe centre map for viewing classification outputs'+
-'\nand the right map for viewing Landsat Composite imagery');
+'imagery, the centre\nmap for viewing classification outputs, and the right'+
+'\nmap for viewing Landsat Composite imagery'+
+'\n'+
+'\nWhen adding comments, pressing enter or clicking off from'+
+'\nthe text box will save the comment. To review saved comments'+
+'\nas well as the currently recorded qualitative analysis'+
+'\nclick on the Print Dictionary button.'+
+'\n'+
+'\nWhen satisfied with the current progress or at the completetion '+
+'\nof the QAA, the dictionary, along with all of the saved comments,'+
+'\ncan be exported to your Google Drive as a CSV file. Click on the '+
+'\nExport Dictionarty button to initiate this task.');
 instructions.style().set('fontWeight', 'bold');
 print(instructions);
 
@@ -586,7 +613,8 @@ var dict = ee.Dictionary({
   comments: comments
 });
 var feat = ee.Feature(null, dict);
-Export.table.toDrive(ee.FeatureCollection(feat));
+Export.table.toDrive({collection:ee.FeatureCollection(feat),
+                      description: 'GEEMMM_QAA_Dictionary'});
 }});
 print(export_button);
 
@@ -607,10 +635,10 @@ print(comment_button);
 
 Export.table.toDrive({collection:new_grid,
                       description: '100km_x_100km_grid'
-});
+  });
 Export.table.toDrive({collection:mini_cells,
                       description: '10km_x_10km_Cells'
-});
+  });
 });
 
 print(QAA_button);
