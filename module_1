@@ -19,11 +19,48 @@ iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM) tool
 will be hosted by a Blue Ventures Conservation Google account.
 
 
-////////////////////////////////////////////////////////////////////////////////
+
 
 ///////////////////////////////////////////////
-//////////////      Step 1       //////////////
+//////////////  Before  Running  //////////////
 ///////////////////////////////////////////////
+
+
+Welcome to Module 1 of the GEEMMM. This module will be used to: 1.) Identify 
+precise region of interest used in the GEEMMM tool. 2.) Generate Landsat image 
+composites. 3.) Calculate any desired spectral indices for the generated composites. 4.) 
+Create a unified mask to remove water pixels or pixels associated with extreme 
+topography from classification. This script will output four image composites, high- and 
+low-tide for both a historic and contemporary temporal window, a final mask, 
+representing a unified water, slope, and elevation mask, as well as a geospatial vector 
+polygon encompassing the region of interest to use throughout the GEEMMM workflow. 
+
+GEEMMM Module 1 is broken down into 5 steps. The first step requires the user to 
+select the desired indices they would like to have calculated, if any. The second step, lets 
+the user interactively explore how large of an area of interest they would like to use by 
+examining known mangrove extent data. The third step generates the Landsat composite 
+imagery, and allows the user to review both the historic and contemporary composites. 
+The fourth step takes the Landsat composites and calculates the requested indices.
+The fifth and final step creates the image masks, removing water (if desired), as well as 
+creating topographic (slope and elevation) masks. The user has the option to view the 
+combined mask, or each mask separately. After pressing the ‘Run’ button at the top of the 
+script editor, a grey button will populate in the ‘Console’ to “Begin Workflow”. Once the 
+workflow has begun it can take as little as three minutes to work through Module 1, not 
+accounting for exporting times of the outputs. 
+
+The default parameters, as discussed in the GEEMMM ReadMe file, were established 
+using during a pilot study conducted for the country of Myanmar. These parameters may 
+work for other areas of interest as well, but the developers make no warranties on the 
+transferability of these settings to other locations around the world.
+
+Before running Module 1, please read through the comments below to determine 
+important user inputs and parameters that will be used in this workflow. Continue until 
+you reach the end, where you will be prompted to now ‘Run’ the script.
+
+
+////////////////////////////////////////////////////////////
+//////////////    User Inputs & Parameters    //////////////
+////////////////////////////////////////////////////////////
 
 
 1.A) USER DEFINED DATA SETS
@@ -78,7 +115,7 @@ var kmx = true;
                             ^--- Must enter an asset path
 */
 
-var cst = false; 
+var cst = true; 
 var cst_path = 'users/yanchojo/gadm36_mmr_0_shore';
 
 /*
@@ -186,7 +223,7 @@ var month_end = 12;
 
 */
 
-var cloud_cover = 5;
+var cloud_cover = 10;
 
 /*
 1.B.e) Tidal Zone  
@@ -356,7 +393,7 @@ var cloud_mask = 'none';
     
     
     ****************************************************************************
-    **********************   Click 'Begin Workflow' Now   **********************
+    **********************         Click 'Run' Now        **********************
     ****************************************************************************
     
     
@@ -410,8 +447,12 @@ var fringe = require('users/yanchojo/GEEMMM_v4_1/:modules/fringe_mang');
 var step_1_button = ui.Button('Begin Workflow');
 step_1_button.onClick(function(){
   // 1.A.a
-  // Map.clear(); 
-
+  print(ui.Label({value:'Module 1: Step 1',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
+  
   // 1.A.b Ingest the known mangrove extent
   var mang_img = known_ext.known_mang(kmx);
   // 1.A.c Ingest the topographic data (DSM)
@@ -541,6 +582,13 @@ step_1_button.onClick(function(){
   ////////////
   var step_2_button = ui.Button('Determine ROI');
   step_2_button.onClick(function(){
+    print(ui.Label({value:'Module 1: Step 2',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
+  
+    
     var indx_list = indx;
 
     // Buffer the known mangrove extent using the coastline
@@ -594,6 +642,11 @@ step_1_button.onClick(function(){
     // Prepare the imagery
     var step_3_button = ui.Button('Prepare Imagery for Processing');
     step_3_button.onClick(function(){
+      print(ui.Label({value:'Module 1: Step 3',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
       print('When the imagery has been prepared, '+
             '\nbuttons will appear to display the imagery;'+
             '\nindicating to add either the contemporary'+
@@ -666,6 +719,11 @@ step_1_button.onClick(function(){
       // Calculation of the spectral indices
       var step_4_button = ui.Button('Calculate the Spectral Indices');
       step_4_button.onClick(function(){
+        print(ui.Label({value:'Module 1: Step 4',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
         print('When the indices have been calculated'+
             '\nthe imagery and indices will be prepared for export.'+
             '\nThen, an alert will appear in the console when the '+
@@ -748,12 +806,17 @@ step_1_button.onClick(function(){
         // Creating image masks and finalizing images
         var step_5_button = ui.Button('Prepare Image Mask');
         step_5_button.onClick(function(){
+          print(ui.Label({value:'Module 1: Step 5',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
           print('When the final mask has been prepared the task tab'+
               '\nwill turn yellow, prompting for export. The final mask'+
               '\nand the other intermediary outputs can be viewed in the'+
               '\npanel by clicking on the corresponding button.'+
               '\n'+
-              '\nOnce all hte of intermediary outputs have begun to export'+
+              '\nOnce all the of intermediary outputs have begun to export'+
               '\nGEEMMM Module 1 is complete. Proceed to GEEMMM Module 2'+
               '\nafter all outputs have successfully been exported and'+
               '\nadded to the asset GEE asset folder.');
