@@ -132,7 +132,7 @@ discussed above. Run them in order, and save the exports for each script
 
 <h4>Module 2:</h4>
 
->https://code.earthengine.google.com/da2c8eb2d490fe26cb6c76509398d1c4?noload=true
+>https://code.earthengine.google.com/da9457a92103c9dbb1d25eb3d305757a?noload=true
 
 <h4>Module 3:</h4>
 
