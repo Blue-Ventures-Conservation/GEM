@@ -126,10 +126,10 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
               
               var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min').aside(print);
+                                 selectors: [label]}).get('min');
               var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max').aside(print);
+                                 selectors: [label]}).get('max');
               
               
               Map.addLayer(classified_CHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
@@ -196,10 +196,10 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
     
               var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min').aside(print);
+                                 selectors: [label]}).get('min');
               var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max').aside(print);
+                                 selectors: [label]}).get('max');
               
               
               Map.addLayer(classified_CLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
@@ -270,10 +270,10 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
               
               var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min').aside(print);
+                                 selectors: [label]}).get('min');
               var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max').aside(print);
+                                 selectors: [label]}).get('max');
               
               Map.addLayer(classified_CCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'Combine_Classification_contemporary');
@@ -358,10 +358,10 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
     
               var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min').aside(print);
+                                 selectors: [label]}).get('min');
               var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max').aside(print);
+                                 selectors: [label]}).get('max');
               
               Map.addLayer(classified_HHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'HOT_Classification_Historic');
@@ -447,10 +447,10 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
               
               var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min').aside(print);
+                                 selectors: [label]}).get('min');
               var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max').aside(print);
+                                 selectors: [label]}).get('max');
               
               Map.addLayer(classified_HLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'LOT_Classification_Historic');
@@ -488,8 +488,7 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
   var Hcom = Hhot.addBands(Hlot);
   var Ccom = Chot.addBands(Clot);
   bands = Ccom.bandNames();
-  print(bands);  
-    
+  
   var non_STI = function(){
   // Overlay the points on the imagery to get training for HOT
   var sample_HCOM = Ccom.select(bands).sampleRegions({
@@ -549,10 +548,10 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
     
               var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min').aside(print);
+                                 selectors: [label]}).get('min');
               var max_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max').aside(print);
+                                 selectors: [label]}).get('max');
               
              Map.addLayer(classified_HCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
                           palette: clPalette}, 'Combine_Classification_Historic');
