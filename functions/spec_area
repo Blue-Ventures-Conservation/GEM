@@ -1,3 +1,35 @@
+/*
+
+This is the spectral area/seperability module, which is part 
+of the BVC GEEMMM v1.0 library. It is used to determine if input 
+land cover classification reference data a spectral distinguishable.
+
+Last update: Novemver 4, 2020
+
+*/
+
+
+exports.doc = 'The spectral area/seperability module is used'+
+    '\ndetermine if input land cover classification reference' +
+    '\ndata a spectral distinguishable. The outputs are typically'+
+    '\ngraphs to be viewed in the GEE GUI console. There are two'+
+    '\nfunctions included in this module.'+
+    '\n' +
+    '\n ls_candles(sample, label, label2, name):' +
+    '\n   @param {ee.FeatureCollection} sample: trained subset of classification reference data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {text} label2: column name for the text-name for each land cover class in the training data' +
+    '\n   @param {text} name: text name to include in the chart title' +
+    '\n   @print {ee.Chart} bar-and-whisker style chart for the six visible spectrum landsat bands.' +
+    '\n' +
+    '\n whiskerCharts2(sample, label, label2, band name):' +
+    '\n   @param {ee.FeatureCollection} sample: trained subset of classification reference data' +
+    '\n   @param {text} label: column name for the numeric land cover class in the training data' +
+    '\n   @param {text} label2: column name for the text-name for each land cover class in the training data' +
+    '\n   @param {text} band: the band or index of interest, must be a band found on the source image'+
+    '\n   @param {text} name: text name to include in the chart title' +
+    '\n   @print {ee.Chart} bar-and-whisker style chart for each land cover class for the selected band.';
+
 exports.ls_candles = function(sample, label, label2, name){
 
   var bands =  ['B1','B2','B3','B4','B5','B7'];
@@ -137,17 +169,3 @@ exports.whiskerCharts2 = function(sample, label, label2, band, name){
       });
   print(chart);
 };
-  
-
-exports.scatter = function(sample, bandX, bandY, label){
-  var data = ee.List(sample).get(1);
-  var title = ee.List(sample).get(0);
-  
-  var chart =    ui.Chart.feature.groups(sample, bandX, bandY, label)
-    .setChartType('ScatterChart')
-    .setOptions({ title: title + " " + bandX + " v. " + bandY});
-  print(chart);
-};
-
-
-
