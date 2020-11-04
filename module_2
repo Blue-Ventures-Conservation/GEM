@@ -12,18 +12,62 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: November 2, 2020
+Last updated: November 4, 2020
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
 iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM) tool
 will be hosted by a Blue Ventures Conservation Google account.
 
-////////////////////////////////////////////////////////////////////////////////
+
+
 
 ///////////////////////////////////////////////
-//////////////      Step 1       //////////////
+//////////////  Before  Running  //////////////
 ///////////////////////////////////////////////
+
+
+Welcome to Module 2 of the GEEMMM. This module will be used to: 1.) Explore the 
+spectral relationships between the classification reference data (CRD) classes. 2.) 
+Generate the land cover classification maps using the inputs from Module 1 and the 
+Random forest classifier. Module 2’s workflow is less linear than Module 1’s. In the first 
+step, the user can generate a series of charts and tables that they can use to explore index 
+correlations and spectral separability between land cover classes. The primary output 
+from Module 2 are the single-band land cover classification images, the number can 
+range from one to six classifications. Associated with each classification are quantitative 
+accuracy metrics and matrices. 
+
+GEEMMM Module 2 is broken down into 2 steps, with a quick initiation selection before 
+the actual Module to reestablish the chosen indices. In step one, the spectral relationship 
+step, the user can view the spectral space of each land cover class across any of the 
+various bands or indices. Additionally, correlation matrices can be generated for the 
+calculated indices. Take time to explore the data in this step, and affirm that the desired 
+land cover classes are truly spectrally distinct.  Once satisfied with the input data, the 
+second step in module 2 will produce the classification. Depending on the desired output 
+maps, chosen before the script is run, the classification(s) will be added to the map 
+viewer and the accuracy metrics will populate in the console including the validation 
+overall accuracy, validation matrix, the resubstitution overall accuracy, and the 
+resubstitution matrix. The output classification images should be exported to the user’s 
+assets. After pressing the ‘Run’ button at the top of the script editor, the user will be re-
+prompted to select the indices they selected in Module 1. Once the workflow has begun it 
+can take as little as two minutes to work through Module 2 and view classification 
+results, not accounting for exporting times of the outputs or prolonged exploration of the 
+spectral separability. 
+
+The default parameters, as discussed in the GEEMMM ReadMe file, were established 
+using during a pilot study conducted for the country of Myanmar(Burma). These parameters may 
+work for other areas of interest as well, but the developers make no warranties on the 
+transferability of these settings to other locations around the world.
+
+Before running Module 2, please read through the comments below to determine 
+important user inputs and parameters that will be used in this workflow. Continue until 
+you reach the end, where you will be prompted to now ‘Run’ the script.
+
+
+////////////////////////////////////////////////////////////
+//////////////    User Inputs & Parameters    //////////////
+////////////////////////////////////////////////////////////
+
 
 0.0)
 
@@ -136,7 +180,13 @@ var HOT_hist_out = false;        // High tide historic Imagery
 var LOT_hist_out = true;        // Low tide historic Imagery
 var combo_hist_out = false;     // Combination historic Imagery
 
-/*
+
+/*    
+    ****************************************************************************
+    **********************         Click 'Run' Now        **********************
+    ****************************************************************************
+
+
       ** This line marks the end of the user-defined inputs and variables. **
 */
 
@@ -166,7 +216,7 @@ var RFclass = require('users/yanchojo/GEEMMM_v4_1/:modules/rf_classer');
 var InCor = require('users/yanchojo/GEEMMM_v4_1/:modules/input_correlation');
 var specSp = require('users/yanchojo/GEEMMM_v4_1/:modules/spec_area');
 
-print('Re-select the indices that were calculated in Step 1.');
+print('Re-select the indices that were calculated in Module 1.');
 
 // 1.B.k Generate the index list
   var indx = ee.List([]);
@@ -289,6 +339,12 @@ print('Re-select the indices that were calculated in Step 1.');
 var step_1_button = ui.Button('1.) View Spectral Space \n and Ref. Data Relationships');
 step_1_button.onClick(function(){
 
+  print(ui.Label({value:'Module 2: Step 1',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
+                
   var bands = Chot.bandNames();
   var h_bands = Hhot.bandNames();
 
@@ -326,7 +382,23 @@ step_1_button.onClick(function(){
     scale: 30, 
     tileScale: 16
     });
-
+  var header = ui.Label({
+                          value: 'View the Spectral Relationships of the Reference Data',
+                          style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '20px',
+                                    textAlign: 'center'
+                                  }
+                        });   
+  print(header);   
+  print(ui.Label({value:'Index Correlations',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
+  print('Select any of the composite buttons below'+
+        '\nto view the index band correlation matrix'+
+        '\nfor that composite.');         
   // Create correlation buttons
   var chot_cor_but = ui.Button('View CHOT Index Band Correlation');
   chot_cor_but.onClick(function(){
@@ -349,7 +421,11 @@ step_1_button.onClick(function(){
   var cor_panel = ui.Panel({layout: ui.Panel.Layout.flow('horizontal')});
   cor_panel.add(chot_cor_but).add(clot_cor_but).add(hhot_cor_but).add(hlot_cor_but);
   print(cor_panel);
-  
+  print(ui.Label({value:'Spectral Separation Graphs',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
   var bandDict = {'B1': 'B1', 'B2': 'B2', 'B3': 'B3', 'B4': 'B4', 'B5': 'B5', 'B6': 'B6', 'B7': 'B7',
                   'SR': 'SR', 'NDVI': 'NDVI', 'NDWI': 'NDWI', 'MNDWI': 'MNDWI',
                   'CMRI': 'CMRI', 'MMRI': 'MMRI', 'SAVI': 'SAVI', 'OSAVI': 'OSAVI',
@@ -391,19 +467,11 @@ step_1_button.onClick(function(){
                             style: {position: 'top-right'}
                             });
                           
-  var header = ui.Label({
-                          value: 'View the Spectral Relationships of the Reference Data',
-                          style: {
-                                    fontWeight: 'bold',
-                                    fontSize: '24px',
-                                    textAlign: 'center'
-                                  }
-                        });   
-  print(header);
-  print('The first set of charts below shows the single band'+
-    '\n relationships betweeen the difference land cover classes.'+
-    '\n To view a graph, select a band from each of the drop-down'+
-    '\n menus, corresponding to the various image composites.');
+
+  print('The set of charts below shows the single band/index'+
+    '\nrelationships betweeen the difference land cover classes.'+
+    '\nTo view a graph, select a band from each of the drop-down'+
+    '\nmenus, corresponding to the various image composites.');
                
   var cont_lab = ui.Label({
                             value: 'Contemporary Refernce Data',
@@ -533,7 +601,12 @@ print(step_1_button);
 var step_2_button = ui.Button('2.) Begin Classification');
 step_2_button.onClick(function(){
   
-
+  print(ui.Label({value:'Module 2: Step 2',
+                  style:{fontWeight: 'bold',
+                         fontSize: '18px',
+                         textAlign: 'center'}
+                }));
+  print('Bands used for classification:');
   
   // Update the image masks
   Chot = Chot.updateMask(final_mask);
@@ -546,6 +619,7 @@ step_2_button.onClick(function(){
   var t_poly_h = ee.FeatureCollection(class_ref_hist);
   // Isolate the bands to use in the classification
   var bands = ee.List(['B1', 'B2', 'B3', 'B4', 'B5', 'B7']).cat(indx);
+  print(bands); 
   // Classification using RF
   // Contemporary
   if(HOT_cont_out === true){ var Chot_class = RFclass.ChotClassify(Chot, 
