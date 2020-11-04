@@ -4,7 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEEMMM v1.0 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: Novemver 3, 2020
+Last update: Novemver 4, 2020
 
 */
 
@@ -115,7 +115,7 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
   Export.image.toAsset({
               image: classified_CHOT.clip(ROI),
               description: 'HOT_Classification_contemporary',
-              assetID: 'HOT_Classification_contemporary',
+              assetId: 'HOT_Classification_contemporary',
               region: ROI,
               scale: 30,
               maxPixels:1e13,
@@ -185,7 +185,7 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
   Export.image.toAsset({
               image: classified_CLOT.clip(ROI),
               description: 'LOT_Classification_contemporary',
-              assetID: 'LOT_Classification_contemporary',
+              assetId: 'LOT_Classification_contemporary',
               region: ROI,
               scale: 30,
               maxPixels:1e13,
@@ -259,7 +259,7 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
   Export.image.toAsset({
               image: classified_CCOM.clip(ROI),
               description: 'Combine_Classification_contemporary',
-              assetID: 'Combine_Classification_contemporary',
+              assetId: 'Combine_Classification_contemporary',
               region: ROI,
               scale: 30,
               maxPixels:1e13,
@@ -347,7 +347,7 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
   Export.image.toAsset({
               image: classified_HHOT.clip(ROI),
               description: 'HOT_Classification_historic',
-              assetID: 'HOT_Classification_historic',
+              assetId: 'HOT_Classification_historic',
               region: ROI,
               scale: 30,
               maxPixels:1e13,
@@ -436,7 +436,7 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
   Export.image.toAsset({
               image: classified_HLOT.clip(ROI),
               description: 'LOT_Classification_Historic',
-              assetID: 'LOT_Classification_Historic',
+              assetId: 'LOT_Classification_Historic',
               region: ROI,
               scale: 30,
               maxPixels:1e13,
@@ -538,7 +538,7 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
   Export.image.toAsset({
               image: classified_HCOM.clip(ROI),
               description: 'Combine_Classification_historic',
-              assetID: 'Combine_Classification_historic',
+              assetId: 'Combine_Classification_historic',
               region: ROI,
               scale: 30,
               maxPixels:1e13,
