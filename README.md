@@ -136,7 +136,7 @@ discussed above. Run them in order, and save the exports for each script
 
 <h4>Module 3:</h4>
 
->https://code.earthengine.google.com/8109c9121dac39fdc2203f4323a0fba3?noload=true
+>https://code.earthengine.google.com/78b9728bbb55ac4add225da20d64ef6d?noload=true
 
 The other option for running the GEEMMM code is to copy each of the three
 Module scripts, and each of the function scripts into individual scripts saved
