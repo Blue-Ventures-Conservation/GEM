@@ -110,7 +110,7 @@ Google Earth Engine. This can be done by following this [link](https://signup.ea
 request form. Approval typically takes one or two business days. Google 
 Earth Engine is free to use for academic and not for profit enterprises, 
 commercial applications will require special permission. Once your Google
-account has been granted access to Earth Engine, you can now use the 
+account has been granted access to Earth Engine, you can use the 
 GEEMMM tool.  
 
 There are two methods to run the GEEMMM:
