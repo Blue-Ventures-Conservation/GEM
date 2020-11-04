@@ -67,17 +67,18 @@ exports.ls_candles = function(sample, label, label2, name){
 
   
   var lst = ee.List([]);
-  var v = ee.List.sequence(0, IDs_str.length().subtract(1)).getInfo();
-  var n = ee.Number(IDs_str.length()).subtract(1).getInfo();
-
-  for (var i = 0; i < n; i++){
-    var in_1 = ee.String(ee.List(v).get(i)).slice(0,1).getInfo();
+  var v = ee.List.sequence(0, 6, 1).getInfo();
+  
+  for (var i = 0; i < 6; i++){
+    var in_1 = ee.String(ee.List(v).get(i)).getInfo();
     var in_2 = ee.String(ee.List(bands).get(i)).getInfo();
     lst = lst.add(ee.Dictionary({v: in_1,
                                 f: in_2})); 
   }
   
   var lst2 = ee.List([]);
+  var n = ee.Number(IDs_str.length()).getInfo();
+  
   for (var q = 0; q < n; q++){
     lst2 = lst2.add(ee.Dictionary({labelInLegend: l2.get(q)}));
   }
