@@ -177,14 +177,19 @@ however, to perform the classification in Module 2, classification reference
 data (CRD) must be provided. CRD are points or polygon areas that represent 
 unique land cover classes across the region of interest, offering a representative
  sample of how the user  would like the classifier to sort the input imagery’s pixels 
-into land cover map classes. For example, a typical mangrove land cover map would contain, water, mangroves, bare soil, and non-mangrove vegetation. The input CRD should select 
-points or small polygon areas that represent each of these classes in the input imagery, which will then be used as training (and validation) data for the land cover classification. Because of the unique nature of land cover classifications, CRD must be provided by the user. A process to create CRD in Earth Engine is provided [here](https://developers.google.com/earth-engine/tutorials/community/drawing-tools#example_classification_with_user-drawn_geometries) by Google.    
+into land cover map classes. For example, a typical mangrove land cover map would contain, 
+water, mangroves, bare soil, and non-mangrove vegetation. The input CRD should select 
+points or small polygon areas that represent each of these classes in the input imagery, 
+which will then be used as training (and validation) data for the land cover classification.
+Because of the unique nature of land cover classifications, CRD must be provided by the user. 
+A process to create CRD in Earth Engine is provided [here](https://developers.google.com/earth-engine/tutorials/community/drawing-tools#example_classification_with_user-drawn_geometries) 
+by Google.    
 
 
 <h2>KNOWN ISSUES</h2>
 
 The most common errors that may occur (outside of user variable/input errors) are
-server side memory issues. While Google Earth Engine is a free service,
+server-side memory issues. While Google Earth Engine is a free service,
 it does have its limits, chiefly the allocation of server space for user initiated
 tasks. These errors will often be expressed as time-out errors or memory
 capacity errors. Errors which occur while trying to visualize a layer in the GUI
