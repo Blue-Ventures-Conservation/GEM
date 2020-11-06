@@ -1,5 +1,7 @@
 # GEEMMM_v1.0
-<h1>Google Earth Engine Mangrove Mapping Methodology v1.0 1</h1>
+<h1>Google Earth Engine 
+ 
+ Mangrove Mapping Methodology v1.0 </h1>
 
 
 ----------------------------------------------------------------------------------------------------------
