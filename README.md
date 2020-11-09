@@ -26,9 +26,9 @@ remote sensing, geospatial analysis, or coding, the tool is designed with
 the assumption that users have basic computer skills and are familiar with 
 the key steps in mapping mangroves and assessing dynamics.  
  
-A pilot study (i.e., Yancho et al. 2020)[https://www.mdpi.com/journal/remotesensing/special_issues/remote_sensing_mangroves] 
+A pilot study (i.e., [Yancho et al. 2020](https://www.mdpi.com/journal/remotesensing/special_issues/remote_sensing_mangroves)) 
 published in a special issue on 
-(“Remote Sensing in Mangroves”)[https://www.mdpi.com/journal/remotesensing/special_issues/remote_sensing_mangroves] 
+[“Remote Sensing in Mangroves”](https://www.mdpi.com/journal/remotesensing/special_issues/remote_sensing_mangroves) 
 in the journal Remote Sensing demonstrates an application of the GEEMMM for
 the entire coast of Myanmar (Burma) - a global mangrove loss hotspot.  The 
 published manuscript not only demonstrates one application for GEEMMM, but 
@@ -37,31 +37,32 @@ user-interface features included in the tool. The manuscript walks potential
 users, step-by-step, through the three modules which comprise the tool: 
 
 <h4>Module 1: Defining the Region of Interest (ROI) and Compositing Imagery </h4>
-This module helps the user to define customized Region of Interest (ROI) 
-boundaries, and select the input imagery to make multi-date (i.e., historic 
-and contemporary) composites. The user adjusts several parameters according 
-to their specific project requirements and preferences (e.g. years of interest, 
-months of interest, cloud cover, etc.). All imagery is sourced from the Landsat 
-archives (Missions 4, 5, 7, & 8). 
+
+>This module helps the user to define customized Region of Interest (ROI) 
+>boundaries, and select the input imagery to make multi-date (i.e., historic 
+>and contemporary) composites. The user adjusts several parameters according 
+>to their specific project requirements and preferences (e.g. years of interest, 
+>months of interest, cloud cover, etc.). All imagery is sourced from the Landsat 
+>archives (Missions 4, 5, 7, & 8). 
 
 <h4>Module 2: Spectral Separability, Classifications and Accuracy Assessment </h4>
 
-This module enables the user to define classification reference areas (CRAs) 
-representing target map classes, choose spectral indices as additional 
-classification inputs, explores the spectral relationships within and between 
-user-defined map classes, undertakes multi-date (i.e., historic and contemporary) 
-supervised classifications, and assesses map accuracies. Exploring spectral 
-relationships is very interactive, and includes the option to examine correlation 
-between potential spectral indices and separability of CRAs across all potential 
-classification inputs. Following classification, accuracy assessments are 
-automatically produced for each output map. 
+>This module enables the user to define classification reference areas (CRAs) 
+>representing target map classes, choose spectral indices as additional 
+>classification inputs, explores the spectral relationships within and between 
+>user-defined map classes, undertakes multi-date (i.e., historic and contemporary) 
+>supervised classifications, and assesses map accuracies. Exploring spectral 
+>relationships is very interactive, and includes the option to examine correlation 
+>between potential spectral indices and separability of CRAs across all potential 
+>classification inputs. Following classification, accuracy assessments are 
+>automatically produced for each output map. 
 
 <h4>Module 3: Dynamics and Qualitative Accuracy Assessment (QAA) </h4>
 
-This module uses multi-date mangrove maps to automatically calculate and 
-subsequently explore mangrove dynamics (i.e., loss, persistence and gain), 
-and provides an optional qualitative accuracy assessment (QAA) tool.  
-The QAA goes above and beyond standard accuracy metrics.  
+>This module uses multi-date mangrove maps to automatically calculate and 
+>subsequently explore mangrove dynamics (i.e., loss, persistence and gain), 
+>and provides an optional qualitative accuracy assessment (QAA) tool.  
+>The QAA goes above and beyond standard accuracy metrics.  
 
 Separate from the three modules of the GEEMMM, there is also a ‘Functions’ 
 folder which contains some of the back-end support code used by the tool. 
@@ -82,16 +83,16 @@ For new users to GEE, there are several sources available to learn how the
 service works. The GEEMMM has been designed to minimize knowledge requirements
 for coding as much as possible, but it may be useful to familiarize oneself 
 with the Earth Engine Javascript interface before use. The best resources 
-available to new users are the (‘JavaScript and Python Guides’)[https://developers.google.com/earth-engine/guides] 
+available to new users are the [‘JavaScript and Python Guides’](https://developers.google.com/earth-engine/guides) 
 provided by the GEE team. These guides walk the user through the basic elements 
-of GEE. The (Earth Engine API)[https://developers.google.com/earth-engine/apidocs]
+of GEE. The [Earth Engine API](https://developers.google.com/earth-engine/apidocs)
 documents also provide further information on GEE specific functions, and their 
 associated variables and inputs. GEE also has a 
-(large spatial data library)[https://developers.google.com/earth-engine/datasets] 
+[large spatial data library](https://developers.google.com/earth-engine/datasets) 
 available to users wherein users can find specific datasets they wish to use in 
 the GEEMMM, or learn more about default datasets available to GEEMMM users. 
 Another valuable resource for GEE users, new or experienced, is the GEE group, 
-(“Google Earth Engine Developers”)[https://groups.google.com/g/google-earth-engine-developers].
+[“Google Earth Engine Developers”](https://groups.google.com/g/google-earth-engine-developers).
 It is likely that most casual users of the GEEMMM will not encounter issues that 
 require the GEE community’s support, but the Google group is a useful resource 
 if users begin to develop their own code. There are several common server-side 
@@ -118,7 +119,7 @@ Myanmar pilot serves as beginning to end demonstration of how the tool works.
 <h2>OPERATION</h2>
 
 Before the GEEMMM can be used, the user must request developer access to 
-GEE. This can be done by following this (link)[https://signup.earthengine.google.com/]
+GEE. This can be done by following this [link](https://signup.earthengine.google.com/)
 and filling out a simple request form. Approval typically takes one or 
 two business days. GEE is free to use for academic and not for profit 
 enterprises - commercial applications will require special permission. 
@@ -195,7 +196,7 @@ and non-mangrove vegetation. The user-defined CRAs should comprise points or sma
 polygon areas that represent each of these classes in the input imagery, which will 
 then be used as training (and validation) data for the multi-date classifications. 
 An overview of how to create CRAs in GEE is provided 
-(here)[https://developers.google.com/earth-engine/tutorials/community/drawing-tools#example_classification_with_user-drawn_geometries] 
+[here](https://developers.google.com/earth-engine/tutorials/community/drawing-tools#example_classification_with_user-drawn_geometries)
 by Google; however, users may also create CRAs in stand-alone (GIS) software of 
 their choice, and subsequently point the GEEMMM towards these data.  Whether using 
 the GEE interface or importing from elsewhere, coastal managers can capitalize on 
