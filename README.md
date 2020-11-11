@@ -142,15 +142,15 @@ personal Earth Engine ‘Asset’ folder).
 
 <h4>Module 1:</h4>
 
->https://code.earthengine.google.com/00a0c3c08646eaf05965dd2121beed77?noload=true
+>https://code.earthengine.google.com/97d64f064d6797b2e925f96786f86eff?noload=true
 
 <h4>Module 2:</h4>
 
->https://code.earthengine.google.com/da9457a92103c9dbb1d25eb3d305757a?noload=true
+>https://code.earthengine.google.com/962efdd7afb99fe7de0972337ec91426?noload=true
 
 <h4>Module 3:</h4>
 
->https://code.earthengine.google.com/95fde212418176e2e1f00acdc36a4bcc?noload=true
+>https://code.earthengine.google.com/c0f49fb12074760b77e68b480d594cdf?noload=true
 
 The second option for using the GEEMMM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
