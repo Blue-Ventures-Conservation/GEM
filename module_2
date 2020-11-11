@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //////////      Google Earth Engine Mangrove Mapping Methodology     ///////////
+//////////                     (GEEMMM) Module  2                    ///////////
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -12,11 +13,11 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: November 4, 2020
+Last updated: November 10, 2020
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
-iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM) tool
+iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM) 
 will be hosted by a Blue Ventures Conservation Google account.
 
 
@@ -37,32 +38,47 @@ from Module 2 are the single-band land cover classification images, the number c
 range from one to six classifications. Associated with each classification are quantitative 
 accuracy metrics and matrices. 
 
-GEEMMM Module 2 is broken down into 2 steps, with a quick initiation selection before 
-the actual Module to reestablish the chosen indices. In step one, the spectral relationship 
-step, the user can view the spectral space of each land cover class across any of the 
-various bands or indices. Additionally, correlation matrices can be generated for the 
-calculated indices. Take time to explore the data in this step, and affirm that the desired 
-land cover classes are truly spectrally distinct.  Once satisfied with the input data, the 
-second step in module 2 will produce the classification. Depending on the desired output 
-maps, chosen before the script is run, the classification(s) will be added to the map 
-viewer and the accuracy metrics will populate in the console including the validation 
-overall accuracy, validation matrix, the resubstitution overall accuracy, and the 
-resubstitution matrix. The output classification images should be exported to the user’s 
-assets. After pressing the ‘Run’ button at the top of the script editor, the user will be re-
-prompted to select the indices they selected in Module 1. Once the workflow has begun it 
-can take as little as two minutes to work through Module 2 and view classification 
-results, not accounting for exporting times of the outputs or prolonged exploration of the 
-spectral separability. 
+GEEMMM Module 2 is broken down into 3 section:
+
+    Section 1: The user sets the inputs and parameters, and reestablish the chosen indices. 
+
+    Section 2: The spectral relationship section, the user can view the spectral space of 
+                     each land cover class across any of the  various bands or indices. 
+                     Additionally, correlation matrices can be generated for the calculated 
+                     indices. Take time to explore the data in this step, and affirm that the 
+                     desired land cover classes are truly spectrally distinct.
+
+    Section 3: The classification section. Depending on the desired output 
+                     maps, chosen before the script is run, the classification(s) will be added 
+                     to the map viewer and the accuracy metrics will populate in the console 
+                     including the validation overall accuracy, validation matrix, the 
+                     resubstitution overall accuracy, and the resubstitution matrix. 
+                     
+The output classification images should be exported to the user’s assets. After pressing the 
+‘Run’ button at the top of the script editor, the user will be re-prompted to select the indices 
+they selected in Module 1. Once the workflow has begun it can take as little as two minutes to 
+work through Module 2 and view classification results, not accounting for exporting times of the 
+outputs or prolonged exploration of the spectral separability. Times may vary depending on internet
+speed.
 
 The default parameters, as discussed in the GEEMMM ReadMe file, were established 
-using during a pilot study conducted for the country of Myanmar(Burma). These parameters may 
-work for other areas of interest as well, but the developers make no warranties on the 
-transferability of these settings to other locations around the world.
+using during a pilot study conducted for the country of Myanmar (Burma). Many of these parameters
+may also work for other areas of interest, but the developers make no claims about the 
+transferability of default settings to other locations around the world. For applying the GEEMMM
+elsewhere, please pay careful attention to the parameters and set them according to the local 
+situation and project goals/objectives.  
+
+At the end of the workflow, the user should have started exporting:
+    1.) 1 - 6 Land cover images 
+    * - Additionally, they may have saved the output classification
+        accuracy metrics or any of the graphs/tables from Section 2
 
 Before running Module 2, please read through the comments below to determine 
 important user inputs and parameters that will be used in this workflow. Continue until 
 you reach the end, where you will be prompted to now ‘Run’ the script.
 
+*** Note: Be sure that the 'Code Editor', 'Console' tab, and the map viewer are
+all visible on your screen before proceeding ***
 
 ////////////////////////////////////////////////////////////
 //////////////    User Inputs & Parameters    //////////////
@@ -75,11 +91,11 @@ you reach the end, where you will be prompted to now ‘Run’ the script.
 
 Bring in Imagery and Masks exported from Module 1. Name as follows:
 
-  Chot = high tide, contemporary imagery
-  Clot = low tide, contemporary imagery
+  Chot = contemporary image; highest observed tide
+  Clot = contemporary image; lowest observed tide
 
-  Hhot = high tide, historic imagery
-  Hlot = low tide, historic imagery
+  Hhot = historic imagery; highest observed tide
+  Hlot = historic imagery; lowest observed tide
 
   final_mask = final mask
   
@@ -89,6 +105,9 @@ This can be done by selecting the assets from the 'Asset' tab and clicking the
 arrow to import the asset to this script. Once imported, the name can be changed
 by clicking the automatic 'image' name (see top of the script) and renaming.
 
+///////////////////////////////////////////////
+/////////    Section 1: User Inputs  //////////
+///////////////////////////////////////////////
 
 1.A) Classification Reference Data 
      The most significant input for the classification data is the 
@@ -109,8 +128,8 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
 var class_ref_cont = "users/yanchojo/reference_data/cont_CRD_0914";
 var class_ref_hist = "users/yanchojo/reference_data/hist_CRD_0914";
 // Landcover labels for the classifier
-var label = 'ID';
-var label2 = 'Classname';
+var class_label_numeric = 'ID';
+var class_label_character = 'Classname';
 
 
 
@@ -118,22 +137,23 @@ var label2 = 'Classname';
 1.B) Classification Reference Data Type
      Record type of classification reference data. It is important for the 
      GEEMMM that the user distinguishes their classification reference data
-     as eitherspatio-temporally invariant across the time-period (historic and
+     as either spatio-temporally invariant across the time-period (historic and
      contemporary imagery) or derived from just contemporary sources. 
      
      1.) Spatio-temporally invariant: The land cover classes have not changed 
                                       between the historic years of interest
                                       and the contemporary years of interest.
      2.) Contemporary Data: The land cover classes were determined by using just 
-                            contemporary sources (i.e. high resolution imagery
+                            contemporary sources (e.g., high resolution imagery
                             that was recently acquired)
                             
      These are important distinctions to make. If just contemporary sources are 
      used, the spectral values from the contemporary data will be used to
      classify the historic. If the data is spatio-temporally invariant, the 
-     classifier will be retrained for each data set. Spatio-temporally invariant
-     classification reference data will provide more accurate classification 
-     results. However, it is harder to generate accurately.
+     classifier will be retrained for both the historic and contemporary image 
+     sets. Spatio-temporally invariant classification reference data will likely
+     provide more consistent classification results. However, it is harder to 
+     generate accurately.
      
      Enter:
           var class_ref_type = true; (the Reference Data is Spatio-
@@ -142,14 +162,16 @@ var label2 = 'Classname';
                                             temporally invariant)
 */
 
-var class_ref_type = true;
+var class_ref_type = false;
 
 /*
 1.C) Classifier
      GEE offers a variety of classifiers. These come in both supervised and 
      unsupervised classifier choices. At this time however, the GEEMMM is built to
-     only run the Random Forest Classifier, a supervised decision tree classifier.
-     Future versions will offer more classification options.
+     run the Random Forest Classifier, a supervised decision tree classifier.
+     Future versions will offer more classification options. The Random Forest 
+     classifier is one of the most well-researched classifiers, and has routinely
+     been shown to produce accurate results. 
 
      Enter:
           var classifier = 'RF'; (To use the Random Forest Classifier)
@@ -161,7 +183,7 @@ var trees = 200;
 /*
 
 1.D) Output Structure
-     The outputs from the GEEMMM methodology can be generated as either a combined
+     The outputs from the GEEMMM can be generated as either a combined
      (where the high- and low-tide data are combined into a single collection) 
      or separate (individual high- and low-tide) classifications. Outputs below can 
      be turned on and off by adding a 'true'/'false' to the corresponding 
@@ -174,20 +196,22 @@ var trees = 200;
           var XXX_out = false; (No action)
 */
 var HOT_cont_out = false;        // High tide comtemporary Imagery
-var LOT_cont_out = true;        // Low tide comtemporary Imagery
-var combo_cont_out = false;     // Combination comtemporary Imagery
+var LOT_cont_out = false;        // Low tide comtemporary Imagery
+var combo_cont_out = true;     // Combination comtemporary Imagery
 var HOT_hist_out = false;        // High tide historic Imagery
-var LOT_hist_out = true;        // Low tide historic Imagery
-var combo_hist_out = false;     // Combination historic Imagery
+var LOT_hist_out = false;        // Low tide historic Imagery
+var combo_hist_out = true;     // Combination historic Imagery
 
 
 /*    
     ****************************************************************************
     **********************         Click 'Run' Now        **********************
     ****************************************************************************
-
-
+    
+    
+    
       ** This line marks the end of the user-defined inputs and variables. **
+                *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
 */
 
 
@@ -211,131 +235,58 @@ var combo_hist_out = false;     // Combination historic Imagery
 
 ////////////////////////////////////////////////////////////////////////////////
 // Required Modules
+// Functions are brought into GEEMMM Module 2 through the require() function
 
 var RFclass = require('users/yanchojo/GEEMMM_v4_1/:modules/rf_classer');
 var InCor = require('users/yanchojo/GEEMMM_v4_1/:modules/input_correlation');
 var specSp = require('users/yanchojo/GEEMMM_v4_1/:modules/spec_area');
 
+var label = class_label_numeric;
+var label2 = class_label_character;
+
 print('Re-select the indices that were calculated in Module 1.');
 
-// 1.B.k Generate the index list
-  var indx = ee.List([]);
-  var SR = ui.Checkbox('SR', false);
-  SR.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('SR');
-    return indx;});
+// Quickly re-select the indices from Module 1
 
-  var NDVI = ui.Checkbox('NDVI', false);
-  NDVI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('NDVI');
-    return indx;});
-
-  var NDWI = ui.Checkbox('NDWI', false);
-  NDWI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('NDWI');
-    return indx;});
-
-  var MNDWI = ui.Checkbox('MNDWI', false);
-  MNDWI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('MNDWI');
-    return indx;});
+// Generate the empty index list
+var indx = ee.List([]);
   
-  var CMRI = ui.Checkbox('CMRI', false);
-  CMRI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('CMRI');
-    return indx;});
-
-  var MMRI = ui.Checkbox('MMRI', false);
-  MMRI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('MMRI');
-    return indx;});
-
-  var SAVI = ui.Checkbox('SAVI', false);
-  SAVI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('SAVI');
-    return indx;});
-
-  var OSAVI = ui.Checkbox('OSAVI', false);
-  OSAVI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('OSAVI');
-    return indx;});
-
-  var EVI = ui.Checkbox('EVI', false);
-  EVI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('EVI');
-    return indx;});
+// List of reference indices
+var OG_band_list = ui.data.ActiveList(['SR','NDVI','NDWI','MNDWI','CMRI','MMRI','SAVI',
+'OSAVI','EVI','MRI','SMRI','LSWI','NDTI','EBBI']);
   
-  var MRI = ui.Checkbox('MRI', false);
-  MRI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('MRI');
-    return indx;});
-
-  var SMRI = ui.Checkbox('SMRI', false);
-  SMRI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('SMRI');
-    return indx;});
-
-  var LSWI = ui.Checkbox('LSWI', false);
-  LSWI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('LSWI');
-    return indx;});    
-
-  var NDTI = ui.Checkbox('NDTI', false);
-  NDTI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('NDTI');
-    return indx;});    
-
-  var EBBI = ui.Checkbox('EBBI', false);
-  EBBI.onChange(function() {
-    // Add the index to the list
-    indx = indx.add('EBBI');
-    return indx;});    
-
-    
-
-  print(SR);
-  print(NDVI);
-  print(NDWI);
-  print(MNDWI);
-  print(CMRI);
-  print(MMRI);
-  print(SAVI);
-  print(OSAVI);
-  print(EVI);
-  print(MRI);
-  print(SMRI);
-  print(LSWI);
-  print(NDTI);
-  print(EBBI);
+// Create checkboxes 
+OG_band_list.forEach(function(x){
+  var ind_box = ui.Checkbox(x, false);
+  ind_box.onChange(function(checked) {
+  // Add/remove the index to the list
+  if (checked === true){indx = indx.add(x);
+  } else {indx = indx.remove(x);}}); 
+  print(ind_box);
+});
   
-  var button = ui.Button({
+// Print instructions
+print('Print the index list to review indices selected');
+// Print index list button
+var button = ui.Button({
   label: 'Print Index List',
   onClick: function() {
     print('Index List', indx.distinct());
     return ee.List(indx.distinct());
     }
   });
-  print(button);
+print(button);
+  
   
 
 
-////////////
-// Step 1 //
-////////////
-// Image Stats
+///////////////////////////////////////////////
+///     Section 2: Spectral Separability    ///
+///////////////////////////////////////////////
+// This section allows the user to interactively explore the spectral relationshops
+// between their CRAs and their input imagery/indices. The graphs can be expanded and
+// saved as independant PNG or SVG files.
+
 var step_1_button = ui.Button('1.) View Spectral Space \n and Ref. Data Relationships');
 step_1_button.onClick(function(){
 
@@ -474,7 +425,7 @@ step_1_button.onClick(function(){
     '\nmenus, corresponding to the various image composites.');
                
   var cont_lab = ui.Label({
-                            value: 'Contemporary Refernce Data',
+                            value: 'Contemporary Reference Data',
                             style: {
                                     fontWeight: 'bold',
                                     fontSize: '16px',
@@ -482,7 +433,7 @@ step_1_button.onClick(function(){
                                     }
                           });      
   var hist_lab = ui.Label({
-                          value: 'Historic Refernce Data',
+                          value: 'Historic Reference Data',
                           style: {
                                     fontWeight: 'bold',
                                     fontSize: '16px',
@@ -560,7 +511,7 @@ step_1_button.onClick(function(){
   var x_lab = ui.Label({value: 'X Band: '});   
   var y_lab = ui.Label({value: 'Y Band: '});
   var scat_lab = ui.Label({
-                        value: 'Spectral Distribution for Refernce Data',
+                        value: 'Spectral Distribution for Reference Data',
                         style: {
                                   fontWeight: 'bold',
                                   fontSize: '18px',
@@ -594,10 +545,14 @@ print(step_1_button);
 
 
 
-////////////
-// Step 2 //
-////////////
-// Image Classification
+///////////////////////////////////////
+///     Section 3: Classification   ///
+///////////////////////////////////////
+// The classification step will take the input imagery, CRAs, and user 
+// parameters and generate the land cover maps requested. Additionally,
+// all of the standard quantitative classification accuracy metrics are 
+// printed to the cosnole.
+
 var step_2_button = ui.Button('2.) Begin Classification');
 step_2_button.onClick(function(){
   
@@ -620,6 +575,12 @@ step_2_button.onClick(function(){
   // Isolate the bands to use in the classification
   var bands = ee.List(['B1', 'B2', 'B3', 'B4', 'B5', 'B7']).cat(indx);
   print(bands); 
+  
+  print('Console will populate with accuracy metrics. The Tasks tab'+
+        '\nwill turn yellow when the classifications are complete and'+
+        '\nready to export to the asset folder. The classification(s)'+
+        '\nwill be automatically added to the map viewer to explore.');
+  
   // Classification using RF
   // Contemporary
   if(HOT_cont_out === true){ var Chot_class = RFclass.ChotClassify(Chot, 
@@ -639,5 +600,10 @@ step_2_button.onClick(function(){
                                                     
   });
 print(step_2_button);
+
+// At the end of the workflow, the user should have started exporting:
+//    1.) 1 - 6 Land cover images 
+//    * - Additionally, they may have saved the output classification
+//        accuracy metrics or any of the graphs/tables from Section 2
 
 ////////////////////////////////////////////////////////////////////////////////  
