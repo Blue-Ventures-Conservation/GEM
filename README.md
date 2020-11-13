@@ -1,11 +1,11 @@
 # GEEMMM_v1.0
-#Google Earth Engine 
+# Google Earth Engine 
  
-#Mangrove Mapping Methodology v1.0 
+# Mangrove Mapping Methodology v1.0 
 
 
 ----------------------------------------------------------------------------------------------------------
-##INTRODUCTION
+## INTRODUCTION
 
 The Google Earth Engine Mangrove Mapping Methodology (GEEMMM) provides an 
 intuitive, accessible and replicable tool which caters to a wide audience 
@@ -36,7 +36,7 @@ also describes in detail the various parameters, options, outputs, and
 user-interface features included in the tool. The manuscript walks potential 
 users, step-by-step, through the three modules which comprise the tool: 
 
-####Module 1: Defining the Region of Interest (ROI) and Compositing Imagery 
+#### Module 1: Defining the Region of Interest (ROI) and Compositing Imagery 
 
 >This module helps the user to define customized Region of Interest (ROI) 
 >boundaries, and select the input imagery to make multi-date (i.e., historic 
@@ -45,7 +45,7 @@ users, step-by-step, through the three modules which comprise the tool:
 >months of interest, cloud cover, etc.). All imagery is sourced from the Landsat 
 >archives (Missions 4, 5, 7, & 8). 
 
-####Module 2: Spectral Separability, Classifications and Accuracy Assessment 
+#### Module 2: Spectral Separability, Classifications and Accuracy Assessment 
 
 >This module enables the user to define classification reference areas (CRAs) 
 >representing target map classes, choose spectral indices as additional 
@@ -57,7 +57,7 @@ users, step-by-step, through the three modules which comprise the tool:
 >classification inputs. Following classification, accuracy assessments are 
 >automatically produced for each output map. 
 
-####Module 3: Dynamics and Qualitative Accuracy Assessment (QAA) 
+#### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA) 
 
 >This module uses multi-date mangrove maps to automatically calculate and 
 >subsequently explore mangrove dynamics (i.e., loss, persistence and gain), 
@@ -116,7 +116,7 @@ running, but it is important to remember how the default parameters were selecte
 Importantly, all parameters can be changed by the user to meet their needs - the 
 Myanmar pilot serves as a beginning to end demonstration of how the tool works. 
 
-##OPERATION
+## OPERATION
 
 Before the GEEMMM can be used, the user must request developer access to 
 GEE. This can be done by following this [link](https://signup.earthengine.google.com/)
@@ -141,17 +141,17 @@ above. Run them in order, and save the exports for each script (ideally to your
 personal Earth Engine ‘Asset’ folder).
 
 
-####Module 1: Defining the Region of Interest (ROI) and Compositing Imagery
+#### Module 1: Defining the Region of Interest (ROI) and Compositing Imagery
 
->https://code.earthengine.google.com/97d64f064d6797b2e925f96786f86eff?noload=true
+>https://code.earthengine.google.com/992e660970fbca040ad73602f68a224b?noload=true
 
-####Module 2: Spectral Separability, Classifications, and Accuracy Assessment
+#### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
->https://code.earthengine.google.com/962efdd7afb99fe7de0972337ec91426?noload=true
+>https://code.earthengine.google.com/182bffd999596b2f41dece627522a0d0?noload=true
 
-####Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
+#### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
->https://code.earthengine.google.com/3911f3df4db316ac7bb57e0b9d3ba34a?noload=true
+>https://code.earthengine.google.com/93faa1817ba1b9cfe35674829ceec3b7?noload=true
 
 The second option for using the GEEMMM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
@@ -160,7 +160,7 @@ the script dependencies’ locations. If the user chooses to run the GEEMMM in
 this manner, they will also need to change the paths for each of the ‘require()’ 
 functions, located near the top of each module’s script.
 
-####Example:
+#### Example:
 
     //The code will look like this
     var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
@@ -204,7 +204,7 @@ the GEE interface or importing from elsewhere, coastal managers can capitalize o
 their intimate first-hand knowledge to derive representative CRAs.
 
 
-##KNOWN ISSUES
+## KNOWN ISSUES
 
 The most common errors that may occur (outside of user variable/input errors) are 
 server-side memory issues. While GEE is a free service, it does have its limits, 
@@ -234,7 +234,7 @@ it will continue even if internet connectivity is temporarily lost.  This means
 that intermediate data products - and the user’s progress - is effectively saved,
 to an extent.  
 
-##FUNDING
+## FUNDING
 
 GEEMMM was funded by Blue Ventures Conservation (BVC), with support from
 the UK Government’s International Climate Fund, part of the UK commitment
@@ -243,7 +243,7 @@ climate change and benefit from the opportunities. You may learn more about
 BVC at:    https://blueventures.org/
 
 
-##CONTACT
+## CONTACT
 
 If there are discovered bugs or issues with the code, or with the directions
 on how to use the tool, you can contact Dr. Trevor Gareth Jones:
@@ -253,7 +253,7 @@ Please be sure to read the KNOWN ISSUES section of this document before
 contacting the developers.
 
     
-##LICENSING
+## LICENSING
 
 The included software in this package is distributed under the GNU General
 Public License v3.0. See License document included in this package.
