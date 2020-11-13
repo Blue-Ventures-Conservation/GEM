@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: November 10, 2020
+Last updated: November 13, 2020
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -29,31 +29,40 @@ will be hosted by a Blue Ventures Conservation Google account.
 
 
 Welcome to Module 2 of the GEEMMM. This module will be used to: 1.) Explore the 
-spectral relationships between the classification reference data (CRD) classes. 2.) 
+spectral relationships between the classification reference areas (CRAs) classes. 2.) 
 Generate the land cover classification maps using the inputs from Module 1 and the 
 Random forest classifier. Module 2’s workflow is less linear than Module 1’s. In the first 
 step, the user can generate a series of charts and tables that they can use to explore index 
 correlations and spectral separability between land cover classes. The primary output 
 from Module 2 are the single-band land cover classification images, the number can 
-range from one to six classifications. Associated with each classification are quantitative 
-accuracy metrics and matrices. 
+range from one to six classifications (see below). Associated with each classification are
+quantitative accuracy metrics and matrices. 
 
-GEEMMM Module 2 is broken down into 3 section:
+GEEMMM Module 2 is broken down into 3 sections:
 
-    Section 1: The user sets the inputs and parameters, and reestablish the chosen indices. 
+    Section 1: The user sets the inputs and parameters (including the CRAs), and reestablishes 
+               the chosen indices. 
 
-    Section 2: The spectral relationship section, the user can view the spectral space of 
-                     each land cover class across any of the  various bands or indices. 
-                     Additionally, correlation matrices can be generated for the calculated 
-                     indices. Take time to explore the data in this step, and affirm that the 
-                     desired land cover classes are truly spectrally distinct.
+    Section 2: The spectral relationship section. The user can view the spectral space of 
+               each land cover class across any of the  various bands or indices. 
+               Additionally, correlation matrices can be generated for the calculated 
+               indices. Take time to explore the data in this step, and affirm that the 
+               desired land cover classes are truly spectrally distinct.
 
     Section 3: The classification section. Depending on the desired output 
-                     maps, chosen before the script is run, the classification(s) will be added 
-                     to the map viewer and the accuracy metrics will populate in the console 
-                     including the validation overall accuracy, validation matrix, the 
-                     resubstitution overall accuracy, and the resubstitution matrix. 
-                     
+               maps, chosen before the script is run, the classification(s) will be added 
+               to the map viewer and the accuracy metrics will populate in the console 
+               including the validation overall accuracy, validation matrix, the 
+               resubstitution overall accuracy, and the resubstitution matrix. 
+
+The classification reference areas (CRAs) will be divided to in seperately train and then 
+validate the classifier and classification results, respectively. Randomly, 70% of the CRAs
+will be used to train the classifier, and the remaining 30% are used to validate the results.
+The CRAs used in the GEEMMM pilto study employed the the coordinate reference system (CRS) 
+"EPSG:4326 - WGS 84". However, GEE "... is designed so that you rarely have to worry about 
+map projections when doing computations." Follow the link below to learn more about GEE and 
+data projections:  https://developers.google.com/earth-engine/guides/projections
+
 The output classification images should be exported to the user’s assets. After pressing the 
 ‘Run’ button at the top of the script editor, the user will be re-prompted to select the indices 
 they selected in Module 1. Once the workflow has begun it can take as little as two minutes to 
@@ -62,14 +71,20 @@ outputs or prolonged exploration of the spectral separability. Times may vary de
 speed.
 
 The default parameters, as discussed in the GEEMMM ReadMe file, were established 
-using during a pilot study conducted for the country of Myanmar (Burma). Many of these parameters
-may also work for other areas of interest, but the developers make no claims about the 
-transferability of default settings to other locations around the world. For applying the GEEMMM
-elsewhere, please pay careful attention to the parameters and set them according to the local 
-situation and project goals/objectives.  
+during a pilot study conducted for the country of Myanmar (Burma). Many of 
+these parameters may also work for other parts of the world, but the developers 
+make no claims about the transferability of default settings to other locations.
+For applying the GEEMMM elsewhere, please pay careful attention to the parameters 
+and set them according to the local situation and project goals/objectives.   
 
 At the end of the workflow, the user should have started exporting:
-    1.) 1 - 6 Land cover images 
+    1.) 1 - 6 land cover maps
+        a.) High tide comtemporary land cover map
+        b.) Low tide comtemporary land cover map
+        c.) Combination comtemporary land cover map
+        d.) High tide historic land cover map
+        e.) Low tide historic land cover map
+        f.) Combination historic land cover map
     * - Additionally, they may have saved the output classification
         accuracy metrics or any of the graphs/tables from Section 2
 
@@ -91,15 +106,15 @@ all visible on your screen before proceeding ***
 
 Bring in Imagery and Masks exported from Module 1. Name as follows:
 
-  Chot = contemporary image; highest observed tide
-  Clot = contemporary image; lowest observed tide
+  Chot = HOT contemporary composite (HOT_Img_contemporary); highest observed tide
+  Clot = LOT contemporary composite (LOT_Img_contemporary); lowest observed tide
 
-  Hhot = historic imagery; highest observed tide
-  Hlot = historic imagery; lowest observed tide
+  Hhot = HOT historic composite (HOT_Img_historic); highest observed tide
+  Hlot = LOT historic composite (LOT_Img_historic); lowest observed tide
 
-  final_mask = final mask
+  final_mask = Finalized mask (final_mask)
   
-  ROI = region of interest 
+  ROI =  Finalized ROI (ROI), region of interest 
 
 This can be done by selecting the assets from the 'Asset' tab and clicking the 
 arrow to import the asset to this script. Once imported, the name can be changed
@@ -109,17 +124,18 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
 /////////    Section 1: User Inputs  //////////
 ///////////////////////////////////////////////
 
-1.A) Classification Reference Data 
-     The most significant input for the classification data is the 
-     classification reference data. This data set must be created by the user. 
+1.A) Classification Reference areas 
+     The most significant input for the classification are the classification
+     reference areas (CRAs). The CRAs set must be created by the user. 
      This can be done within the GEE environment or externally and uploaded as a 
      GEE user asset. To execute the classification, the user will be asked below 
      about several important parameters associated with the classification
      process, but at this time the user must simply identify the classification 
-     reference data that will be used to determine the output land cover classes.
+     reference areas that will be used to determine the output land cover classes.
      This is a vector dataset. It can be a multi-point or multi-polygon geometry. 
      It is also important that the user declares which field the unique class 
-     'label' is recorded in. It should be a unique numeric number.
+     labels (numeric & character) are recorded in. There should be a unique  
+     integer and character name associated with each CRA class.
      
      Enter:
           var class_ref = **PATH**; (Path to the Classification Reference Data)
@@ -209,8 +225,27 @@ var combo_hist_out = true;     // Combination historic Imagery
     ****************************************************************************
     
     
-    
       ** This line marks the end of the user-defined inputs and variables. **
+    
+      What follows is the bulk of the script for module 2 - below this line 
+      the user does not need to further change anything. Comments are provided
+      for each section/step below so the user can understand how the script 
+      actually works. All further user action occurs in the ‘Console'.
+      
+      NOTE:
+      -Once the workflow begins, you will have to re-select the indices from
+       GEEMMM Module 1. 
+      -Take as much time as you need to explore the spectral relationships of 
+       the CRAs and input composite bands. Some items take a while to load, 
+       so do not initate more than one task at a time.
+      -The spectral correlation matrices take a long time to generate and 
+       may freeze the browser. The more indices being correlated the longer
+       this task will take. If an memory limit error occurs, click the button
+       again to re-start the task. It should load the second time.
+      -The classification can be started at anytime.
+      -Do not change the name of the exports unless you are an advanced GIS user
+      
+      
                 *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
 */
 
@@ -601,9 +636,16 @@ step_2_button.onClick(function(){
   });
 print(step_2_button);
 
-// At the end of the workflow, the user should have started exporting:
-//    1.) 1 - 6 Land cover images 
-//    * - Additionally, they may have saved the output classification
-//        accuracy metrics or any of the graphs/tables from Section 2
-
+/*
+At the end of the workflow, the user should have started exporting:
+    1.) 1 - 6 land cover maps
+        a.) High tide comtemporary land cover map
+        b.) Low tide comtemporary land cover map
+        c.) Combination comtemporary land cover map
+        d.) High tide historic land cover map
+        e.) Low tide historic land cover map
+        f.) Combination historic land cover map
+    * - Additionally, they may have saved the output classification
+        accuracy metrics or any of the graphs/tables from Section 2
+*/
 ////////////////////////////////////////////////////////////////////////////////  
