@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: November 10, 2020
+Last updated: November 13, 2020
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -28,10 +28,11 @@ will be hosted by a Blue Ventures Conservation Google account.
 
 Welcome to Module 3 of the GEEMMM. This module will be used to: 1.) Explore the 
 mangrove (or other land cover class) loss, persistence, and gain dynamics. 2.) Provide a 
-tool to conduct a qualitative accuracy assessments (QAA). This is the final module of the 
-GEEMMM. Outputs from Module 3 will include three image layers which will represent 
-the loss, persistence, and gain for the selected land cover class, as well as a CSV file 
-containing the user generated QAA feedback.
+tool to conduct a qualitative accuracy assessment (QAA). The QAA is an entirely optional
+component of the GEEMMM, however it adds another option for analysing of the land cover maps.
+This is the final module of the GEEMMM. Outputs from Module 3 will include three image layers 
+which will represent the loss, persistence, and gain for the selected land cover class, as
+well as a CSV file containing the user generated QAA feedback.
 
 GEEMMM Module 3 is broken down into 3 sections. 
 
@@ -40,14 +41,14 @@ GEEMMM Module 3 is broken down into 3 sections.
 
     Section 2: The landcover class dynamics are calculated the area of loss, persistence, 
                and gain, along with the historic and contemporary land cover class areas will
-               populate the ‘Console’. The loss, persistence, and gain will also be add as 
-               image layers to the map viewer and export tasks begun for each dynamic’s image 
+               populate the ‘Console’. The loss, persistence, and gain will also be added as 
+               image layers to the map viewer and export tasks begun for each dynamics' image 
                layer. 
                
-    Section 3: The qualitative accuracy assessments (QAA). The  is built around two randomly 
+    Section 3: The qualitative accuracy assessments (QAA). The QAA is centered around two randomly 
                generated grids. During the QAA process, the user will cycle through random, 
-               automatically generated cells and qualitatively asses the land cover map 
-               generated in Module 2. The region of interest is first divided into 100 km by
+               automatically generated cells and qualitatively asses the land cover map(s) 
+               generated in Module 2. The region of interest (ROI) is first divided into 100 km by
                100km cells, of which 50% are randomly selected for analysis. Then, each 100 
                km by 100 km cell is subdivided into 10 km by 10 km sub-grids; of which 20% are
                retained for analysis. It is within these 10 km by 10 km grid cells that the QAA 
@@ -70,12 +71,11 @@ through the QAA may take several minutes or tens of hours depending on the size 
 and the detail recorded in the comments.
 
 The default parameters, as discussed in the GEEMMM ReadMe file, were established 
-using during a pilot study conducted for the country of Myanmar (Burma). Many of 
-these parameters may also work for other areas of interest, but the developers 
-make no claims about the transferability of default settings to other locations 
-around the world. For applying the GEEMMM elsewhere, please pay careful attention 
-to the parameters and set them according to the local situation and project 
-goals/objectives.  
+during a pilot study conducted for the country of Myanmar (Burma). Many of 
+these parameters may also work for other parts of the world, but the developers 
+make no claims about the transferability of default settings to other locations.
+For applying the GEEMMM elsewhere, please pay careful attention to the parameters 
+and set them according to the local situation and project goals/objectives.  
 
 At the end of the workflow, the user should have started exporting:
     1.) Loss Image 
@@ -104,20 +104,19 @@ land cover class values to the script as lists.
 As in GEEMMM Module 2, bring in Imagery and Masks exported from Module 1. Name 
 as follows:
 
-  Chot_image = contemporary image; highest observed tide (exported in Module 1)
-  Clot_image = contemporary image; lowest observed tide (exported in Module 1)
+  Chot_image = HOT contemporary composite (HOT_Img_contemporary); highest observed tide
+  Clot_image = LOT contemporary composite (LOT_Img_contemporary); lowest observed tide
 
-  Hhot_image = historic image; highest observed tide (exported in Module 1)
-  Hlot_image = historic image; lowest observed tide (exported in Module 1)
+  Hhot_image = HOT historic composite (HOT_Img_historic); highest observed tide
+  Hlot_image = LOT historic composite (LOT_Img_historic); lowest observed tide
 
-  final_mask = final mask (exported in Module 1)
+  final_mask = Finalized mask (final_mask)
   
-  ROI = region of interest (exported in Module 1)
+  ROI =  Finalized ROI (ROI), region of interest 
 
 This can be done by selecting the assets from the 'Asset' tab and clicking the 
 arrow to import the asset to this script. Once imported, the name can be changed
 by clicking the default name, e.g. ‘image’ (see top of the script), and renaming.
-
 
 The next step is for the user to bring in the classification results and 
 determine which data they would like to view in the QAA process. By switching the
@@ -143,10 +142,10 @@ tab and clicking the arrow to import the asset to this script. Once imported,
 the name can be changed by clicking the automatic 'image' name (see top of 
 the script) and renaming.
 
-Lastly, the training reference data needs to be added to
+Lastly, the classification reference areas (CRAs) needs to be added to
 accurately label the various layers and classification inputs. In addition to
-the reference data, the numeric land cover class number needs to be 
-provided for which ever land cover class will be tested in the dynamics 
+the CRAs, the numeric land cover class number and land cover character name
+need to be provided for which ever land cover class will be tested in the dynamics 
 analysis (eg. Closed Canopy Mangroves = 11). If there are multiple classes of
 interest, change the 'class_no' value and re-run Module 3. 
 */
@@ -211,6 +210,20 @@ var colors = ee.List(['#E69800',
     ****************************************************************************
 
       ** This line marks the end of the user-defined inputs and variables. **
+      
+      What follows is the bulk of the script for module 3 - below this line the
+      user does not need to further change anything. Comments are provided 
+      for each section/step below so the user can understand how the script 
+      actually works. All further user action occurs in the ‘Console'.
+      
+      NOTES:
+            -The exports' destiations are set to the individual user's Google drive.
+            -The names of the exports at this juncture matter mostly to the user,
+             so any name changes should be meaningful to the the user. 
+            -After running the script, directions will follow in the 'Console' to
+             walk the user through Sections 2 & 3 of Module 3.
+      
+                  *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
 */
 
 
@@ -400,7 +413,7 @@ print('Historic Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Num
 print('Contemporary Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(gain.get('area')).divide(1e6)).getInfo());
 
 //////////////////////////////////////////////////////
-//////////////   Section 3: Dynamics    //////////////
+//////////////   Section 3: QAA    //////////////
 //////////////////////////////////////////////////////
 // This is the QAA section. The user will be walked through a set of 
 // grid cells to judge the 'quality' of the classification(s). The user 
