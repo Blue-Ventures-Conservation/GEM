@@ -45,7 +45,7 @@ users, step-by-step, through the three modules which comprise the tool:
 >months of interest, cloud cover, etc.). All imagery is sourced from the Landsat 
 >archives (Missions 4, 5, 7, & 8). 
 
-#### Module 2: Spectral Separability, Classifications and Accuracy Assessment 
+#### Module 2: Spectral Separability, Classifications, and Accuracy Assessment 
 
 >This module enables the user to define classification reference areas (CRAs) 
 >representing target map classes, choose spectral indices as additional 
