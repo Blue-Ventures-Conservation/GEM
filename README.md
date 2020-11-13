@@ -180,7 +180,7 @@ page and reference the three module scripts.
 
 After you have opened the links or saved the GEEMMM locally, there are detailed 
 code-comment instructions at the beginning of each module and above each distinct 
-section and step of each module. Be sure to carefully read, in full, the instructions  
+section and step of each module. Be sure to carefully read, in full, the instructions
 for each module. It is in these instructions where the user must identify input 
 datasets, determine impactful variables, and understand how certain functions 
 within the GEEMMM will operate. Throughout each module, there are comments at the 
