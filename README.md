@@ -151,7 +151,7 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
->https://code.earthengine.google.com/93faa1817ba1b9cfe35674829ceec3b7?noload=true
+>https://code.earthengine.google.com/0a66f136fc3f7290d3e10abcb260c0cf?noload=true
 
 The second option for using the GEEMMM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
