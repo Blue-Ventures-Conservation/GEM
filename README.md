@@ -112,9 +112,9 @@ focused on the Southeast Asian country of Myanmar (Burma). While some of these
 parameters are location-agnostic, such as the percentage of allowable cloud cover,
 others, like the coastal tidal zone, are very location-specific. The code is well 
 commented to help aid in the determination of the optimal parameters to set before 
-running, but it is important to remember how the default parameters were selected.  
+running, but it is important to remember how the default parameters were selected.
 Importantly, all parameters can be changed by the user to meet their needs - the 
-Myanmar pilot serves as beginning to end demonstration of how the tool works. 
+Myanmar pilot serves as a beginning to end demonstration of how the tool works. 
 
 ##OPERATION
 
