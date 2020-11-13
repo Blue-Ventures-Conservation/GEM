@@ -117,16 +117,15 @@ Importantly, all parameters can be changed by the user to meet their needs - the
 Myanmar pilot serves as a beginning to end demonstration of how the tool works. 
 
 ## OPERATION
+Before the GEEMMM can be used, the user must request developer access to GEE. 
+This can be done by following this [link](https://signup.earthengine.google.com/) 
+and filling out a simple request form. Approval typically takes one or two business 
+days. Once your Google account has been granted access to GEE, you can use the GEEMMM.
 
-Before the GEEMMM can be used, the user must request developer access to 
-GEE. This can be done by following this [link](https://signup.earthengine.google.com/)
-and filling out a simple request form. Approval typically takes one or 
-two business days. GEE is free to use for academic and not for profit 
-enterprises. For commercial applications, GEE offers paid commercial licenses 
-- details [here](https://earthengine.google.com/faq/).  At this time, the GEEMMM 
-is not available for commercial use -interested parties should contact the authors
-to confirm this status. Once your Google account has been granted access to GEE, 
-you can use the GEEMMM.
+GEE is free to use for academic and not for profit enterprises. For commercial 
+applications, GEE offers paid commercial licenses: details [here](https://earthengine.google.com/faq/).
+At this time, the GEEMMM is not available for commercial use - interested parties 
+should contact the authors to confirm this status. 
 
 There are two methods to run the GEEMMM:
 1) Click on the links below and run the scripts. Clear instructions are
