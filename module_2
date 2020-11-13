@@ -150,9 +150,9 @@ var class_label_character = 'Classname';
 
 
 /*
-1.B) Classification Reference Data Type
-     Record type of classification reference data. It is important for the 
-     GEEMMM that the user distinguishes their classification reference data
+1.B) Classification Reference Area Type
+     Record type of classification reference areas. It is important for the 
+     GEEMMM that the user distinguishes their classification reference areas
      as either spatio-temporally invariant across the time-period (historic and
      contemporary imagery) or derived from just contemporary sources. 
      
@@ -169,13 +169,12 @@ var class_label_character = 'Classname';
      classifier will be retrained for both the historic and contemporary image 
      sets. Spatio-temporally invariant classification reference data will likely
      provide more consistent classification results. However, it is harder to 
-     generate accurately.
+     generate accurately. Whether or not the CRAs are spatio-temporally invariant
+     or not, the 'class_ref_hist' object from 1.A will be used.
      
      Enter:
-          var class_ref_type = true; (the Reference Data is Spatio-
-                                            temporally invariant)
-          var class_ref_type = false; (the Reference Data is NOT Spatio-
-                                            temporally invariant)
+          var class_ref_type = true; (the CRAs are spatio-temporally invariant)
+          var class_ref_type = false; (the CRAs are NOT Spatio-temporally invariant)
 */
 
 var class_ref_type = false;
