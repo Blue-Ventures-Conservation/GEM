@@ -48,8 +48,8 @@ users, step-by-step, through the three modules which comprise the tool:
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment 
 
->This module enables the user to choose spectral indices to use as
->classification inputs, explores the spectral relationships within and between 
+>This module enables the user to choose from the calculate spectral indices (from Module 1) 
+>to use as classification inputs, explores the spectral relationships within and between 
 >user-defined map classes, undertakes multi-date (i.e., historic and contemporary) 
 >supervised classifications, and assesses land cover map accuracies. Exploring spectral 
 >relationships is very interactive, and includes the option to examine correlation 
