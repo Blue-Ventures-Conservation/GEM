@@ -42,13 +42,14 @@ users, step-by-step, through the three modules which comprise the tool:
 >boundaries, and select the input imagery to make multi-date (i.e., historic 
 >and contemporary) composites. The user adjusts several parameters according 
 >to their specific project requirements and preferences (e.g. years of interest, 
->months of interest, cloud cover, etc.). All imagery is sourced from the Landsat 
->archives (Missions 4, 5, 7, & 8). 
+>months of interest, cloud cover, etc.). It is in Module 1 that the user can 
+>choose to calculate a number of mangrove and non-mangrove specific spectral indices.
+>All imagery is sourced from the Landsat archives (Missions 4, 5, 7, & 8). 
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment 
 
 >This module enables the user to define classification reference areas (CRAs) 
->representing target map classes, choose spectral indices as additional 
+>representing target map classes, choose spectral indices to use as
 >classification inputs, explores the spectral relationships within and between 
 >user-defined map classes, undertakes multi-date (i.e., historic and contemporary) 
 >supervised classifications, and assesses map accuracies. Exploring spectral 
