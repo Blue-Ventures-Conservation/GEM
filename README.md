@@ -61,8 +61,8 @@ users, step-by-step, through the three modules which comprise the tool:
 
 >This module uses multi-date mangrove maps to automatically calculate and 
 >subsequently explore mangrove dynamics (i.e., loss, persistence and gain), 
->and provides an optional qualitative accuracy assessment (QAA) tool.  
->The QAA goes above and beyond standard accuracy metrics.  
+>and provides an optional qualitative accuracy assessment (QAA) tool. The 
+>QAA goes above and beyond standard accuracy metrics.  
 
 Separate from the three modules of the GEEMMM, there is also a ‘Functions’ 
 folder which contains some of the back-end support code used by the tool. 
