@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: November 10, 2020
+Last updated: November 13, 2020
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -32,7 +32,7 @@ the precise region of interest (ROI) used in the GEEMMM, 2.) generate Landsat
 image composites, 3.) calculate any desired spectral indices for the generated 
 composites and 4.) create a unified mask to remove water pixels or pixels 
 associated with extreme topography from classification. This module outputs up to
-of four image composites (depending on user preference: high- and  low-tide for 
+four image composites (depending on user preference: high- and  low-tide for 
 both a historic and contemporary temporal window), a final mask, representing 
 unified water, slope, and elevation, and a vector  polygon encompassing the region 
 of interest (ROI) to use throughout the GEEMMM workflow. 
@@ -43,9 +43,9 @@ GEEMMM Module 1 is broken down into 5 Sections:
     
       Step 1: User identifies the desired data inputs
       Step 2: User identifies the variables to use in module 1, (e.g. dates, 
-          thresholds, etc.)
+          thresholds, indices, etc.)
 
-    Section 2: Lets the user interactively explore how large of an area of interest 
+    Section 2: Lets the user interactively explore how large of an region of interest 
                they would like to use by examining known mangrove extent data. 
 
     Section 3: Generates the selected historic and contemporary Landsat composites 
@@ -61,27 +61,34 @@ GEEMMM Module 1 is broken down into 5 Sections:
                search for fringe mangroves if user selects that option.
 
 After pressing the ‘Run’ button at the top of the  script editor, a grey button will 
-populate in the ‘Console’ to “Begin Workflow”. Once the  workflow has begun it can 
-take as little as three minutes to work through Module 1, not accounting for exporting
-times of the outputs. Times may vary depending on internet speed.
+populate in the ‘Console’ to “Begin Workflow”. Shift your attention to the ‘Console’, 
+where buttons (starting with ‘Being Workflow’) provide interactive control as the module
+runs.  If you encounter errors, use “find” to find the variables related to the error 
+messages. Make corrections in user-defined data or variables as needed, and press ‘Run’ 
+again. Once the  workflow has begun it can take as little as three minutes to work 
+through Module 1, not accounting for exporting times of the outputs. Times may vary 
+depending on internet speed.
 
 The default parameters, as discussed in the GEEMMM ReadMe file, were established 
-using during a pilot study conducted for the country of Myanmar (Burma). Many of 
-these parameters may also work for other areas of interest, but the developers 
-make no claims about the transferability of default settings to other locations 
-around the world. For applying the GEEMMM elsewhere, please pay careful attention 
-to the parameters and set them according to the local situation and project 
-goals/objectives.  
+during a pilot study conducted for the country of Myanmar (Burma). Many of 
+these parameters may also work for other parts of the world, but the developers 
+make no claims about the transferability of default settings to other locations.
+For applying the GEEMMM elsewhere, please pay careful attention to the parameters 
+and set them according to the local situation and project goals/objectives.  
 
 At the end of the workflow, the user should have started exporting:
-    1.) 4 images w/ calculated indices 
-    2.) ROI
-    3.) Final Mask
+      1) HOT contemporary composite (HOT_Img_contemporary)
+      2) LOT contemporary composite (LOT_Img_contemporary)
+      3) HOT historic composite (HOT_Img_historic)
+      4) LOT historic composite (LOT_Img_historic)
+      5) Finalized ROI (ROI) 
+      6) Finalized mask (final_mask)
 
 Before running Module 1, please read through the comments below to determine 
 important user inputs and parameters that will be used in this workflow. Continue until 
 you reach the end, where you will be code-comment prompt to ‘Run’ the script at the end 
-of entering the user inputs (Section 1).
+of entering the user inputs (Section 1). Do not change variable names, and, if external
+data is used, be sure to upload into the user's 'Assets'.
 
 
 *** Note: Be sure that the 'Code Editor', 'Console' tab, and the map viewer are
@@ -96,9 +103,10 @@ all visible on your screen before proceeding ***
      In this first sub-section the user must determine what data they would 
      like to use within the Google Earth Engine Mangrove Mapping Methodology 
      (GEEMMM). For each, two options are usually presented: use GEE data or 
-     upload user-owned data. Additionally, if the user would like, they may 
-     file a request to Google to add a specific data set into the 'Earth
-     Engine Data Catalog'. To submit a data request follow the below link:
+     upload external user-selected data. Additionally, if the user would like, 
+     they may file a request to Google to add a specific data set into the 
+     'Earth Engine Data Catalog'. To submit a data request follow the below 
+     link:
      
           https://developers.google.com/earth-engine/help#dataset_requests
           Note: This will likely not be a very quick service/response.   
@@ -120,7 +128,11 @@ all visible on your screen before proceeding ***
      and elevation thresholds). At this time, the user must identify whether GEEEMMM 
      will use the GEE provided Global Mangrove Forests Distribution, v1 (2000), or 
      an alternative ‘known mangrove’ asset which has been uploaded to the user’s 
-     account.
+     account. If the user uses an uploaded dataset they will be prompted to 
+     reference the asset path once the workflow begins; after 'Running' the script.
+     
+     To upload an asset follow the instructions found here:
+          https://developers.google.com/earth-engine/guides/asset_manager
      
      Enter:
           var kmx = true; (to use the GEE Global Mangrove Forests Distribution)
@@ -133,7 +145,7 @@ var kmx = true;
 
 1.C) Coastline Data
      The coastline is a very important data set for this workflow. It will be 
-     used to define the actual ROI, as well as to aid in the determination of the
+     used to define the finalized ROI, as well as to aid in the determination of the
      tidal conditions for each of the landsat images which are to be processed. 
      The coastline layer available in GEE is the Large Scale International 
      Boundary Polygons. Alternatively, as per the known mangrove extent, the user 
@@ -175,7 +187,7 @@ var topo_path = 'users/yanchojo/topo';
 
 
 /*
-2) USER DEFINED VARIABLE
+2) USER DEFINED VARIABLES
     In this sub-section, the user will have to define some variables about how 
     the GEEMMM will run. These variables include the historic and contemporary year
     windows, topographic thresholds, cloud cover limits, etc. Each variable will
@@ -190,8 +202,8 @@ var topo_path = 'users/yanchojo/topo';
      variables.
      
      Enter:
-          var contemporary_start_year = 2014; (Later Contemporary year)
-          var Contemporary_end_year = 2018; (Earlier Contemporary year)
+          var contemporary_start_year = 2014; (Older Contemporary year)
+          var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
 var contemporary_start_year = 2018;
@@ -205,8 +217,8 @@ var contemporary_end_year = 2020;
      Note: If a single year is desired, put the same year for both variables.
   
      Enter:
-          var historic_start_year = 2004; (Later Historic year)
-          var historic_end_year = 2008; (Earlier Historic year)
+          var historic_start_year = 2004; (Older Historic year)
+          var historic_end_year = 2008; (More recent Historic year)
 
 */
 
@@ -287,12 +299,14 @@ var cloud_mask = 'aggressive';
      The tidal zone is a user-defined parameter that is used to help the GEEMMM 
      determine the tidal condition for each image, in both the historic and the
      contemporary image sets. The tidal zone is functionally a shoreline buffer
-     which extends seawards from the shore. The distance should be the tidally 
+     which extends seawards from the shore. This distance should be the tidally 
      'active' zone, which will contain the majority of the tidal flats and tidal
      islands which would be exposed and then resubmerged given the tidal state.
      
      The default number is 1000 m (1 km). This number can be tailored for the
-     specific region of interest. **NOTE: The tidal zone is not the ROI.**
+     specific region of interest. **NOTE: The tidal zone is NOT the ROI. The
+     tidal zone is strickly a seaward buffer and produces no meaningful 
+     intermediary data products.**
     
      Enter:
           var tidal_zone = 1000; (meters, Integer)
@@ -305,10 +319,12 @@ var tidal_zone = 1000;
 /*
 2.G) Water Mask
      The GEEMMM offers the option to mask out water pixels using the modified 
-     normalized water index (MNDWI). The MNDWI is calculated for the entire ROI
-     and water pixels are removed based on a threshold established in the original
-     paper by Dr. H. Xu (2006). If water pixels are not masked, the reference 
-     training data must take this into account in some fashion (e.g. "water_class").
+     normalized difference water index (MNDWI). The MNDWI is calculated for the 
+     entire ROI and water pixels are removed based on a threshold established 
+     in the original paper by Dr. H. Xu (2006). If water pixels are not masked, 
+     the referencetraining data must take this into account in some fashion 
+     (e.g., the usermust define a “water” class in their classification reference 
+     areas).
 
      Enter:
           var remove_water = true; (mask out the water pixels using MNDWI)
@@ -368,9 +384,10 @@ var slope = 16;
      these exclaves must attempt to be captured. To do so, the ROI can be expanded 
      to 2x to account for low-lying elevations beyond the initial determination.
      
-     Example: If the ROI is determined to be a 25 km buffer of the coastline, if 
-              'true', the ROI will be expanded to include all pixels between 25 
-              and 50 km which also fall at or below 5 m a.s.l.
+     Example: If the ROI is determined to be a 25 km buffer of the coastline (in
+              Section 2), if 'var inland_mang = true', the final ROI will be expanded 
+              to include all pixels between 25 and 50 km which also fall at or 
+              below 5 m a.s.l.
 
      Enter:
           var inland_mang = true; (true, double the ROI for pixels <= 5 m a.s.l)
@@ -437,9 +454,22 @@ var inland_mang = false;
     **********************         Click 'Run' Now        **********************
     ****************************************************************************
     
+    ** This line marks the end of the user-defined inputs and variables. **
     
+    What follows is the bulk of the script for module 1 - below this line 
+    the user does not need to further change anything. Comments are 
+    provided for each section/step below so the user can understand how
+    the script actually works. All further user action occurs in the ‘Console'.
     
-      ** This line marks the end of the user-defined inputs and variables. **
+    NOTE:
+      -Once the 'Workflow' has begun, the user will be walked through several
+       interative steps.
+      -Several intermediary outputs will be generated from GEEMMM Module 1. 
+       These outputs MUST be exported to the user's GEE 'Assets'
+      -Work through Module 1 completely and ensure all exports have successfully
+       been added to the user 'Assets' folder before proceeding to GEEMMM Moduel 2
+      -Do not change the name of the exports unless you are an advanced GIS user
+      
                 *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
 */
 
@@ -489,7 +519,7 @@ var fringe = require('users/yanchojo/GEEMMM_v4_1/:modules/fringe_mang');
 /////////////////////////
 // This code sets up the user to select the indices that they would like to add.
 // All of the selection is done in the console through a series of checkboxes
-// which and add/remove each index.
+// which add/remove each index.
 
 var step_1_button = ui.Button('Begin Workflow');
 step_1_button.onClick(function(){
@@ -549,11 +579,12 @@ step_1_button.onClick(function(){
   ///////////////
   // Section 2 //
   ///////////////
-  // Here the user will determine the actual ROI to be used in the workflow.
-  // A known mangrove extent is buffered at multiple distances from the input 
-  // coastline to calculate the area of mangroves included at various buffer
-  // extents. The user then selects the ROI buffer distance from a drop-down
-  // menu.
+  // Here the user will determine the shoreline buffer distance to be used in 
+  // the workflow, which is ultimately set-up to be the first stage of the final 
+  // ROI. A known mangrove extent is buffered at multiple distances from the  
+  // input coastline to calculate the area of mangroves included at various 
+  // buffer extents. The user then selects the ROI buffer distance from a 
+  // drop-down menu.
   
   var step_2_button = ui.Button('Section 2: Determine ROI');
   step_2_button.onClick(function(){
@@ -617,9 +648,9 @@ step_1_button.onClick(function(){
     ///////////////
     // Section 3 //
     ///////////////
-    // The variables from Setion 1 are used to generate the imagery
-    // which will be used through out the rest of the GEEMMM. Imagery
-    // will be added to the GUI map viewer.
+    // The variables from Setion 1 are used to generate the image composites
+    // which will be used through out the rest of the GEEMMM. image 
+    // composites will be added to the GUI map viewer.
     
     // Prepare the imagery
     var step_3_button = ui.Button('Section 3: Prepare Imagery for Processing');
@@ -698,8 +729,8 @@ step_1_button.onClick(function(){
       ///////////////
       // Section 4 //
       ///////////////
-      // The variables selected in section 1 are calculated. Once calculated
-      // they are calculated the user will be prompted to export the imagery
+      // The indices variables selected in Section 1 are calculated. Once 
+      // calculated, the user will be prompted to export the imagery
       // to their GEE asset folder. 
       
       // Calculation of the spectral indices
@@ -794,8 +825,8 @@ step_1_button.onClick(function(){
         // Section 5 //
         ///////////////
         // Section 5 will create the masks, and ultimately the final mask
-        // for the classification(s). They will automatically populate the 
-        // task tab. Just like the imagery it should be exported to each 
+        // for the classification(s). The exports will automatically populate  
+        // the task tab. Just like the imagery it should be exported to each 
         // user's asset folder.
         
         // section 5 button
@@ -870,9 +901,9 @@ step_1_button.onClick(function(){
               dimensions: 1024
             });
             
-          // Prep ROI for export
+          // Prepare final ROI for export
           var ROI_out = ee.FeatureCollection(ee.Feature(ROI, {name: 'ROI'}));
-          // Export ROI
+          // Export final ROI
           Export.table.toAsset({
             collection: ROI_out,
             description: "ROI",
@@ -911,9 +942,13 @@ step_1_button.onClick(function(){
 });
 print(step_1_button);
 
-// At the end of the workflow, the user should have started exporting:
-//    1.) 4 images w/ calculated indices 
-//    2.) ROI
-//    3.) Final Mask
-
+/*
+At the end of the workflow, the user should have started exporting:
+      1) HOT contemporary composite (HOT_Img_contemporary)
+      2) LOT contemporary composite (LOT_Img_contemporary)
+      3) HOT historic composite (HOT_Img_historic)
+      4) LOT historic composite (LOT_Img_historic)
+      5) Finalized ROI (ROI) 
+      6) Finalized mask (final_mask)
+*/
 ////////////////////////////////////////////////////////////////////////////////  
