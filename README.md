@@ -48,15 +48,14 @@ users, step-by-step, through the three modules which comprise the tool:
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment 
 
->This module enables the user to define classification reference areas (CRAs) 
->representing target map classes, choose spectral indices to use as
+>This module enables the user to choose spectral indices to use as
 >classification inputs, explores the spectral relationships within and between 
 >user-defined map classes, undertakes multi-date (i.e., historic and contemporary) 
->supervised classifications, and assesses map accuracies. Exploring spectral 
+>supervised classifications, and assesses land cover map accuracies. Exploring spectral 
 >relationships is very interactive, and includes the option to examine correlation 
->between potential spectral indices and separability of CRAs across all potential 
->classification inputs. Following classification, accuracy assessments are 
->automatically produced for each output map. 
+>between potential spectral indices and separability of classification reference areas 
+>(CRAs) across all potential classification inputs. Following classification, 
+>accuracy assessments are automatically produced for each output map. 
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA) 
 
