@@ -143,11 +143,13 @@ the name can be changed by clicking the automatic 'image' name (see top of
 the script) and renaming.
 
 Lastly, the classification reference areas (CRAs) needs to be added to
-accurately label the various layers and classification inputs. In addition to
-the CRAs, the numeric land cover class number and land cover character name
-need to be provided for which ever land cover class will be tested in the dynamics 
-analysis (eg. Closed Canopy Mangroves = 11). If there are multiple classes of
-interest, change the 'class_no' value and re-run Module 3. 
+accurately label the various layers and classification inputs. In addition 
+to the CRAs, the numeric land cover class number needs to be provided for 
+which everland cover class will be tested in the dynamics analysis 
+(e.g., Closed Canopy Mangroves = 11). If there are multiple classes of
+interest, change the 'class_no' value and re-run Module 3. The dynamics 
+assesment does not need to be a mangrove class, it can be any of the CRAs
+land cover classes present in both land cover maps.
 */
 
 
