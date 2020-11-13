@@ -122,15 +122,16 @@ Before the GEEMMM can be used, the user must request developer access to
 GEE. This can be done by following this [link](https://signup.earthengine.google.com/)
 and filling out a simple request form. Approval typically takes one or 
 two business days. GEE is free to use for academic and not for profit 
-enterprises - commercial applications will require special permission. 
-Once your Google account has been granted access to GEE, you can use the 
-GEEMMM.
+enterprises. For commercial applications, GEE offers paid commercial licenses 
+- details [here](https://earthengine.google.com/faq/).  At this time, the GEEMMM 
+is not available for commercial use -interested parties should contact the authors
+to confirm this status. Once your Google account has been granted access to GEE, 
+you can use the GEEMMM.
 
 There are two methods to run the GEEMMM:
 1) Click on the links below and run the scripts. Clear instructions are
 provided in the comments within each script; or
-2) Copy the entire tool into your personal Google Earth Engine Script
-library.
+2) Copy the entire tool into your personal GEE Script library.
 
 The first option is the easiest to execute, and least likely to generate any 
 errors.
@@ -140,15 +141,15 @@ above. Run them in order, and save the exports for each script (ideally to your
 personal Earth Engine ‘Asset’ folder).
 
 
-####Module 1:
+####Module 1: Defining the Region of Interest (ROI) and Compositing Imagery
 
 >https://code.earthengine.google.com/97d64f064d6797b2e925f96786f86eff?noload=true
 
-####Module 2:
+####Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
 >https://code.earthengine.google.com/962efdd7afb99fe7de0972337ec91426?noload=true
 
-####Module 3:
+####Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
 >https://code.earthengine.google.com/3911f3df4db316ac7bb57e0b9d3ba34a?noload=true
 
@@ -180,11 +181,11 @@ page and reference the three module scripts.
 
 After you have opened the links or saved the GEEMMM locally, there are detailed 
 code-comment instructions at the beginning of each module and above each distinct 
-section of each module. Be sure to carefully read, in full, the instructions for 
-each module. It is in these instructions where the user must identify input 
+section and step of each module. Be sure to carefully read, in full, the instructions  
+for each module. It is in these instructions where the user must identify input 
 datasets, determine impactful variables, and understand how certain functions 
 within the GEEMMM will operate. Throughout each module, there are comments at the 
-end of each distinct section identifying the end of the user inputs/instruction.
+end of each distinct section and step identifying the end of the user inputs/instruction.
 
 The data inputs for the GEEMMM have both internal and external source options, 
 however, to perform the classification in Module 2, classification reference areas 
