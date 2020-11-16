@@ -26,7 +26,7 @@ remote sensing, geospatial analysis, or coding, the tool is designed with
 the assumption that users have basic computer skills and are familiar with 
 the key steps in mapping mangroves and assessing dynamics.  
  
-A pilot study (i.e., [Yancho et al. 2020](https://www.mdpi.com/journal/remotesensing/special_issues/remote_sensing_mangroves)) 
+A pilot study (i.e., [Yancho et al. 2020](https://www.mdpi.com/2072-4292/12/22/3758)) 
 published in a special issue on 
 [“Remote Sensing in Mangroves”](https://www.mdpi.com/journal/remotesensing/special_issues/remote_sensing_mangroves) 
 in the journal Remote Sensing demonstrates an application of the GEEMMM for
@@ -142,15 +142,15 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 1: Defining the Region of Interest (ROI) and Compositing Imagery
 
->https://code.earthengine.google.com/992e660970fbca040ad73602f68a224b?noload=true
+>https://code.earthengine.google.com/8c048e4082c45961ed3c6d0245aaf33a?noload=true
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
->https://code.earthengine.google.com/509192e13b8da2f815165be539699471?noload=true
+>https://code.earthengine.google.com/796bc8b82c3a2d529b243f340a89f133?noload=true
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
->https://code.earthengine.google.com/0a66f136fc3f7290d3e10abcb260c0cf?noload=true
+>https://code.earthengine.google.com/5afe742e00bbe7c7002d4f9701c9e4b6?noload=true
 
 The second option for using the GEEMMM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
