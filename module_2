@@ -55,10 +55,10 @@ GEEMMM Module 2 is broken down into 3 sections:
                including the validation overall accuracy, validation matrix, the 
                resubstitution overall accuracy, and the resubstitution matrix. 
 
-The classification reference areas (CRAs) will be divided to in seperately train and then 
+The classification reference areas (CRAs) will be divided to separately train and then 
 validate the classifier and classification results, respectively. Randomly, 70% of the CRAs
 will be used to train the classifier, and the remaining 30% are used to validate the results.
-The CRAs used in the GEEMMM pilto study employed the the coordinate reference system (CRS) 
+The CRAs used in the GEEMMM pilot study employed the the coordinate reference system (CRS) 
 "EPSG:4326 - WGS 84". However, GEE "... is designed so that you rarely have to worry about 
 map projections when doing computations." Follow the link below to learn more about GEE and 
 data projections:  https://developers.google.com/earth-engine/guides/projections
@@ -138,7 +138,7 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
      integer and character name associated with each CRA class.
      
      Enter:
-          var class_ref = **PATH**; (Path to the Classification Reference Data)
+          var class_ref = **PATH**; (Path to the CRAs)
 */
 
 var class_ref_cont = "users/yanchojo/reference_data/cont_CRD_0914";
@@ -150,27 +150,24 @@ var class_label_character = 'Classname';
 
 
 /*
-1.B) Classification Reference Area Type
-     Record type of classification reference areas. It is important for the 
-     GEEMMM that the user distinguishes their classification reference areas
-     as either spatio-temporally invariant across the time-period (historic and
-     contemporary imagery) or derived from just contemporary sources. 
+1.B) Classification Reference Area (CRA) Type
+     Record type of CRA. It is important for the GEEMMM that the user distinguishes 
+     their CRAs as either spatio-temporally invariant across the time-period (historic
+     and contemporary imagery) or derived from just contemporary sources. 
      
-     1.) Spatio-temporally invariant: The land cover classes have not changed 
-                                      between the historic years of interest
-                                      and the contemporary years of interest.
-     2.) Contemporary Data: The land cover classes were determined by using just 
-                            contemporary sources (e.g., high resolution imagery
-                            that was recently acquired)
+     1.) Spatio-temporally invariant: The CRAs have not changed between the historic
+                                      years of interest and the contemporary years of 
+                                      interest.t - a single set of CRAs is used for both
+                                      classifications.
+     2.) Not spatio-temporally invariant: The CRAs have changed between the historic years 
+                                          of interest and the contemporary years of interest 
+                                          - a separate set of CRAs is used for each 
+                                          classification (i.e., historic and contemporary). 
                             
-     These are important distinctions to make. If just contemporary sources are 
-     used, the spectral values from the contemporary data will be used to
-     classify the historic. If the data is spatio-temporally invariant, the 
-     classifier will be retrained for both the historic and contemporary image 
-     sets. Spatio-temporally invariant classification reference data will likely
-     provide more consistent classification results. However, it is harder to 
-     generate accurately. Whether or not the CRAs are spatio-temporally invariant
-     or not, the 'class_ref_hist' object from 1.A will be used.
+     These are important distinctions to make. If the CRAs are not spatio-temporally 
+     invariant, the classifier will be retrained for both the historic and contemporary 
+     image sets.  If the CRAs are spatio-temporally invariant, the same set will be used 
+     for historic and contemporary classifications.  
      
      Enter:
           var class_ref_type = true; (the CRAs are spatio-temporally invariant)
@@ -178,6 +175,29 @@ var class_label_character = 'Classname';
 */
 
 var class_ref_type = false;
+
+/*
+1.B.i) Classification Reference Area (CRA) Type: Missing Historic CRA
+  If the data is not spatio-temporally invariant, but historic CRAs are not available, the
+  user has the option to use contemporary landsat spectral values for trained contemporary
+  CRAs subset to classify the historic data. For this feature to work 'class_ref_type' needs 
+  to be set to 'true' to ensure that the historic classifications are using the contemporary 
+  CRAs data and the 'use_cont_spec' (below) must be set to 'true'. 
+  
+  Alternatively, historic outputs do not need be generated in Module 2. Simply make all of the
+  historic classification outputs in 1.D to 'false'. However, if this is the case the dynamics
+  analysis in Module 3 will not work properly (since there will only be one land cover map).
+  
+          **NOTE: Default if 'false'. Do not switch to 'true' unless certain.**
+  
+       Enter:
+          var use_cont_spec = true; (uses the contemporary trained classifier to 
+                                      classify the historic imagery)
+          var use_cont_spec = false; (uses the CRAs data as designated in 1.A)
+
+*/
+
+var use_cont_spec = false; 
 
 /*
 1.C) Classifier
@@ -623,13 +643,14 @@ step_2_button.onClick(function(){
                                         t_poly_c, label, bands, ROI, trees);}
   if(combo_cont_out === true){ var Ccom_class = RFclass.CcomClassify(Chot, 
                                   Clot, t_poly_c, label, bands, ROI, trees);}
+                                 
   // Historic
   if( HOT_hist_out === true){ var Hhot_class = RFclass.HhotClassify(Hhot, 
-                  class_ref_type, Chot, t_poly_h, label, bands, ROI, trees);}
+                  class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, trees);}
   if(LOT_hist_out === true){ var Hlot_class = RFclass.HlotClassify(Hlot, 
-                  class_ref_type, Clot, t_poly_h, label, bands, ROI, trees);}
+                  class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees);}
   if(combo_hist_out === true){var Hcom_class = RFclass.HcomClassify(Hhot,
-      Hlot, class_ref_type, Chot, Clot, t_poly_h, label, bands, ROI, trees);}
+      Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees);}
         
                                                     
   });
