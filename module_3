@@ -39,11 +39,11 @@ GEEMMM Module 3 is broken down into 3 sections.
     Section 1: The first step allows the user to select a land cover class for a dynamics 
                analysis. The class is selected prior to the script being run.
 
-    Section 2: The landcover class dynamics are calculated the area of loss, persistence, 
-               and gain, along with the historic and contemporary land cover class areas will
-               populate the ‘Console’. The loss, persistence, and gain will also be added as 
-               image layers to the map viewer and export tasks begun for each dynamics' image 
-               layer. 
+    Section 2: The land cover class dynamics calculated include the area of loss, persistence,
+               and gain, align with the historic and contemporary land cover class areas: all
+               of which are populated in the ‘Console’ The loss, persistence, and gain will 
+               also be added as image layers to the map viewer and export tasks begun for each 
+               dynamics' image layer. 
                
     Section 3: The qualitative accuracy assessments (QAA). The QAA is centered around two randomly 
                generated grids. During the QAA process, the user will cycle through random, 
@@ -145,11 +145,11 @@ the script) and renaming.
 Lastly, the classification reference areas (CRAs) needs to be added to
 accurately label the various layers and classification inputs. In addition 
 to the CRAs, the numeric land cover class number needs to be provided for 
-which everland cover class will be tested in the dynamics analysis 
+which ever land cover class will be tested in the dynamics analysis 
 (e.g., Closed Canopy Mangroves = 11). If there are multiple classes of
 interest, change the 'class_no' value and re-run Module 3. The dynamics 
 assesment does not need to be a mangrove class, it can be any of the CRAs
-land cover classes present in both land cover maps.
+land cover classes represent in both land cover maps.
 */
 
 
