@@ -62,7 +62,7 @@ GEEMMM Module 1 is broken down into 5 Sections:
 
 After pressing the ‘Run’ button at the top of the  script editor, a grey button will 
 populate in the ‘Console’ to “Begin Workflow”. Shift your attention to the ‘Console’, 
-where buttons (starting with ‘Being Workflow’) provide interactive control as the module
+where buttons (starting with ‘Begin Workflow’) provide interactive control as the module
 runs.  If you encounter errors, use “find” to find the variables related to the error 
 messages. Make corrections in user-defined data or variables as needed, and press ‘Run’ 
 again. Once the  workflow has begun it can take as little as three minutes to work 
@@ -86,7 +86,7 @@ At the end of the workflow, the user should have started exporting:
 
 Before running Module 1, please read through the comments below to determine 
 important user inputs and parameters that will be used in this workflow. Continue until 
-you reach the end, where you will be code-comment prompt to ‘Run’ the script at the end 
+you reach the end, where you will be code-comment prompted to ‘Run’ the script at the end 
 of entering the user inputs (Section 1). Do not change variable names, and, if external
 data is used, be sure to upload into the user's 'Assets'.
 
@@ -100,7 +100,7 @@ all visible on your screen before proceeding ***
 
 
 1) USER DEFINED DATA SETS
-     In this first sub-section the user must determine what data they would 
+     In this first section the user must determine what data they would 
      like to use within the Google Earth Engine Mangrove Mapping Methodology 
      (GEEMMM). For each, two options are usually presented: use GEE data or 
      upload external user-selected data. Additionally, if the user would like, 
@@ -322,9 +322,8 @@ var tidal_zone = 1000;
      normalized difference water index (MNDWI). The MNDWI is calculated for the 
      entire ROI and water pixels are removed based on a threshold established 
      in the original paper by Dr. H. Xu (2006). If water pixels are not masked, 
-     the referencetraining data must take this into account in some fashion 
-     (e.g., the usermust define a “water” class in their classification reference 
-     areas).
+     the classification references areas (CRAs) must take this into account in some 
+     fashion (e.g., the user must define a “water” class in their CRAs).
 
      Enter:
           var remove_water = true; (mask out the water pixels using MNDWI)
@@ -467,7 +466,7 @@ var inland_mang = false;
       -Several intermediary outputs will be generated from GEEMMM Module 1. 
        These outputs MUST be exported to the user's GEE 'Assets'
       -Work through Module 1 completely and ensure all exports have successfully
-       been added to the user 'Assets' folder before proceeding to GEEMMM Moduel 2
+       been added to the user 'Assets' folder before proceeding to GEEMMM Module 2
       -Do not change the name of the exports unless you are an advanced GIS user
       
                 *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
@@ -530,10 +529,12 @@ step_1_button.onClick(function(){
                          fontSize: '18px',
                          textAlign: 'center'}
                 }));
-  print('Select the indices to be calculated in Section 4');
   
   // Ingest the known mangrove extent
   var mang_img = known_ext.known_mang(kmx);
+  
+  // Print Index selection instructions
+  print('Select the indices to be calculated in Section 4');
   
   // Ingest the topographic data (DSM)
   var dsm = topography.dsm_id(topo);
