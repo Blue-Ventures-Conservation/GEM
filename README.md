@@ -1,8 +1,5 @@
 # GEEMMM_v1.0
-# Google Earth Engine 
- 
-# Mangrove Mapping Methodology v1.0 
-
+# Google Earth Engine Mangrove Mapping Methodology v1.0 
 
 ----------------------------------------------------------------------------------------------------------
 ## INTRODUCTION
