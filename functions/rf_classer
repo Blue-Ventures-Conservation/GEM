@@ -4,8 +4,10 @@ This is the Random Forest image classification module, which is part
 of the BVC GEEMMM v1.0 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: Novemver 4, 2020
+Last update: Novemver 16, 2020
 
+
+use_cont_spec, Chot, Clot, t_poly_h, t_poly_c,
 */
 
 
@@ -17,7 +19,7 @@ exports.doc = 'The Random Forest Classification module is used'+
     '\n' +
     '\n ChotClassify(Chot, t_poly, label, bands, ROI, trees):' +
     '\n   @param {ee.Image} Chot: contemporary high-tide composite' +
-    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {ee.FeatureCollection} t_poly: the CRAs data' +
     '\n   @param {text} label: column name for the numeric land cover class in the training data' +
     '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
     '\n   @param {ee.Geometry} ROI: region of interest' +
@@ -26,7 +28,7 @@ exports.doc = 'The Random Forest Classification module is used'+
     '\n' +
     '\n ClotClassify(Clot, t_poly, label, bands, ROI, trees):' +
     '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
-    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {ee.FeatureCollection} t_poly: the CRAs data' +
     '\n   @param {text} label: column name for the numeric land cover class in the training data' +
     '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
     '\n   @param {ee.Geometry} ROI: region of interest' +
@@ -36,42 +38,48 @@ exports.doc = 'The Random Forest Classification module is used'+
     '\n CcomClassify(Chot, Clot, t_poly, label, bands, ROI, trees):' +
     '\n   @param {ee.Image} Chot: contemporary high-tide composite' +    
     '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
-    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {ee.FeatureCollection} t_poly: the CRAs data' +
     '\n   @param {text} label: column name for the numeric land cover class in the training data' +
     '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
     '\n   @param {ee.Geometry} ROI: region of interest' +
     '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
     '\n   @return {ee.Image} Single band raster image' +
     '\n'+
-    '\n HhotClassify(Hhot, class_ref_type, Chot, t_poly, label, bands, ROI, trees):' +
+    '\n HhotClassify(Hhot, class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, trees):' +
     '\n   @param {ee.Image} Hhot: historic high-tide composite' +
     '\n   @param {boolean} class_ref_type: type of classification reference data being used' +
+    '\n   @param {boolean} use_cont_spec: will the contemporary spectral values be applied' +
     '\n   @param {ee.Image} Chot: contemporary high-tide composite' +
-    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {ee.FeatureCollection} t_poly_h: the historic CRAs data' +
+    '\n   @param {ee.FeatureCollection} t_poly_c: the contemporary CRAs data' +
     '\n   @param {text} label: column name for the numeric land cover class in the training data' +
     '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
     '\n   @param {ee.Geometry} ROI: region of interest' +
     '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
     '\n   @return {ee.Image} Single band raster image' +
     '\n'+
-    '\n HlotClassify(Hlot, class_ref_type, Clot, t_poly, label, bands, ROI, trees):' +
+    '\n HlotClassify(Hlot, class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees):' +
     '\n   @param {ee.Image} Hlot: historic low-tide composite' +
     '\n   @param {boolean} class_ref_type: type of classification reference data being used' +
+    '\n   @param {boolean} use_cont_spec: will the contemporary spectral values be applied' +    
     '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
-    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {ee.FeatureCollection} t_poly_h: the historic CRAs data' +
+    '\n   @param {ee.FeatureCollection} t_poly_c: the contemporary CRAs data' +
     '\n   @param {text} label: column name for the numeric land cover class in the training data' +
     '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
     '\n   @param {ee.Geometry} ROI: region of interest' +
     '\n   @param {numeric} trees: Random Forest parameter, number of trees to use in classification' +
     '\n   @return {ee.Image} Single band raster image' +
     '\n'+
-    '\n HcomClassify(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, label, bands, ROI, trees):' +
+    '\n HcomClassify(Hhot, Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees):' +
     '\n   @param {ee.Image} Hhot: historic high-tide composite' +
     '\n   @param {ee.Image} Hlot: historic low-tide composite' +
     '\n   @param {boolean} class_ref_type: type of classification reference data being used' +
+    '\n   @param {boolean} use_cont_spec: will the contemporary spectral values be applied' +    
     '\n   @param {ee.Image} Chot: contemporary high-tide composite' +
     '\n   @param {ee.Image} Clot: contemporary low-tide composite' +
-    '\n   @param {ee.FeatureCollection} t_poly: the training data' +
+    '\n   @param {ee.FeatureCollection} t_poly_h: the historic CRAs data' +
+    '\n   @param {ee.FeatureCollection} t_poly_c: the contemporary CRAs data' +
     '\n   @param {text} label: column name for the numeric land cover class in the training data' +
     '\n   @param {ee.List} bands: list of bands to use in the classification'+ 
     '\n   @param {ee.Geometry} ROI: region of interest' +
@@ -297,12 +305,18 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
 };
 
 // Historic High-tide Classification 
-exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands, ROI, trees){
+exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, trees){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
   
-  var non_STI = function(){
+  // CRA Type?
+  if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
+  
+  
+  // Training functions
+  
+  var cont_spec = function(){
     // Overlay the points on the imagery to get training for HOT
     var sample_HHOT = Chot.select(bands).sampleRegions({
                 collection: t_poly,
@@ -313,7 +327,7 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
     return sample_HHOT;
     }; 
 
-  var STI = function(){    
+  var hist_spec = function(){    
     // Overlay the points on the imagery to get training for HOT
     var sample_HHOT = Hhot.select(bands).sampleRegions({
                 collection: t_poly,
@@ -324,7 +338,9 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
     return sample_HHOT;
     }; 
 
-  if(class_ref_type === true){ var sample_HHOT = STI();}else{var sample_HHOT = non_STI();}
+  // If there is no historic data?
+  if(use_cont_spec === true){ var sample_HHOT = cont_spec();}else{var sample_HHOT = hist_spec();}
+  
   //add random column to training data
   sample_HHOT = sample_HHOT.randomColumn({ seed: 1 });
   // select 70% to train
@@ -386,12 +402,17 @@ exports.HhotClassify = function(Hhot, class_ref_type, Chot, t_poly, label, bands
 };
 
 // Historic Low-tide Classification
-exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands, ROI, trees){
+exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
   
-  var non_STI = function(){
+    
+  // CRA Type?
+  if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
+
+  
+  var cont_spec = function(){
     // Overlay the points on the imagery to get training for HOT
     var sample_HLOT = Clot.select(bands).sampleRegions({
                 collection: t_poly,
@@ -402,7 +423,7 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
     return sample_HLOT;
     }; 
 
-  var STI = function(){    
+  var hist_spec = function(){    
     // Overlay the points on the imagery to get training for HOT
     var sample_HLOT = Hlot.select(bands).sampleRegions({
                 collection: t_poly,
@@ -412,8 +433,10 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
               });
     return sample_HLOT;
     }; 
-
-  if(class_ref_type === true){ var sample_HLOT = STI();}else{var sample_HLOT = non_STI();}
+    
+  // If there is no historic data?
+  if(use_cont_spec === true){ var sample_HLOT = cont_spec();}else{var sample_HLOT = hist_spec();}
+  
   //add random column to training data
   sample_HLOT = sample_HLOT.randomColumn({ seed: 1 });
   // select 70% to train
@@ -475,11 +498,15 @@ exports.HlotClassify = function(Hlot, class_ref_type, Clot, t_poly, label, bands
 };
 
 // Historic Combined Classification
-exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, label, bands, ROI, trees){
+exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
 
+  // CRA Type?
+  if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
+
+  //Organize imagery
   Hhot = Hhot.select(bands);
   Hlot = Hlot.select(bands);  
   Chot = Chot.select(bands);
@@ -489,7 +516,7 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
   var Ccom = Chot.addBands(Clot);
   bands = Ccom.bandNames();
   
-  var non_STI = function(){
+  var cont_spec = function(){
   // Overlay the points on the imagery to get training for HOT
   var sample_HCOM = Ccom.select(bands).sampleRegions({
                 collection: t_poly,
@@ -500,7 +527,7 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
     return sample_HCOM;
     }; 
 
-  var STI = function(){
+  var hist_spec = function(){
     // Overlay the points on the imagery to get training for HOT
     var sample_HCOM = Hcom.select(bands).sampleRegions({
                 collection: t_poly,
@@ -511,9 +538,8 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
     return sample_HCOM;
     }; 
 
-  if(class_ref_type === true){ var sample_HCOM = STI();
-                             }else{
-                               var sample_HCOM = non_STI();}
+  // If there is no historic data?
+  if(use_cont_spec === true){ var sample_HCOM = cont_spec();}else{var sample_HCOM = hist_spec();}
   
   // Add random column to training data
   sample_HCOM = sample_HCOM.randomColumn({ seed: 1 });
@@ -529,7 +555,6 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, Chot, Clot, t_poly, 
                                   classProperty: label,
                                   inputProperties: bands
                                   });
-  
 
   // Classify the HOT image.
   var classified_HCOM = Hcom.classify(HCOM_trained_classifier);
