@@ -341,10 +341,10 @@ print(button);
 // between their CRAs and their input imagery/indices. The graphs can be expanded and
 // saved as independant PNG or SVG files.
 
-var step_1_button = ui.Button('1.) View Spectral Space \n and Ref. Data Relationships');
+var step_1_button = ui.Button('Sec. 2.) View Spectral Space \n and Ref. Data Relationships');
 step_1_button.onClick(function(){
 
-  print(ui.Label({value:'Module 2: Step 1',
+  print(ui.Label({value:'Module 2: Section 2',
                   style:{fontWeight: 'bold',
                          fontSize: '18px',
                          textAlign: 'center'}
@@ -607,10 +607,10 @@ print(step_1_button);
 // all of the standard quantitative classification accuracy metrics are 
 // printed to the cosnole.
 
-var step_2_button = ui.Button('2.) Begin Classification');
+var step_2_button = ui.Button('Sec. 3.) Begin Classification');
 step_2_button.onClick(function(){
   
-  print(ui.Label({value:'Module 2: Step 2',
+  print(ui.Label({value:'Module 2: Section 3',
                   style:{fontWeight: 'bold',
                          fontSize: '18px',
                          textAlign: 'center'}
