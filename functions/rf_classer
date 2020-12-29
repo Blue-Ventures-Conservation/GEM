@@ -484,7 +484,7 @@ exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_pol
               print('LOT Hist. Training overall accuracy: ', HLOT_trainAccuracy.accuracy());
               
               // Classify the validation data.
-              var validated_CLOT = CLOT_validation.classify(HLOT_trained_classifier);
+              var validated_HLOT = HLOT_validation.classify(HLOT_trained_classifier);
               
               // Get a confusion matrix representing expected accuracy.
               var HLOT_testAccuracy = validated_HLOT.errorMatrix(label, 'classification');
