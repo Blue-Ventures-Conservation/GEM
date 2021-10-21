@@ -4,8 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEEMMM v1.0 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: Novemver 16, 2020
-
+Last update: October 21, 2021
 
 use_cont_spec, Chot, Clot, t_poly_h, t_poly_c,
 */
@@ -87,10 +86,10 @@ exports.doc = 'The Random Forest Classification module is used'+
     '\n   @return {ee.Image} Single band raster image';
 
 // Contemporary High-tide Classification  
-exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
+exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
   
-  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
-                    '00FFC5', '004DA8', 'FFFF00'];
+  var clPalette = [ 'FFFF00','E69800', 'ffe59a', '004DA8','267300','4CE600','CDF57A',
+                      '8400A8',];
   
   
   // Overlay the points on the imagery to get training for HOT
@@ -109,12 +108,19 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
   var CHOT_validation = sample_CHOT.filter(ee.Filter.gte('random', 0.7));
 
   // Train a RF classifier for the HOT image
-  var CHOT_trained_classifier = ee.Classifier.smileRandomForest(trees)
-                              .train({
-                                  features: CHOT_training,
-                                  classProperty: label,
-                                  inputProperties: bands
-                                  });
+  var CHOT_trained_classifier = ee.Classifier.smileRandomForest(
+                                    {numberOfTrees: trees,
+                                    variablesPerSplit: splits,
+                                    minLeafPopulation: leafpop,
+                                    bagFraction: bag,
+                                    maxNodes: nodes,
+                                    seed: seeds
+                                    })
+                                    .train({
+                                          features: CHOT_training,
+                                          classProperty: label,
+                                          inputProperties: bands
+                                          });
   
 
   // Classify the HOT image.
@@ -162,7 +168,7 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees){
 };
 
 // Contemporary Low-tide Classification
-exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
+exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
   
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
@@ -180,7 +186,14 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
   var CLOT_validation = sample_CLOT.filter(ee.Filter.gte('random', 0.7));
           
   // Train a RF classifier for the LOT image
-  var CLOT_trained_classifier = ee.Classifier.smileRandomForest(trees)
+  var CLOT_trained_classifier = ee.Classifier.smileRandomForest(
+                                    {numberOfTrees: trees,
+                                    variablesPerSplit: splits,
+                                    minLeafPopulation: leafpop,
+                                    bagFraction: bag,
+                                    maxNodes: nodes,
+                                    seed: seeds
+                                    })
                               .train({
                                   features: CLOT_training,
                                   classProperty: label,
@@ -232,7 +245,7 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees){
 
 
 // Contemporary Combine Classification
-exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
+exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
@@ -254,7 +267,14 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
   var CCOM_validation = sample_Ccom.filter(ee.Filter.gte('random', 0.7));
           
   // Train a RF classifier for the LOT image
-  var CCOM_trained_classifier = ee.Classifier.smileRandomForest(trees)
+  var CCOM_trained_classifier = ee.Classifier.smileRandomForest(
+                                    {numberOfTrees: trees,
+                                    variablesPerSplit: splits,
+                                    minLeafPopulation: leafpop,
+                                    bagFraction: bag,
+                                    maxNodes: nodes,
+                                    seed: seeds
+                                    })
                               .train({
                                   features: CCOM_training,
                                   classProperty: label,
@@ -305,7 +325,8 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees){
 };
 
 // Historic High-tide Classification 
-exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, trees){
+exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, 
+                                trees, splits, leafpop, bag, nodes, seeds){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
@@ -349,7 +370,14 @@ exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_pol
   var HHOT_validation = sample_HHOT.filter(ee.Filter.gte('random', 0.7));
 
   // Train a RF classifier for the HOT image
-  var HHOT_trained_classifier = ee.Classifier.smileRandomForest(trees)
+  var HHOT_trained_classifier = ee.Classifier.smileRandomForest(
+                                    {numberOfTrees: trees,
+                                    variablesPerSplit: splits,
+                                    minLeafPopulation: leafpop,
+                                    bagFraction: bag,
+                                    maxNodes: nodes,
+                                    seed: seeds
+                                    })
                               .train({
                                   features: HHOT_training,
                                   classProperty: label,
@@ -402,7 +430,8 @@ exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_pol
 };
 
 // Historic Low-tide Classification
-exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees){
+exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, 
+                                trees, splits, leafpop, bag, nodes, seeds){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
@@ -445,7 +474,14 @@ exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_pol
   var HLOT_validation = sample_HLOT.filter(ee.Filter.gte('random', 0.7));
 
   // Train a RF classifier for the HOT image
-  var HLOT_trained_classifier = ee.Classifier.smileRandomForest(trees)
+  var HLOT_trained_classifier = ee.Classifier.smileRandomForest(
+                                    {numberOfTrees: trees,
+                                    variablesPerSplit: splits,
+                                    minLeafPopulation: leafpop,
+                                    bagFraction: bag,
+                                    maxNodes: nodes,
+                                    seed: seeds
+                                    })
                               .train({
                                   features: HLOT_training,
                                   classProperty: label,
@@ -498,7 +534,8 @@ exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_pol
 };
 
 // Historic Combined Classification
-exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees){
+exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, 
+                                label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
 
   var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
                     '00FFC5', '004DA8', 'FFFF00'];
@@ -549,7 +586,14 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot,
   var HCOM_validation = sample_HCOM.filter(ee.Filter.gte('random', 0.7));
 
   // Train a RF classifier for the HOT image
-  var HCOM_trained_classifier = ee.Classifier.smileRandomForest(trees)
+  var HCOM_trained_classifier = ee.Classifier.smileRandomForest(
+                                    {numberOfTrees: trees,
+                                    variablesPerSplit: splits,
+                                    minLeafPopulation: leafpop,
+                                    bagFraction: bag,
+                                    maxNodes: nodes,
+                                    seed: seeds
+                                    })
                               .train({
                                   features: HCOM_training,
                                   classProperty: label,
