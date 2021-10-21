@@ -143,11 +143,11 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
->https://code.earthengine.google.com/9e6290258e6ebe8f48e9524ed8bf40c1?noload=true
+>https://code.earthengine.google.com/57c1482e4a232a202c4437754b746402?noload=true
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
->https://code.earthengine.google.com/88f48c2acd981afa6834bd37146c70d0
+>https://code.earthengine.google.com/b8b657fdfce19502b62c302bc77d7601?noload=true
 
 The second option for using the GEEMMM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
