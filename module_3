@@ -153,11 +153,11 @@ land cover classes represent in both land cover maps.
 */
 
 
-var class_ref = "users/yanchojo/crd_update_0724_multi";
+var class_ref = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2016_210226_v2";
 // Landcover labels for the classifier
-var class_label_numeric = 'ID';           //<<<------<<<< Numeric Column
+var class_label_numeric = 'Classvalue';           //<<<------<<<< Numeric Column
 var class_label_character = 'Classname';  //<<<------<<<< Text Column
-var class_no = 11;                        // (numeric, land class 
+var class_no = 5;                        // (numeric, land class 
                                           //   number from 'class_label_numeric')
 
 
@@ -194,15 +194,35 @@ var colors = ee.List(['red',
 */
 
 // A color palette to use to ID the layers
-var colors = ee.List(['#E69800',
-                      '#267300',
-                      '#4CE600',
-                      '#8400A8', 
-                      '#CDF57A',
-                      '#00FFC5',
-                      '#004DA8',
-                      '#FFFF00']);
+var colors = ee.List(['#ed6334',
+'#fadf69',
+'#939599',
+'#2D4348',
+'#034f05',
+'#2eb831',
+'#93ed95',
+'#8CD7E3',
+'#5BC7BC',
+'#6C92B3',
+'#0449b8'
+]);
 
+/*
+Set your QAA Grid Scale
+
+The QAA part of the GEEMMM is built around the qualitative analysis of two sets of
+one large and once nested in the other. The size of these grid cells needs to be set
+by the user in order to be appropriate for the scale of the project. The inputs are 
+in meters (m). The two should be evenly divisable; e.g. 1000 / 100 = 10.
+
+Enter:
+  var large_grid_scale = 100000; Larger scale size (m)
+  var nested_grid_scale = 10000; Nested scale size (m)
+
+*/
+
+var large_grid_scale = 50000;
+var nested_grid_scale = 5000;
 
 
 /*
@@ -235,7 +255,18 @@ var colors = ee.List(['#E69800',
 
 
 
-
+Clot_image = Clot_image.select(Clot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
+                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
+                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
+Chot_image = Chot_image.select(Chot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
+                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
+                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
+Hlot_image = Hlot_image.select(Hlot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
+                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
+                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
+Hhot_image = Hhot_image.select(Hhot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
+                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
+                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
 
 
 
@@ -324,9 +355,6 @@ var t_poly = ee.FeatureCollection(class_ref);
 // Extract the LC class names and values and make list
 var values = t_poly.distinct(label).aggregate_array(label).getInfo();
 var names = t_poly.distinct(label2).aggregate_array(label2);
-
-// A color palette to use to ID the layers
-var colors = ee.List(['#E69800', '#267300', '#4CE600', '#8400A8', '#CDF57A', '#00FFC5', '#004DA8', '#FFFF00']);
 
 // Redefine the ROI
 var ROI_dis = ROI; 
@@ -519,12 +547,12 @@ function makeGrid(geometry, scale) {
 }
 
 // Create larger 100x100 km grid
-var grid = makeGrid(ROI.geometry(), 100000);
+var grid = makeGrid(ROI.geometry(), large_grid_scale);
 var new_grid = grid.randomColumn().filter(ee.Filter.lte('random', 0.5));
 
 // Create the smaller cells
 var mini_cells = new_grid.map(function(x){
-  var mini_grid = makeGrid(ee.Feature(x).geometry(), 10000); 
+  var mini_grid = makeGrid(ee.Feature(x).geometry(), nested_grid_scale); 
   mini_grid = mini_grid.randomColumn().filter(ee.Filter.lte('random', 0.20));
   mini_grid = mini_grid.map(function(feat){
     var geom =feat.geometry().coordinates().flatten();
