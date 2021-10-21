@@ -255,27 +255,6 @@ var nested_grid_scale = 5000;
 
 
 
-Clot_image = Clot_image.select(Clot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
-                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
-                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
-Chot_image = Chot_image.select(Chot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
-                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
-                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
-Hlot_image = Hlot_image.select(Hlot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
-                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
-                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
-Hhot_image = Hhot_image.select(Hhot_image.bandNames().remove('b6'),['B1', 'B2', 'B3', 'B4', 'B5', 'B7',
-                  'SR', 'NDVI', 'NDWI', 'MNDWI', 'CMRI', 'MMRI', 'SAVI', 'OSAVI',
-                  'EVI', 'MRI', 'SMRI', 'LSWI', 'NDTI', 'EBBI']);
-
-
-
-
-
-
-
-
-
 
 
 
@@ -470,10 +449,10 @@ alert('GEE QAA INTERFACE'+
 '\nas well as the currently recorded qualitative analysis'+
 '\nclick on the Print Dictionary button.'+
 '\n'+
-'\nWhen satisfied with the current progress or at the completetion '+
+'\nWhen satisfied with the current progress or at the completion '+
 '\nof the QAA, the dictionary, along with all of the saved comments,'+
 '\ncan be exported to your Google Drive as a CSV file. Click on the '+
-'\nExport Dictionarty button to initiate this task.');
+'\nExport Dictionary button to initiate this task.');
 
 
 var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
@@ -631,10 +610,10 @@ var instructions = ui.Label('Use the left map for viewing GE '+
 '\nas well as the currently recorded qualitative analysis'+
 '\nclick on the Print Dictionary button.'+
 '\n'+
-'\nWhen satisfied with the current progress or at the completetion '+
+'\nWhen satisfied with the current progress or at the completion '+
 '\nof the QAA, the dictionary, along with all of the saved comments,'+
 '\ncan be exported to your Google Drive as a CSV file. Click on the '+
-'\nExport Dictionarty button to initiate this task.');
+'\nExport Dictionary button to initiate this task.');
 instructions.style().set('fontWeight', 'bold');
 print(instructions);
 
