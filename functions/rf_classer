@@ -4,7 +4,8 @@ This is the Random Forest image classification module, which is part
 of the BVC GEEMMM v1.0 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: October 21, 2021
+Last update: October 22, 2021
+
 
 use_cont_spec, Chot, Clot, t_poly_h, t_poly_c,
 */
@@ -132,8 +133,7 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, 
               assetId: 'HOT_Classification_contemporary',
               region: ROI,
               scale: 30,
-              maxPixels:1e13,
-              dimensions: 512
+              maxPixels:1e13
               });
               
   classified_CHOT.evaluate(function(){
@@ -209,8 +209,7 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, 
               assetId: 'LOT_Classification_contemporary',
               region: ROI,
               scale: 30,
-              maxPixels:1e13,
-              dimensions: 512
+              maxPixels:1e13
               });
               
   classified_CLOT.evaluate(function(){
@@ -290,8 +289,7 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, sp
               assetId: 'Combine_Classification_contemporary',
               region: ROI,
               scale: 30,
-              maxPixels:1e13,
-              dimensions: 512
+              maxPixels:1e13
               });  
               
   classified_CCOM.evaluate(function(){
@@ -394,8 +392,7 @@ exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_pol
               assetId: 'HOT_Classification_historic',
               region: ROI,
               scale: 30,
-              maxPixels:1e13,
-              dimensions: 512
+              maxPixels:1e13
               });  
                 
   classified_HHOT.evaluate(function(){
@@ -498,8 +495,7 @@ exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_pol
               assetId: 'LOT_Classification_Historic',
               region: ROI,
               scale: 30,
-              maxPixels:1e13,
-              dimensions: 512
+              maxPixels:1e13
               });  
               
   classified_HLOT.evaluate(function(){
@@ -609,8 +605,7 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot,
               assetId: 'Combine_Classification_historic',
               region: ROI,
               scale: 30,
-              maxPixels:1e13,
-              dimensions: 512
+              maxPixels:1e13
               });              
               
   classified_HCOM.evaluate(function(){
