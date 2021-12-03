@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: October 21, 2021
+Last updated: December 3, 2021
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -48,18 +48,18 @@ GEEMMM Module 3 is broken down into 3 sections.
     Section 3: The qualitative accuracy assessments (QAA). The QAA is centered around two randomly 
                generated grids. During the QAA process, the user will cycle through random, 
                automatically generated cells and qualitatively asses the land cover map(s) 
-               generated in Module 2. The region of interest (ROI) is first divided into 100 km by
-               100km cells, of which 50% are randomly selected for analysis. Then, each 100 
-               km by 100 km cell is subdivided into 10 km by 10 km sub-grids; of which 20% are
-               retained for analysis. It is within these 10 km by 10 km grid cells that the QAA 
-               takes place. For each cell, the user can record if each land cover class is over, 
-               well, or under represented, and provide written comments for each cell. Tallies for
-               all of the cells are recorded along with the comments (recorded with the 
-               corresponding cell number), which can be viewed at any time and exported as a CSV 
-               document to the user’s Google drive at any time. If the user would like to save the 
-               grids and use them again outside of GEEMMM they have the ability to export the two 
-               grids as shapefiles to their Google Drive. Further instructions and QAA feature 
-               explanation will be found with Step 2 of Module 3. 
+               generated in Module 2. The region of interest (ROI) is first divided into a large 
+               cell parent grid (set by user), of which 50% are randomly selected for analysis. 
+               Then, each parent grid cell is subdivided into sub-grids (scale set by user); of 
+               which 20% are retained for analysis. It is within these sub-grid cells that the 
+               QAA takes place. For each sub-grid cell, the user can record if each land cover 
+               class is over, well, or under represented, and provide written comments for each 
+               cell. Tallies for all of the sub-grid cells are recorded along with the comments 
+               (recorded with the corresponding cell number), which can be viewed at any time and 
+               exported as a CSV document to the user’s Google drive at any time. If the user would  
+               like to save the grids and use them again outside of GEEMMM they have the ability to 
+               export the two grids as shapefiles to their Google Drive. Further instructions and
+               QAA feature explanation will be found with Step 2 of Module 3. 
 
 After pressing the ‘Run’ button at the top of the script editor, the user will be prompted
 to select the country in which the ROI is found. (Currently, across-border ROI dynamics 
@@ -81,8 +81,8 @@ At the end of the workflow, the user should have started exporting:
     1.) Loss Image 
     2.) Gain Image
     3.) Persistence Image
-    4.) 100 x 100 km grid
-    5.) 10 x 10 km grid
+    4.) Large Cell Parent grid
+    5.) Small Cell Sub-grid
     6.) QAA CSV file
 
 Before running Module 3, please read through the comments below to determine 
@@ -211,13 +211,13 @@ var colors = ee.List(['#ed6334',
 Set your QAA Grid Scale
 
 The QAA part of the GEEMMM is built around the qualitative analysis of two sets of
-one large and once nested in the other. The size of these grid cells needs to be set
-by the user in order to be appropriate for the scale of the project. The inputs are 
-in meters (m). The two should be evenly divisable; e.g. 1000 / 100 = 10.
+one large and once nested sub-grid in the other. The size of these grid cells needs 
+to be set by the user in order to be appropriate for the scale of the project. The 
+inputs are in meters (m). The two should be evenly divisable; e.g. 1000 / 100 = 10.
 
 Enter:
-  var large_grid_scale = 100000; Larger scale size (m)
-  var nested_grid_scale = 10000; Nested scale size (m)
+  var large_grid_scale = 100000; Larger grid scale size (m)
+  var nested_grid_scale = 10000; Nested sub-grid scale size (m)
 
 */
 
