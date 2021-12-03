@@ -775,10 +775,10 @@ var comment_button = ui.Button({label: 'Add Comment', onClick: function(){
 print(comment_button);
 
 Export.table.toDrive({collection:new_grid,
-                      description: '100km_x_100km_grid'
+                      description: 'Large Cell Parent grid'
   });
 Export.table.toDrive({collection:mini_cells,
-                      description: '10km_x_10km_Cells'
+                      description: 'Small Cell Sub-grid'
   });
 });
 
@@ -790,8 +790,8 @@ print(dyn_button);
 //    1.) Loss Image 
 //    2.) Gain Image
 //    3.) Persistence Image
-//    4.) 100 x 100 km grid
-//    5.) 10 x 10 km grid
+//    4.) Large Cell Parent grid
+//    5.) Small Cell Sub-grid
 //    6.) QAA CSV file
 
 ////////////////////////////////////////////////////////////////////////////////
