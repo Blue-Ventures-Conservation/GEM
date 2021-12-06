@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: October 22, 2021
+Last updated: December 6, 2021
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -678,14 +678,14 @@ step_1_button.onClick(function(){
       var cont_imagery = c_imagery.conImagery(ROI, contemporary_start_year, contemporary_end_year,
                                               cloud_cover, month_start, month_end, cloud_mask);
       var hist_imagery = h_imagery.histImagery(ROI, historic_start_year, historic_end_year,
-                                              cloud_cover, month_start, month_end, cloud_mask).aside(print);
+                                              cloud_cover, month_start, month_end, cloud_mask);
       // Calculate tidal conditions
       cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI);
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
       
       // Build the contemporary BAP composites
       var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI');
-      var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').aside(print);
+      var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI');
 
 
       // Add the contemporary imagery once it has finished processing 
