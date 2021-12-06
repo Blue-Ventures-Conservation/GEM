@@ -3,7 +3,7 @@
 This is the contemporary imagery module, which is part of the BVC MMM v4.0 library.
 It is used to collect recent Landsat 8 imagery for the area of interest.
 
-Last update: 29-04-2020
+Last update: 06-12-2021
 
 */
 
@@ -131,7 +131,7 @@ exports.histImagery_45 = function(roi, hist_year1, hist_year2, cloudCoverLimit, 
     // filter for selected year range
     .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
     // filter for selected year range
-    .filter(ee.Filter.calendarRange(month_1, month_2,'month')).aside(print);
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'));
   // collect the LS5 imagery
   
   var col5 =  ee.ImageCollection("LANDSAT/LT05/C01/T1_SR")
@@ -142,10 +142,10 @@ exports.histImagery_45 = function(roi, hist_year1, hist_year2, cloudCoverLimit, 
     // filter for selected year range
     .filterDate( hist_year1 + '-01-01', hist_year2 + '-12-31')
     // filter for selected month range
-    .filter(ee.Filter.calendarRange(month_1, month_2,'month')).aside(print);
+    .filter(ee.Filter.calendarRange(month_1, month_2,'month'));
     
    //merge the collections 
-   var images = ee.ImageCollection(col5.merge(col4)).aside(print);
+   var images = ee.ImageCollection(col5.merge(col4));
    
    if(cloud_mask === "none"){ images = images;}else{
       if(cloud_mask === "mild"){ images = images.map(function(img){
