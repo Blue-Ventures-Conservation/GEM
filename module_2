@@ -58,7 +58,7 @@ GEEMMM Module 2 is broken down into 3 sections:
 The classification reference areas (CRAs) will be divided to separately train and then 
 validate the classifier and classification results, respectively. Randomly, 70% of the CRAs
 will be used to train the classifier, and the remaining 30% are used to validate the results.
-The CRAs used in the GEEMMM pilot study employed the the coordinate reference system (CRS) 
+The CRAs used in the GEEMMM pilot study employed the coordinate reference system (CRS) 
 "EPSG:4326 - WGS 84". However, GEE "... is designed so that you rarely have to worry about 
 map projections when doing computations." Follow the link below to learn more about GEE and 
 data projections:  https://developers.google.com/earth-engine/guides/projections
@@ -157,7 +157,7 @@ var class_label_character = 'Classname';
      
      1.) Spatio-temporally invariant: The CRAs have not changed between the historic
                                       years of interest and the contemporary years of 
-                                      interest.t - a single set of CRAs is used for both
+                                      interest. - a single set of CRAs is used for both
                                       classifications.
      2.) Not spatio-temporally invariant: The CRAs have changed between the historic years 
                                           of interest and the contemporary years of interest 
