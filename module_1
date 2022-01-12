@@ -749,7 +749,7 @@ step_1_button.onClick(function(){
             '\n'+
             '\nOnce the task tab turns yellow, click the tab and click'+
             '\non Run for each item that has populated the Tasks tab.'+
-            '\nBe sure that the export is direcyed to your asset folder.');
+            '\nBe sure that the export is directed to your asset folder.');
 
         // Add single-image indices     
         var Chot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Chot));
