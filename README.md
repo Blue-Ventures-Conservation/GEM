@@ -97,10 +97,12 @@ errors which users may encounter while using the GEEMMM. Please read the ‘KNOW
 ISSUES’ section of this document before contacting the developers.
 
 The development of the GEEMMM was undertaken using the latest versions of both
-Google Chrome (v86.0.4240.111) and Mozilla Firefox (v82.0.2) web browsers, on 
+Google Chrome (v98.0.4758.82) and Mozilla Firefox (v97.0) web browsers, on 
 both macOS (v10.13.6) and Windows (v10.0.19042.610) operating systems. The 
 functionality of the GEEMMM on Linux systems or other web browsers is unknown at
-this time, but no compatibility issues are currently known or expected.
+this time. There have been some documented time-out errors related to non-Chrome
+based GEE execution; more information on this problem can be found below in the
+'Known Issues' section of this document.
 
 Additionally, the GEEMMM is designed to be universally applicable to any location, 
 globally, where mangroves occur. However, it should be noted that the pilot study,
@@ -229,6 +231,12 @@ faster than standalone workstations, and once one portion of the GEEMMM initiate
 it will continue even if internet connectivity is temporarily lost.  This means 
 that intermediate data products - and the user’s progress - is effectively saved,
 to an extent.  
+
+The selected web-browser is known to have an impact on time-out errors. Google 
+Chrome has proven to be the fastest and most reliable web browser to use with the 
+GEEMMM. It has been documented that Firefox will have trouble loading calculated 
+objects before producing a time-out error. However, this problem can typically be 
+resolved by simply re-running the script.
 
 ## FUNDING
 
