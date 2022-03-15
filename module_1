@@ -9,10 +9,10 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (max@vygeo.ca).
+Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: January 14, 2022
+Last updated: March 15, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -206,8 +206,8 @@ var topo_path = 'users/yanchojo/topo';
           var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2018;
-var contemporary_end_year = 2020;
+var contemporary_start_year = 2020;
+var contemporary_end_year = 2022;
 
 /*
 2.B) Historic Years
@@ -271,7 +271,7 @@ var month_end = 12;
 
 */
 
-var cloud_cover = 30;
+var cloud_cover = 15;
 
 /*
 2.E) Cloud Mask
@@ -292,7 +292,7 @@ var cloud_cover = 30;
 
 */
 
-var cloud_mask = 'aggressive';
+var cloud_mask = 'mild';
 
 /*
 2.F) Tidal Zone  
@@ -500,16 +500,15 @@ var inland_mang = false;
 // Required Modules
 
 // This is where the required functions are called into the script
-var known_ext =  require('users/yanchojo/GEEMMM_v4_1/:modules/known_mangroves');
-var coastline =  require('users/yanchojo/GEEMMM_v4_1/:modules/coastline');
-var topography =  require('users/yanchojo/GEEMMM_v4_1/:modules/topography');
-var mangrove_buff = require('users/yanchojo/GEEMMM_v4_1/:modules/mangrove_buff');
-var c_imagery = require('users/yanchojo/GEEMMM_v4_1/:modules/contemporary_imagery');
-var h_imagery = require('users/yanchojo/GEEMMM_v4_1/:modules/historic_imagery');
-var shoreRefl = require('users/yanchojo/GEEMMM_v4_1/:modules/MNDWI_tidal_function');
-var indx_mod = require('users/yanchojo/GEEMMM_v4_1/:modules/indices');
-var water = require('users/yanchojo/GEEMMM_v4_1/:modules/water_mask');
-var fringe = require('users/yanchojo/GEEMMM_v4_1/:modules/fringe_mang');
+var known_ext =  require('users/yanchojo/GEM_LS9/:modules/known_mangroves');
+var coastline =  require('users/yanchojo/GEM_LS9/:modules/coastline');
+var topography =  require('users/yanchojo/GEM_LS9/:modules/topography');
+var mangrove_buff = require('users/yanchojo/GEM_LS9/:modules/mangrove_buff');
+var ls_imagery = require('users/yanchojo/GEM_LS9/:modules/landsat_imagery');
+var shoreRefl = require('users/yanchojo/GEM_LS9/:modules/MNDWI_tidal_function');
+var indx_mod = require('users/yanchojo/GEM_LS9/:modules/indices');
+var water = require('users/yanchojo/GEM_LS9/:modules/water_mask');
+var fringe = require('users/yanchojo/GEM_LS9/:modules/fringe_mang');
 
 
 
@@ -675,10 +674,13 @@ step_1_button.onClick(function(){
       var kn_mang_ext = mang_img.clip(ROI);
       
       // Create hist./cont. image collections
-      var cont_imagery = c_imagery.conImagery(ROI, contemporary_start_year, contemporary_end_year,
+      var cont_imagery = ls_imagery.LSimagery(ROI, contemporary_start_year, contemporary_end_year,
                                               cloud_cover, month_start, month_end, cloud_mask);
-      var hist_imagery = h_imagery.histImagery(ROI, historic_start_year, historic_end_year,
+      var hist_imagery = ls_imagery.LSimagery(ROI, historic_start_year, historic_end_year,
                                               cloud_cover, month_start, month_end, cloud_mask);
+      print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
+      print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
+                                              
       // Calculate tidal conditions
       cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI);
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
@@ -693,7 +695,7 @@ step_1_button.onClick(function(){
         var add_c_imagery = ui.Button('Add Contemporary Imagery');
         add_c_imagery.onClick(function(){
         // Add to Map
-          var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
+          var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
           Map.addLayer(Chot, vis, 'Contemporary High Tide');
           Map.addLayer(Clot, vis, 'Contemporary Low Tide');
         });
@@ -714,7 +716,7 @@ step_1_button.onClick(function(){
         var add_h_imagery = ui.Button('Add Historic Imagery');
         add_h_imagery.onClick(function(){
           // Add to Map
-          var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
+          var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
           Map.addLayer(Hhot, vis, 'Historic High Tide');
           Map.addLayer(Hlot, vis, 'Historic Low Tide');
         });
