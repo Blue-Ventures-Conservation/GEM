@@ -1,3 +1,12 @@
+/*
+
+This is the known mangrove dataset module, which is part of the BVC GEM v1.1 library.
+It either calls from GEE or ingests the raster-based known mangrove extent
+data used withing the GEM tool.
+
+Last update: 14-03-2022
+
+*/
 
 exports.known_mang = function(kmx){
   
