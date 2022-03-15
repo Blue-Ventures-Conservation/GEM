@@ -10,10 +10,10 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (max@vygeo.ca).
+Mr. Max Yancho (yanchojo@gmail.com).
 
 Developed on: June 3, 2020
-Last updated: January 14, 2022
+Last updated: March 15, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -350,7 +350,7 @@ var hist_res = hist_class;
     var class_res = hist_res;
     }
     
-var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
+var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
 Map.addLayer(Chot_image.updateMask(final_mask).clip(c1), vis, 'Contemporary High Tide');
 Map.addLayer(Clot_image.updateMask(final_mask).clip(c1), vis, 'Contemporary Low Tide', false);
 Map.addLayer(Hhot_image.updateMask(final_mask).clip(c1), vis, 'Historic High Tide', false);
@@ -455,7 +455,7 @@ alert('GEE QAA INTERFACE'+
 '\nExport Dictionary button to initiate this task.');
 
 
-var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 3000};
+var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
 
 // Add three maps to the screen.
 var left = ui.Map();
