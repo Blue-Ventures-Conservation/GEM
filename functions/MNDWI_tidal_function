@@ -1,6 +1,6 @@
 /*
 
-This is the MNDWI tidal condition module, which is part of the BVC MMM v4.0 library.
+This is the MNDWI tidal condition module, which is part of the BVC GEM v1.1 library.
 It is used calculate the MNDWI along the shoreline of input images and save the mean 
 MNDWI value as an image metadata property.
 
