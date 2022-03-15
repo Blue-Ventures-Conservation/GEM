@@ -1,10 +1,10 @@
 /*
 
-This is the mangrove buffer module, which is part of the BVC MMM v4.0 library.
+This is the mangrove buffer module, which is part of the BVC GEM v1.1 library.
 It is used to support decsions made around how to automatically select a shoreline
 buffer. 
 
-Last update: 28-04-2020
+Last update: 14-03-2022
 
 */
 
