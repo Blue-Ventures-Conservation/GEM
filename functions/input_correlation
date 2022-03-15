@@ -1,4 +1,6 @@
-
+/*
+Updated: March 15, 2022
+*/
 
 exports.pearson_cor_mat = function(img, bands, geom){
 
