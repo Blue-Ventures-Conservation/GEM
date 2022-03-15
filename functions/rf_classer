@@ -4,7 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEEMMM v1.0 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: October 22, 2021
+Last update: March 15, 2022
 
 
 use_cont_spec, Chot, Clot, t_poly_h, t_poly_c,
