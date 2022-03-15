@@ -1,10 +1,10 @@
 /*
 
-This is the indices module, which is part of the BVC MMM v4.0 library.
+This is the indices module, which is part of the BVC GEM v1.1  library.
 It is used to support the generation of spectral indices for the selected 
 image data seers
 
-Last update: 12-05-2020
+Last update: 14-03-2022
 
 */
 
