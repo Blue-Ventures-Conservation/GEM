@@ -1,4 +1,17 @@
+/*
 
+This is the topography module, which is part of the BVC GEM v1.1 library.
+Two funtions:
+
+dsm_id: determines whether the user will use the GEE JAXA topographic dataset
+        or the user prefers to ingest their own raster-based topographic data
+
+topo_mask_func: the topographic data is used to generate a pixel masck, based
+                on elevation and slope thresholds.
+
+Last update: 14-03-2022
+
+*/
 exports.dsm_id = function(topo, topo_path){
 
   // topo is true/false user identified boolean value 
@@ -22,11 +35,8 @@ exports.dsm_id = function(topo, topo_path){
   
   
   return dsm;
-
-
-//Map.addLayer(dsm);  
-  
 };
+
 
 exports.topo_mask_func = function(dsm, mangroves, mang_topo, elevation, slope){
 
