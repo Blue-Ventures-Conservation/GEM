@@ -1,4 +1,12 @@
+/*
 
+This is the water mask module, which is part of the BVC GEM v1.1 library.
+This function generates a pixel-based water mask using the MNDWI index,
+set at a threshold of 0.09.
+
+Last update: 14-03-2022
+
+*/
 
 
 exports.water_mask = function(hist_img, cont_img, combo_water_mask){
