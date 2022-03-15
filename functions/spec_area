@@ -4,7 +4,7 @@ This is the spectral area/seperability module, which is part
 of the BVC GEEMMM v1.0 library. It is used to determine if input 
 land cover classification reference data a spectral distinguishable.
 
-Last update: Novemver 4, 2020
+Last update: March 15, 2022
 
 */
 
