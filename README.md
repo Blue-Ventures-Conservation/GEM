@@ -142,15 +142,15 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 1: Defining the Region of Interest (ROI) and Compositing Imagery
 
->https://code.earthengine.google.com/754ab072586056251b0d589d99aee8c0?noload=true
+>https://code.earthengine.google.com/3d412feee637efaae80055b9f054bb6c?noload=true
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
->https://code.earthengine.google.com/54e855b9fd3e09d50fae750414278c76?noload=true
+>https://code.earthengine.google.com/0193fe9eb847fff6887487a541f7a51a?noload=true
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
->https://code.earthengine.google.com/df22cc7d6fd985104f9c4250a541bf07?noload=true
+>https://code.earthengine.google.com/d312fd8bd01a74cfcd59408a0c9d96ba?noload=true
 
 The second option for using the GEM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
