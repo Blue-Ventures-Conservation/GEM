@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //////////      Google Earth Engine Mangrove Mapping Methodology     ///////////
-//////////                     (GEEMMM) Module  2                    ///////////
+//////////                     (GEM) Module  2                    ///////////
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -10,14 +10,14 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (yanchojo@gmail.com).
+Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: March 15, 2022
+Last updated: June 1, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
-iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM) 
+iterations of the Google Earth Engine Mangrove Mapping Methodology (GEM) 
 will be hosted by a Blue Ventures Conservation Google account.
 
 
@@ -28,7 +28,7 @@ will be hosted by a Blue Ventures Conservation Google account.
 ///////////////////////////////////////////////
 
 
-Welcome to Module 2 of the GEEMMM. This module will be used to: 1.) Explore the 
+Welcome to Module 2 of the GEM. This module will be used to: 1.) Explore the 
 spectral relationships between the classification reference areas (CRAs) classes. 2.) 
 Generate the land cover classification maps using the inputs from Module 1 and the 
 Random forest classifier. Module 2’s workflow is less linear than Module 1’s. In the first 
@@ -38,7 +38,7 @@ from Module 2 are the single-band land cover classification images, the number c
 range from one to six classifications (see below). Associated with each classification are
 quantitative accuracy metrics and matrices. 
 
-GEEMMM Module 2 is broken down into 3 sections:
+GEM Module 2 is broken down into 3 sections:
 
     Section 1: The user sets the inputs and parameters (including the CRAs), and reestablishes 
                the chosen indices. 
@@ -58,7 +58,7 @@ GEEMMM Module 2 is broken down into 3 sections:
 The classification reference areas (CRAs) will be divided to separately train and then 
 validate the classifier and classification results, respectively. Randomly, 70% of the CRAs
 will be used to train the classifier, and the remaining 30% are used to validate the results.
-The CRAs used in the GEEMMM pilot study employed the coordinate reference system (CRS) 
+The CRAs used in the GEM pilot study employed the coordinate reference system (CRS) 
 "EPSG:4326 - WGS 84". However, GEE "... is designed so that you rarely have to worry about 
 map projections when doing computations." Follow the link below to learn more about GEE and 
 data projections:  https://developers.google.com/earth-engine/guides/projections
@@ -70,11 +70,11 @@ work through Module 2 and view classification results, not accounting for export
 outputs or prolonged exploration of the spectral separability. Times may vary depending on internet
 speed.
 
-The default parameters, as discussed in the GEEMMM ReadMe file, were established 
+The default parameters, as discussed in the GEM ReadMe file, were established 
 during a pilot study conducted for the country of Myanmar (Burma). Many of 
 these parameters may also work for other parts of the world, but the developers 
 make no claims about the transferability of default settings to other locations.
-For applying the GEEMMM elsewhere, please pay careful attention to the parameters 
+For applying the GEM elsewhere, please pay careful attention to the parameters 
 and set them according to the local situation and project goals/objectives.   
 
 At the end of the workflow, the user should have started exporting:
@@ -151,7 +151,7 @@ var class_label_character = 'Classname';
 
 /*
 1.B) Classification Reference Area (CRA) Type
-     Record type of CRA. It is important for the GEEMMM that the user distinguishes 
+     Record type of CRA. It is important for the GEM that the user distinguishes 
      their CRAs as either spatio-temporally invariant across the time-period (historic
      and contemporary imagery) or derived from just contemporary sources. 
      
@@ -202,7 +202,7 @@ var use_cont_spec = false;
 /*
 1.C) Classifier
      GEE offers a variety of classifiers. These come in both supervised and 
-     unsupervised classifier choices. At this time however, the GEEMMM is built to
+     unsupervised classifier choices. At this time however, the GEM is built to
      run the Random Forest Classifier, a supervised decision tree classifier.
      Future versions will offer more classification options. The Random Forest 
      classifier is one of the most well-researched classifiers, and has routinely
@@ -218,7 +218,7 @@ var trees = 200;
 /*
 
 1.D) Output Structure
-     The outputs from the GEEMMM can be generated as either a combined
+     The outputs from the GEM can be generated as either a combined
      (where the high- and low-tide data are combined into a single collection) 
      or separate (individual high- and low-tide) classifications. Outputs below can 
      be turned on and off by adding a 'true'/'false' to the corresponding 
@@ -253,7 +253,7 @@ var combo_hist_out = true;     // Combination historic Imagery
       
       NOTE:
       -Once the workflow begins, you will have to re-select the indices from
-       GEEMMM Module 1. 
+       GEM Module 1. 
       -Take as much time as you need to explore the spectral relationships of 
        the CRAs and input composite bands. Some items take a while to load, 
        so do not initate more than one task at a time.
@@ -289,7 +289,7 @@ var combo_hist_out = true;     // Combination historic Imagery
 
 ////////////////////////////////////////////////////////////////////////////////
 // Required Modules
-// Functions are brought into GEEMMM Module 2 through the require() function
+// Functions are brought into GEM Module 2 through the require() function
 
 var RFclass = require('users/yanchojo/GEM_LS9/:modules/rf_classer');
 var InCor = require('users/yanchojo/GEM_LS9/:modules/input_correlation');
