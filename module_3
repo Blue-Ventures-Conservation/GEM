@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //////////      Google Earth Engine Mangrove Mapping Methodology     ///////////
-//////////                     (GEEMMM) Module  3                    ///////////
+//////////                     (GEM) Module  3                    ///////////
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -10,14 +10,14 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (yanchojo@gmail.com).
+Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: March 15, 2022
+Last updated: June 1, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
-iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM) tool
+iterations of the Google Earth Engine Mangrove Mapping Methodology (GEM) tool
 will be hosted by a Blue Ventures Conservation Google account.
 
 
@@ -26,15 +26,15 @@ will be hosted by a Blue Ventures Conservation Google account.
 ///////////////////////////////////////////////
 
 
-Welcome to Module 3 of the GEEMMM. This module will be used to: 1.) Explore the 
+Welcome to Module 3 of the GEM. This module will be used to: 1.) Explore the 
 mangrove (or other land cover class) loss, persistence, and gain dynamics. 2.) Provide a 
 tool to conduct a qualitative accuracy assessment (QAA). The QAA is an entirely optional
-component of the GEEMMM, however it adds another option for analysing of the land cover maps.
-This is the final module of the GEEMMM. Outputs from Module 3 will include three image layers 
+component of the GEM, however it adds another option for analysing of the land cover maps.
+This is the final module of the GEM. Outputs from Module 3 will include three image layers 
 which will represent the loss, persistence, and gain for the selected land cover class, as
 well as a CSV file containing the user generated QAA feedback.
 
-GEEMMM Module 3 is broken down into 3 sections. 
+GEM Module 3 is broken down into 3 sections. 
 
     Section 1: The first step allows the user to select a land cover class for a dynamics 
                analysis. The class is selected prior to the script being run.
@@ -57,7 +57,7 @@ GEEMMM Module 3 is broken down into 3 sections.
                cell. Tallies for all of the sub-grid cells are recorded along with the comments 
                (recorded with the corresponding cell number), which can be viewed at any time and 
                exported as a CSV document to the user’s Google drive at any time. If the user would  
-               like to save the grids and use them again outside of GEEMMM they have the ability to 
+               like to save the grids and use them again outside of GEM they have the ability to 
                export the two grids as shapefiles to their Google Drive. Further instructions and
                QAA feature explanation will be found with Step 2 of Module 3. 
 
@@ -70,11 +70,11 @@ a while to load, be patient as it may temporarily freeze your browser.)The time 
 through the QAA may take several minutes or tens of hours depending on the size of the area 
 and the detail recorded in the comments.
 
-The default parameters, as discussed in the GEEMMM ReadMe file, were established 
+The default parameters, as discussed in the GEM ReadMe file, were established 
 during a pilot study conducted for the country of Myanmar (Burma). Many of 
 these parameters may also work for other parts of the world, but the developers 
 make no claims about the transferability of default settings to other locations.
-For applying the GEEMMM elsewhere, please pay careful attention to the parameters 
+For applying the GEM elsewhere, please pay careful attention to the parameters 
 and set them according to the local situation and project goals/objectives.  
 
 At the end of the workflow, the user should have started exporting:
@@ -101,7 +101,7 @@ This portion of the script requires slightly more input from the user. The user
 will be required to add a color palette, the land cover class names, and the 
 land cover class values to the script as lists.
 
-As in GEEMMM Module 2, bring in Imagery and Masks exported from Module 1. Name 
+As in GEM Module 2, bring in Imagery and Masks exported from Module 1. Name 
 as follows:
 
   Chot_image = HOT contemporary composite (HOT_Img_contemporary); highest observed tide
@@ -210,7 +210,7 @@ var colors = ee.List(['#ed6334',
 /*
 Set your QAA Grid Scale
 
-The QAA part of the GEEMMM is built around the qualitative analysis of two sets of
+The QAA part of the GEM is built around the qualitative analysis of two sets of
 one large and once nested sub-grid in the other. The size of these grid cells needs 
 to be set by the user in order to be appropriate for the scale of the project. The 
 inputs are in meters (m). The two should be evenly divisable; e.g. 1000 / 100 = 10.
@@ -308,7 +308,7 @@ var country_selector = ui.Select({
 print(country_selector);
 print('Please Note: Google Earth Engine refers to the'+
       '\ncountry of Myanmar as Burma. The names in the above country'+
-      '\nlist do not represent the opinions or ideology of the GEEMMM'+
+      '\nlist do not represent the opinions or ideology of the GEM'+
       '\ndevelopment team or Blue Ventures.'+
       '\n'+
       '\nAdditionally, some names are not listed in alphabetical order'+
@@ -427,7 +427,7 @@ print('Contemporary Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee
 // This is the QAA section. The user will be walked through a set of 
 // grid cells to judge the 'quality' of the classification(s). The user 
 // can add comments, and export their observations at any time. The grid
-// cells are also exported for use outside of the GEEMMM.
+// cells are also exported for use outside of the GEM.
 
 
 // Create the QAA button
@@ -755,7 +755,7 @@ var dict = ee.Dictionary({
 });
 var feat = ee.Feature(null, dict);
 Export.table.toDrive({collection:ee.FeatureCollection(feat),
-                      description: 'GEEMMM_QAA_Dictionary'});
+                      description: 'GEM_QAA_Dictionary'});
 }});
 print(export_button);
 
