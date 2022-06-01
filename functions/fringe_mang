@@ -4,13 +4,13 @@ This is the fringe mangrove module, which is part of the BVC GEM v1.1 library.
 If fringe mangroves are included the ROI is doubles for areas less than 10m in
 elevation.
 
-Last update: 14-03-2022
+Last update: 01-06-2022
 
 */
 
 exports.fringMangrove = function(dsm, buff_dist, roi){
 
-  var aoi = ee.Geometry(roi).buffer(ee.Number(buff_dist));
+  var aoi = roi.buffer(ee.Number(buff_dist));
   var pot_fringe = dsm.clip(aoi).select('elev').lte(10);
   
   return pot_fringe;
