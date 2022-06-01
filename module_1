@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //////////      Google Earth Engine Mangrove Mapping Methodology     ///////////
-//////////                     (GEEMMM) Module  1                    ///////////
+//////////                     (GEM) Module  1                    ///////////
 ////////////////////////////////////////////////////////////////////////////////
 
 /* 
@@ -9,14 +9,14 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (yanchojo@gmail.com).
+Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: March 15, 2022
+Last updated: June 1, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
-iterations of the Google Earth Engine Mangrove Mapping Methodology (GEEMMM)
+iterations of the Google Earth Engine Mangrove Mapping Methodology (GEM)
 will be hosted by a Blue Ventures Conservation Google account.
 
 
@@ -27,17 +27,17 @@ will be hosted by a Blue Ventures Conservation Google account.
 ///////////////////////////////////////////////
 
 
-Welcome to Module 1 of the GEEMMM. This module is used to: 1.) Identify 
-the precise region of interest (ROI) used in the GEEMMM, 2.) generate Landsat 
+Welcome to Module 1 of the GEM. This module is used to: 1.) Identify 
+the precise region of interest (ROI) used in the GEM, 2.) generate Landsat 
 image composites, 3.) calculate any desired spectral indices for the generated 
 composites and 4.) create a unified mask to remove water pixels or pixels 
 associated with extreme topography from classification. This module outputs up to
 four image composites (depending on user preference: high- and  low-tide for 
 both a historic and contemporary temporal window), a final mask, representing 
 unified water, slope, and elevation, and a vector  polygon encompassing the region 
-of interest (ROI) to use throughout the GEEMMM workflow. 
+of interest (ROI) to use throughout the GEM workflow. 
 
-GEEMMM Module 1 is broken down into 5 Sections: 
+GEM Module 1 is broken down into 5 Sections: 
 
     Section 1: User inputs
     
@@ -69,11 +69,11 @@ again. Once the  workflow has begun it can take as little as three minutes to wo
 through Module 1, not accounting for exporting times of the outputs. Times may vary 
 depending on internet speed.
 
-The default parameters, as discussed in the GEEMMM ReadMe file, were established 
+The default parameters, as discussed in the GEM ReadMe file, were established 
 during a pilot study conducted for the country of Myanmar (Burma). Many of 
 these parameters may also work for other parts of the world, but the developers 
 make no claims about the transferability of default settings to other locations.
-For applying the GEEMMM elsewhere, please pay careful attention to the parameters 
+For applying the GEM elsewhere, please pay careful attention to the parameters 
 and set them according to the local situation and project goals/objectives.  
 
 At the end of the workflow, the user should have started exporting:
@@ -102,7 +102,7 @@ all visible on your screen before proceeding ***
 1) USER DEFINED DATA SETS
      In this first section the user must determine what data they would 
      like to use within the Google Earth Engine Mangrove Mapping Methodology 
-     (GEEMMM). For each, two options are usually presented: use GEE data or 
+     (GEM). For each, two options are usually presented: use GEE data or 
      upload external user-selected data. Additionally, if the user would like, 
      they may file a request to Google to add a specific data set into the 
      'Earth Engine Data Catalog'. To submit a data request follow the below 
@@ -165,7 +165,7 @@ var cst_path = 'users/yanchojo/gadm36_mmr_0_shore';
 1.D) Topographic Data 
      Another important variable is that of the topographic data. The topographic 
      data will be used to set elevation and slope thresholds before the 
-     classification is executed. The default GEEMMM topographic data is from the
+     classification is executed. The default GEM topographic data is from the
      JAXA-ALOS satellite radar DSM (30 m). As is the case with the other important
      data inputs, the user has the choice to upload their own data by filling in 
      the 'topo_path' variable below.
@@ -189,7 +189,7 @@ var topo_path = 'users/yanchojo/topo';
 /*
 2) USER DEFINED VARIABLES
     In this sub-section, the user will have to define some variables about how 
-    the GEEMMM will run. These variables include the historic and contemporary year
+    the GEM will run. These variables include the historic and contemporary year
     windows, topographic thresholds, cloud cover limits, etc. Each variable will
     be described thoroughly, and helpful resources provided for further insight.
 
@@ -296,7 +296,7 @@ var cloud_mask = 'mild';
 
 /*
 2.F) Tidal Zone  
-     The tidal zone is a user-defined parameter that is used to help the GEEMMM 
+     The tidal zone is a user-defined parameter that is used to help the GEM 
      determine the tidal condition for each image, in both the historic and the
      contemporary image sets. The tidal zone is functionally a shoreline buffer
      which extends seawards from the shore. This distance should be the tidally 
@@ -318,7 +318,7 @@ var tidal_zone = 1000;
 
 /*
 2.G) Water Mask
-     The GEEMMM offers the option to mask out water pixels using the modified 
+     The GEM offers the option to mask out water pixels using the modified 
      normalized difference water index (MNDWI). The MNDWI is calculated for the 
      entire ROI and water pixels are removed based on a threshold established 
      in the original paper by Dr. H. Xu (2006). If water pixels are not masked, 
@@ -463,10 +463,10 @@ var inland_mang = false;
     NOTE:
       -Once the 'Workflow' has begun, the user will be walked through several
        interative steps.
-      -Several intermediary outputs will be generated from GEEMMM Module 1. 
+      -Several intermediary outputs will be generated from GEM Module 1. 
        These outputs MUST be exported to the user's GEE 'Assets'
       -Work through Module 1 completely and ensure all exports have successfully
-       been added to the user 'Assets' folder before proceeding to GEEMMM Module 2
+       been added to the user 'Assets' folder before proceeding to GEM Module 2
       -Do not change the name of the exports unless you are an advanced GIS user
       
                 *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
@@ -611,7 +611,7 @@ step_1_button.onClick(function(){
     
     // Add the mangrove buffer layers to the map
     Map.addLayer(mang_buff_img.select('35_km'), {palette: ['CC0000']}, '35km_buffer');
-    Map.addLayer(mang_buff_img.select('30_km'), {palette: ['FF780A']}, '20km_buffer');
+    Map.addLayer(mang_buff_img.select('30_km'), {palette: ['FF780A']}, '30km_buffer');
     Map.addLayer(mang_buff_img.select('25_km'), {palette: ['FC9F0D']}, '25km_buffer');
     Map.addLayer(mang_buff_img.select('20_km'), {palette: ['F9CB24']}, '20km_buffer');
     Map.addLayer(mang_buff_img.select('15_km'), {palette: ['74B800']}, '15km_buffer');
@@ -649,7 +649,7 @@ step_1_button.onClick(function(){
     // Section 3 //
     ///////////////
     // The variables from Setion 1 are used to generate the image composites
-    // which will be used through out the rest of the GEEMMM. image 
+    // which will be used through out the rest of the GEM. image 
     // composites will be added to the GUI map viewer.
     
     // Prepare the imagery
@@ -842,7 +842,7 @@ step_1_button.onClick(function(){
               '\npanel by clicking on the corresponding button.'+
               '\n'+
               '\nOnce all the of intermediary outputs have begun to export'+
-              '\nGEEMMM Module 1 is complete. Proceed to GEEMMM Module 2'+
+              '\nGEM Module 1 is complete. Proceed to GEM Module 2'+
               '\nafter all outputs have successfully been exported and'+
               '\nadded to the asset GEE asset folder.');
         
@@ -887,7 +887,7 @@ step_1_button.onClick(function(){
           
           // Final Mask creation
           if(inland_mang === true){var final_mask =  in_t(combo_masked, fringe_mask);
-                                       ROI = ee.Geometry.Polygon(ROI.buffer(buff_dist));}
+                                       ROI = ROI.buffer(buff_dist);}
                               else {var final_mask =  in_f(combo_masked);}
 
           // Export final mask
