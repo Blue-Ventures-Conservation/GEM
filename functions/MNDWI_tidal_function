@@ -4,7 +4,7 @@ This is the MNDWI tidal condition module, which is part of the BVC GEM v1.1 libr
 It is used calculate the MNDWI along the shoreline of input images and save the mean 
 MNDWI value as an image metadata property.
 
-Last update: 29-04-2020
+Last update: 22-06-2022
 
 */
 
@@ -31,8 +31,11 @@ exports.shoreRefl = function(img, zone, roi){
                   
   var img_p1 = ee.ImageCollection(img).map(function(img){
     // create MNDWI Image
-    var MNDWI = ee.Image(img).normalizedDifference(['B2', 'B5']);
-  
+    var MNDWI = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
+      'B2': img.select('B2'),
+      'B5': img.select('B5')
+      }).rename(['MNDWI']);
+
     // use the MODIS land/water mask and cloud mask to mask out the land
     var masked_MNDWI = MNDWI.updateMask(land_mask);
   
