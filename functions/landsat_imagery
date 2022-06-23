@@ -3,7 +3,7 @@
 This is the contemporary imagery module, which is part of the BVC MMM v4.0 library.
 It is used to collect recent Landsat 8 imagery for the area of interest.
 
-Last update: 15-03-2022
+Last update: 23-06-2022
 
 */
 
@@ -145,7 +145,13 @@ exports.LSimagery = function(roi, year1, year2, cloudCoverLimit, month_1, month_
       return image.addBands(specCast, null, true);
     }
     
-    images = images.map(fixFloat);
+   function doubleOO(image) {
+      var clamped = image.select(['B5']).clamp(0,1);
+      clamped = clamped.addBands(image.select(['B1','B2','B3','B4','B7','B6', 'pixel_qa']));
+      return clamped;
+    } 
+    
+    images = images.map(fixFloat).map(doubleOO);
 
     if(cloud_mask === "none"){ images = images;}else{
       if(cloud_mask === "mild"){ images = images.map(function(img){
@@ -319,7 +325,13 @@ exports.LSimagery_sans7 = function(roi, year1, year2, cloudCoverLimit, month_1, 
       return image.addBands(specCast, null, true);
     }
     
-    images = images.map(fixFloat);
+   function doubleOO(image) {
+      var clamped = image.select(['B5']).clamp(0,1);
+      clamped = clamped.addBands(image.select(['B1','B2','B3','B4','B7','B6', 'pixel_qa']));
+      return clamped;
+    } 
+    
+    images = images.map(fixFloat).map(doubleOO);
 
     if(cloud_mask === "none"){ images = images;}else{
       if(cloud_mask === "mild"){ images = images.map(function(img){
