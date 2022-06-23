@@ -4,7 +4,7 @@ This is the indices module, which is part of the BVC GEM v1.1  library.
 It is used to support the generation of spectral indices for the selected 
 image data seers
 
-Last update: 14-03-2022
+Last update: 23-06-2022
 
 */
 
@@ -132,33 +132,55 @@ exports.addIndex_simple = function(indx_list, image){
                         };
   
   var NDVI_func = function(img){
-                        var NDVI = ee.Image(img).normalizedDifference(['B4','B3'])
-                        .rename(['NDVI']);
+                        var NDVI = ee.Image(img).expression('(B4 - B3)/(B4 + B3)', {
+                             'B4': img.select('B4'),
+                             'B3': img.select('B3')
+                             }).rename(['NDVI']);
                         return NDVI;
                         };
                       
   var NDWI_func = function(img){
-                        var NDWI = ee.Image(img).normalizedDifference(['B2', 'B4'])
-                        .rename(['NDWI']);
+                        var NDWI = ee.Image(img).expression('(B2 - B4)/(B2 + B4)', {
+                             'B2': img.select('B2'),
+                             'B4': img.select('B4')
+                             }).rename(['NDWI']);
                         return NDWI;
                         };
                       
   var MNDWI_func = function(img){
-                        var MNDWI = ee.Image(img).normalizedDifference(['B2', 'B5'])
-                        .rename(['MNDWI']);
+                       var MNDWI = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
+                             'B2': img.select('B2'),
+                             'B5': img.select('B5')
+                             }).rename(['MNDWI']);
+
                         return MNDWI;
                         };
 
   var CMRI_func = function(img){
-                        var NDVI = ee.Image(img).normalizedDifference(['B4','B3']);
-                        var CMRI = NDVI.subtract(ee.Image(img).normalizedDifference(['B4','B2']))
+                        var NDVI = ee.Image(img).expression('(B4 - B3)/(B4 + B3)', {
+                             'B4': img.select('B4'),
+                             'B3': img.select('B3')
+                             }).rename(['NDVI']);
+                        var NDFT = ee.Image(img).expression('(B4 - B2)/(B4 + B2)', {
+                             'B4': img.select('B4'),
+                             'B2': img.select('B2')
+                             }).rename(['NDFT']);
+                        var CMRI = NDVI.subtract(NDFT)
                                  .rename(['CMRI']);
                         return CMRI;
                         };   
                         
   var MMRI_func = function(img){
-                        var NDVI = ee.Image(img).normalizedDifference(['B4','B3']).abs();
-                        var MNDWI = ee.Image(img).normalizedDifference(['B5','B2']).abs();
+                        var NDVI = ee.Image(img).expression('(B4 - B3)/(B4 + B3)', {
+                             'B4': img.select('B4'),
+                             'B3': img.select('B3')
+                             }).rename(['NDVI']);
+                        NDVI = NDVI.abs();
+                        var MNDWI = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
+                             'B2': img.select('B2'),
+                             'B5': img.select('B5')
+                             }).rename(['MNDWI']);
+                        MNDWI = MNDWI.abs();
                         var MMRI = ee.Image(MNDWI.subtract(NDVI))
                                  .divide(ee.Image(MNDWI.add(NDVI)))
                                  .rename(['MMRI']);
@@ -191,14 +213,18 @@ exports.addIndex_simple = function(indx_list, image){
                         };
                         
   var LSWI_func = function(img){
-                        var LSWI = ee.Image(img).normalizedDifference(['B4', 'B5'])
-                        .rename(['LSWI']);
+                        var LSWI = ee.Image(img).expression('(B4 - B5)/(B4 + B5)', {
+                             'B4': img.select('B4'),
+                             'B5': img.select('B5')
+                             }).rename(['LSWI']);
                         return LSWI;
                         };
                         
   var NDTI_func = function(img){
-                        var NDTI = ee.Image(img).normalizedDifference(['B5', 'B7'])
-                        .rename(['NDTI']);
+                        var NDTI = ee.Image(img).expression('(B5 - B7)/(B5 + B7)', {
+                             'B5': img.select('B5'),
+                             'B7': img.select('B7')
+                             }).rename(['NDTI']);
                         return NDTI;
                         };   
                         
@@ -256,8 +282,14 @@ exports.SMRI = function(hot, lot){
   lot = ee.Image(lot);
   hot = ee.Image(hot);
 
-   var NDVIh = hot.normalizedDifference(['B4','B3']);
-   var NDVIl = lot.normalizedDifference(['B4','B3']);
+   var NDVIh = hot.expression('(B4 - B3)/(B4 + B3)', {
+                             'B4': hot.select('B4'),
+                             'B3': hot.select('B3')
+                             }).rename(['NDVIh']);
+   var NDVIl =  lot.expression('(B4 - B3)/(B4 + B3)', {
+                             'B4': lot.select('B4'),
+                             'B3': lot.select('B3')
+                             }).rename(['NDVIl']);
    var SMRI = ee.Image(NDVIl.subtract(NDVIh))
                .multiply(ee.Image(lot.select('B4').subtract(hot.select('B4'))
                .divide(hot.select('B4')))).rename(['SMRI']);
