@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: June 1, 2022
+Last updated: July 1, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -179,7 +179,20 @@ var cst_path = 'users/yanchojo/gadm36_mmr_0_shore';
 var topo = true;
 var topo_path = 'users/yanchojo/topo';
 
-
+/*
+1.E) Inclusion of Landsat 7 Data
+     The majority of the Landsat 7 collections have been affected by the Scan Line 
+     Corrector (SLC) failure on May 31, 2003. This causes missing data values for 
+     about 22% of each scene. While the remaining pixels provide high-quality data,
+     the missing data values can potentially create artifacts in the output Landsat
+     composites. To include or exclude the Landsat 7 archive toggle the variable 
+     'ls_7_in'; between 'true' (to include) and 'false' (to exclude).
+     
+     Enter:
+          var ls_7_in = true; (to include the Landsat 7 data)
+          var ls_7_in = false; (to exclude the Landsat 7 data)
+*/
+var ls_7_in = true;
 
 ////////////////////////////////////////////////////////////
 ////////      Section 1, Step 2: User Variables     ////////
@@ -206,8 +219,8 @@ var topo_path = 'users/yanchojo/topo';
           var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2020;
-var contemporary_end_year = 2022;
+var contemporary_start_year = 2019;
+var contemporary_end_year = 2021;
 
 /*
 2.B) Historic Years
@@ -222,8 +235,8 @@ var contemporary_end_year = 2022;
 
 */
 
-var historic_start_year = 2004;
-var historic_end_year = 2008;
+var historic_start_year = 1998;
+var historic_end_year = 2001;
 
 /*
 2.C) Months of Interest 
@@ -256,7 +269,7 @@ var historic_end_year = 2008;
 */
 
 var month_start = 6;
-var month_end = 12;
+var month_end = 8;
 
 /*
 2.D) Cloud Cover limit  
@@ -292,7 +305,7 @@ var cloud_cover = 15;
 
 */
 
-var cloud_mask = 'mild';
+var cloud_mask = 'mile';
 
 /*
 2.F) Tidal Zone  
@@ -500,15 +513,15 @@ var inland_mang = false;
 // Required Modules
 
 // This is where the required functions are called into the script
-var known_ext =  require('users/yanchojo/GEM_LS9/:modules/known_mangroves');
-var coastline =  require('users/yanchojo/GEM_LS9/:modules/coastline');
-var topography =  require('users/yanchojo/GEM_LS9/:modules/topography');
-var mangrove_buff = require('users/yanchojo/GEM_LS9/:modules/mangrove_buff');
-var ls_imagery = require('users/yanchojo/GEM_LS9/:modules/landsat_imagery');
-var shoreRefl = require('users/yanchojo/GEM_LS9/:modules/MNDWI_tidal_function');
-var indx_mod = require('users/yanchojo/GEM_LS9/:modules/indices');
-var water = require('users/yanchojo/GEM_LS9/:modules/water_mask');
-var fringe = require('users/yanchojo/GEM_LS9/:modules/fringe_mang');
+var known_ext =  require('users/yanchojo/GEM_LS9_colors/:modules/known_mangroves');
+var coastline =  require('users/yanchojo/GEM_LS9_colors/:modules/coastline');
+var topography =  require('users/yanchojo/GEM_LS9_colors/:modules/topography');
+var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
+var ls_imagery = require('users/yanchojo/GEM_LS9_colors/:modules/landsat_imagery');
+var shoreRefl = require('users/yanchojo/GEM_LS9_colors/:modules/MNDWI_tidal_function');
+var indx_mod = require('users/yanchojo/GEM_LS9_colors/:modules/indices');
+var water = require('users/yanchojo/GEM_LS9_colors/:modules/water_mask');
+var fringe = require('users/yanchojo/GEM_LS9_colors/:modules/fringe_mang');
 
 
 
@@ -674,10 +687,14 @@ step_1_button.onClick(function(){
       var kn_mang_ext = mang_img.clip(ROI);
       
       // Create hist./cont. image collections
-      var cont_imagery = ls_imagery.LSimagery(ROI, contemporary_start_year, contemporary_end_year,
-                                              cloud_cover, month_start, month_end, cloud_mask);
-      var hist_imagery = ls_imagery.LSimagery(ROI, historic_start_year, historic_end_year,
-                                              cloud_cover, month_start, month_end, cloud_mask);
+      var cont_imagery = ee.Algorithms.If(ls_imagery.LSimagery(ROI, contemporary_start_year, contemporary_end_year,
+                                              cloud_cover, month_start, month_end, cloud_mask), 
+                                          ls_imagery.LSimagery_sans7(ROI, contemporary_start_year, contemporary_end_year,
+                                              cloud_cover, month_start, month_end, cloud_mask));
+      var hist_imagery = ee.Algorithms.If(ls_imagery.LSimagery(ROI, historic_start_year, historic_end_year,
+                                              cloud_cover, month_start, month_end, cloud_mask),
+                                          ls_imagery.LSimagery_sans7(ROI, historic_start_year, historic_end_year,
+                                              cloud_cover, month_start, month_end, cloud_mask));
       print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
       print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
                                               
