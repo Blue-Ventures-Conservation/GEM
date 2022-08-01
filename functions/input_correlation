@@ -1,5 +1,10 @@
 /*
-Updated: March 15, 2022
+
+This is the spectral band/index correlation module, which is part 
+of the BVC GEM v1.2 library. It is used to determine the correlation
+between potential spectral classification inputs.
+
+Last Updated: March 15, 2022
 */
 
 exports.pearson_cor_mat = function(img, bands, geom){
