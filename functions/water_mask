@@ -1,10 +1,10 @@
 /*
 
-This is the water mask module, which is part of the BVC GEM v1.1 library.
+This is the water mask module, which is part of the BVC GEM v1.2 library.
 This function generates a pixel-based water mask using the MNDWI index,
 set at a threshold of 0.09.
 
-Last update: 14-03-2022
+Last update: 22-06-2022
 
 */
 
@@ -14,16 +14,28 @@ exports.water_mask = function(hist_img, cont_img, combo_water_mask){
 
 if (combo_water_mask === true){
   // create contemporary MNDWI Image
-  var MNDWI_cont = cont_img.normalizedDifference(['B5', 'B2']).gte(0.09);
+  var MNDWI_cont = cont_img.expression('(B2 - B5)/(B2 + B5)', {
+      'B2': cont_img.select('B2'),
+      'B5': cont_img.select('B5')
+      }).rename(['MNDWI']).lt(0.09);
+  
     // create historic MNDWI Image
-  var MNDWI_hist = hist_img.normalizedDifference(['B5', 'B2']).gte(0.09);
+  var MNDWI_hist = hist_img.expression('(B2 - B5)/(B2 + B5)', {
+      'B2': hist_img.select('B2'),
+      'B5': hist_img.select('B5')
+      }).rename(['MNDWI']).lt(0.09);
+  
   // unify the images, select values greater than 1
   var h2o_mask = MNDWI_cont.add(MNDWI_hist).gte(1);
   
   // export
   return h2o_mask;
 } else {
-  var single_water = hist_img.normalizedDifference(['B5', 'B2']).gte(0.09);
+  var single_water = hist_img.expression('(B2 - B5)/(B2 + B5)', {
+      'B2': hist_img.select('B2'),
+      'B5': hist_img.select('B5')
+      }).rename(['MNDWI']).lt(0.09);
+  
 
   // export
   return single_water;
