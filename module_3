@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: June 1, 2022
+Last updated: July 1, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -162,50 +162,6 @@ var class_no = 5;                        // (numeric, land class
 
 
 
-/*
-Define your color palette
-
-This is a slightly more abstract parameter than the others in this tool, however
-it will aid in the QAA portion of Module 3. The number of colors you choose must
-be equal to or greater than the number of land cover classes you included in 
-your classification maps. For example, if you had just two classes, mangrove and
-non-mangrove, you only need to have two colors 'green' and 'red'. Enter the 
-colors in the square brackets and in quotations, matching the example below. The
-color will match the numerical order of the land cover classes, so, to extend 
-our example, mangrove pixels would be green and non-mangrove pixels would be red.
-
-The user may write colors as 'red', 'cyan', 'yellow' or as six-digit hex triplet 
-color codes; e.g.'#267300'. (https://en.wikipedia.org/wiki/Web_colors#Hex_triplet).
-It is recommended that the user employ the hex code colors, as there are only 
-limited variations of 'string-colors' available which can be used, and if a 
-'string-color' is not available an error may be occur.
-
-Example:
-
-var colors = ee.List(['red',
-                      '#267300',
-                      'green',
-                      '#8400A8', 
-                      '#CDF57A',
-                      'yellow',
-                      '#004DA8',
-                      '#FFFF00']);
-
-*/
-
-// A color palette to use to ID the layers
-var colors = ee.List(['#ed6334',
-'#fadf69',
-'#939599',
-'#2D4348',
-'#034f05',
-'#2eb831',
-'#93ed95',
-'#8CD7E3',
-'#5BC7BC',
-'#6C92B3',
-'#0449b8'
-]);
 
 /*
 Set your QAA Grid Scale
@@ -277,6 +233,45 @@ var nested_grid_scale = 5000;
 //
 var label = class_label_numeric;
 var label2 = class_label_character;
+
+
+
+
+var lc_names = ui.data.ActiveList(ee.FeatureCollection(class_ref).distinct(label).sort(label)
+                                  .aggregate_array(label2).getInfo());
+
+var colList = {'purple':'purple', 'red':'red','pink':'pink','orange':'orange',
+               'yellow':'yellow', 'green': 'green', 'lightgreen':'lightgreen',
+               'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'brown',
+               'black':'black', 'white':'white', 'grey':'grey', 'lightgrey':'lightgrey'};
+
+var colors = ee.List.sequence(0,ee.Number(lc_names.length()).subtract(1),1);
+
+lc_names.forEach(function(x){
+  var col_drop = ui.Select({
+                              placeholder: ee.String("Select " + x + " Colour").getInfo(),
+                              items: Object.keys(colList),
+                              onChange: function(key) { colors = colors.set(lc_names.indexOf(x),key)}
+                              });
+ print(x);
+ print(col_drop);
+});
+
+// Print instructions
+print('Print the index list to review indices selected');
+// Print color list button
+var button = ui.Button({
+  label: 'Print Colour List',
+  onClick: function() {
+    var ordered_labs = ee.FeatureCollection(class_ref).distinct(label).sort(label)
+                                  .aggregate_array(label2);
+    alert('Land Cover Color List:' + ee.String.encodeJSON(ee.Dictionary.fromLists(ordered_labs, ee.List(colors)))
+                          .replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
+                          .replace('}', '', 'g' ).getInfo());
+    return ee.List(colors);
+    }
+  });
+print(button);
 
 
 // Country Selection 
