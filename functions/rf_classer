@@ -1,10 +1,10 @@
 /*
 
 This is the Random Forest image classification module, which is part 
-of the BVC GEEMMM v1.0 library. It is used to classify the composite
+of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: March 15, 2022
+Last update: July 1, 2022
 
 
 use_cont_spec, Chot, Clot, t_poly_h, t_poly_c,
@@ -87,11 +87,7 @@ exports.doc = 'The Random Forest Classification module is used'+
     '\n   @return {ee.Image} Single band raster image';
 
 // Contemporary High-tide Classification  
-exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
-  
-  var clPalette = [ 'FFFF00','E69800', 'ffe59a', '004DA8','267300','4CE600','CDF57A',
-                      '8400A8',];
-  
+exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
   
   // Overlay the points on the imagery to get training for HOT
    var sample_CHOT = Chot.select(bands).sampleRegions({
@@ -147,7 +143,7 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, 
               
               
               Map.addLayer(classified_CHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: clPalette}, 'HOT_Classification_contemporary');
+                          palette: colors.getInfo()}, 'HOT_Classification_contemporary');
               
               // Get a confusion matrix resubstitution accuracy.
               var CHOT_trainAccuracy = CHOT_trained_classifier.confusionMatrix();
@@ -168,11 +164,8 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, 
 };
 
 // Contemporary Low-tide Classification
-exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
-  
-  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
-                    '00FFC5', '004DA8', 'FFFF00'];
-  
+exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
+
   // Overlay the points on the imagery to get training for LOT
   var sample_CLOT = Clot.select(bands).sampleRegions({
               collection: t_poly,
@@ -223,7 +216,7 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, 
               
               
               Map.addLayer(classified_CLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: clPalette}, 'LOT_Classification_contemporary');
+                          palette: colors.getInfo()}, 'LOT_Classification_contemporary');
               
               // Get a confusion matrix resubstitution accuracy.
               var CLOT_trainAccuracy = CLOT_trained_classifier.confusionMatrix();
@@ -244,11 +237,8 @@ exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, 
 
 
 // Contemporary Combine Classification
-exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
+exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
 
-  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
-                    '00FFC5', '004DA8', 'FFFF00'];
-  
   Chot = Chot.select(bands);
   Clot = Clot.select(bands);
   var Ccom = Chot.addBands(Clot);
@@ -302,7 +292,7 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, sp
                                  selectors: [label]}).get('max');
               
               Map.addLayer(classified_CCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: clPalette}, 'Combine_Classification_contemporary');
+                          palette: colors.getInfo()}, 'Combine_Classification_contemporary');
     
               // Get a confusion matrix resubstitution accuracy.
               var CCOM_trainAccuracy = CCOM_trained_classifier.confusionMatrix();
@@ -324,11 +314,8 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, sp
 
 // Historic High-tide Classification 
 exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, 
-                                trees, splits, leafpop, bag, nodes, seeds){
+                                trees, splits, leafpop, bag, nodes, seeds, colors){
 
-  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
-                    '00FFC5', '004DA8', 'FFFF00'];
-  
   // CRA Type?
   if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
   
@@ -405,7 +392,7 @@ exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_pol
                                  selectors: [label]}).get('max');
               
               Map.addLayer(classified_HHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: clPalette}, 'HOT_Classification_Historic');
+                          palette: colors.getInfo()}, 'HOT_Classification_Historic');
     
               // Get a confusion matrix resubstitution accuracy.
               var HHOT_trainAccuracy = HHOT_trained_classifier.confusionMatrix();
@@ -428,12 +415,8 @@ exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_pol
 
 // Historic Low-tide Classification
 exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, 
-                                trees, splits, leafpop, bag, nodes, seeds){
+                                trees, splits, leafpop, bag, nodes, seeds, colors){
 
-  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
-                    '00FFC5', '004DA8', 'FFFF00'];
-  
-    
   // CRA Type?
   if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
 
@@ -508,7 +491,7 @@ exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_pol
                                  selectors: [label]}).get('max');
               
               Map.addLayer(classified_HLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: clPalette}, 'LOT_Classification_Historic');
+                          palette: colors.getInfo()}, 'LOT_Classification_Historic');
     
               // Get a confusion matrix resubstitution accuracy.
               var HLOT_trainAccuracy = HLOT_trained_classifier.confusionMatrix();
@@ -531,10 +514,7 @@ exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_pol
 
 // Historic Combined Classification
 exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, 
-                                label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds){
-
-  var clPalette = [ 'E69800', '267300', '4CE600', '8400A8', 'CDF57A', 
-                    '00FFC5', '004DA8', 'FFFF00'];
+                                label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
 
   // CRA Type?
   if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
@@ -618,7 +598,7 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot,
                                  selectors: [label]}).get('max');
               
              Map.addLayer(classified_HCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: clPalette}, 'Combine_Classification_Historic');
+                          palette: colors.getInfo()}, 'Combine_Classification_Historic');
             
               // Get a confusion matrix resubstitution accuracy.
               var HCOM_trainAccuracy = HCOM_trained_classifier.confusionMatrix();
