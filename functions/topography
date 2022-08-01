@@ -1,6 +1,6 @@
 /*
 
-This is the topography module, which is part of the BVC GEM v1.1 library.
+This is the topography module, which is part of the BVC GEM v1.2 library.
 Two funtions:
 
 dsm_id: determines whether the user will use the GEE JAXA topographic dataset
