@@ -1,6 +1,6 @@
 /*
 
-This is the coastline generation module, which is part of the BVC GEM v1.1 library.
+This is the coastline generation module, which is part of the BVC GEM v1.2 library.
 Either creates or ingests the vector based coastline used withing the GEM tool.
 
 Last update: 14-03-2022
