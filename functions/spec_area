@@ -1,10 +1,10 @@
 /*
 
 This is the spectral area/seperability module, which is part 
-of the BVC GEEMMM v1.0 library. It is used to determine if input 
+of the BVC GEM v1.2 library. It is used to determine if input 
 land cover classification reference data a spectral distinguishable.
 
-Last update: March 15, 2022
+Last update: July 1, 2022
 
 */
 
@@ -30,7 +30,7 @@ exports.doc = 'The spectral area/seperability module is used'+
     '\n   @param {text} name: text name to include in the chart title' +
     '\n   @print {ee.Chart} bar-and-whisker style chart for each land cover class for the selected band.';
 
-exports.ls_candles = function(sample, label, label2, name){
+exports.ls_candles = function(sample, label, label2, name, colors){
 
   var bands =  ['B1','B2','B3','B4','B5','B7'];
   
@@ -100,11 +100,12 @@ exports.ls_candles = function(sample, label, label2, name){
       },
       series: lst2.getInfo(),
       lineWidth: 1,
-      pointSize: 3
+      pointSize: 3,
+      colors: colors
       });
   print(chart);
 };
-
+ 
 
 
 exports.whiskerCharts2 = function(sample, label, label2, band, name){
@@ -166,7 +167,7 @@ exports.whiskerCharts2 = function(sample, label, label2, band, name){
         title: band
       },
       lineWidth: 1,
-      pointSize: 3
+      pointSize: 3,
       });
   print(chart);
 };
