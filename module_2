@@ -3,7 +3,6 @@
 //////////                     (GEM) Module  2                    ///////////
 ////////////////////////////////////////////////////////////////////////////////
 
-
 /* 
 
 This code was developed for Blue Ventures Conservation, by Max Yancho.
@@ -13,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: June 1, 2022
+Last updated: July 1, 2022
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -141,8 +140,8 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
           var class_ref = **PATH**; (Path to the CRAs)
 */
 
-var class_ref_cont = "users/yanchojo/reference_data/cont_CRD_0914";
-var class_ref_hist = "users/yanchojo/reference_data/hist_CRD_0914";
+var class_ref_cont = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2020_210224";
+var class_ref_hist = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2020_210224";
 // Landcover labels for the classifier
 var class_label_numeric = 'ID';
 var class_label_character = 'Classname';
@@ -291,47 +290,66 @@ var combo_hist_out = true;     // Combination historic Imagery
 // Required Modules
 // Functions are brought into GEM Module 2 through the require() function
 
-var RFclass = require('users/yanchojo/GEM_LS9/:modules/rf_classer');
-var InCor = require('users/yanchojo/GEM_LS9/:modules/input_correlation');
-var specSp = require('users/yanchojo/GEM_LS9/:modules/spec_area');
+var RFclass = require('users/yanchojo/GEM_LS9_colors/:modules/rf_classer');
+var InCor = require('users/yanchojo/GEM_LS9_colors/:modules/input_correlation');
+var specSp = require('users/yanchojo/GEM_LS9_colors/:modules/spec_area');
 
 var label = class_label_numeric;
 var label2 = class_label_character;
 
-print('Re-select the indices that were calculated in Module 1.');
 
-// Quickly re-select the indices from Module 1
 
-// Generate the empty index list
-var indx = ee.List([]);
-  
-// List of reference indices
-var OG_band_list = ui.data.ActiveList(['SR','NDVI','NDWI','MNDWI','CMRI','MMRI','SAVI',
-'OSAVI','EVI','MRI','SMRI','LSWI','NDTI','EBBI']);
-  
-// Create checkboxes 
-OG_band_list.forEach(function(x){
-  var ind_box = ui.Checkbox(x, false);
-  ind_box.onChange(function(checked) {
-  // Add/remove the index to the list
-  if (checked === true){indx = indx.add(x);
-  } else {indx = indx.remove(x);}}); 
-  print(ind_box);
+var lc_names = ui.data.ActiveList(ee.FeatureCollection(class_ref_cont).distinct(label).sort(label)
+                                  .aggregate_array(label2).getInfo());
+
+var colList = {'purple':'purple', 'red':'red','pink':'pink','orange':'orange',
+               'yellow':'yellow', 'green': 'green', 'lightgreen':'lightgreen',
+               'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'brown',
+               'black':'black', 'white':'white', 'grey':'grey', 'lightgrey':'lightgrey'};
+
+var colors = ee.List.sequence(0,ee.Number(lc_names.length()).subtract(1),1);
+
+lc_names.forEach(function(x){
+  var col_drop = ui.Select({
+                              placeholder: ee.String("Select " + x + " Colour").getInfo(),
+                              items: Object.keys(colList),
+                              onChange: function(key) { colors = colors.set(lc_names.indexOf(x),key)}
+                              });
+ print(x);
+ print(col_drop);
 });
-  
-// Print instructions
-print('Print the index list to review indices selected');
-// Print index list button
+
+print(ui.Label({
+                            value: 'View Color Selection',
+                            style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '14px',
+                                    textAlign: 'center'
+                                    }
+                          }));   
+
+// Print color list button
 var button = ui.Button({
-  label: 'Print Index List',
+  label: 'Print Colour List',
   onClick: function() {
-    print('Index List', indx.distinct());
-    return ee.List(indx.distinct());
+    var ordered_labs = ee.FeatureCollection(class_ref_cont).distinct(label).sort(label)
+                                  .aggregate_array(label2);
+    alert('Land Cover Color List:' + ee.String.encodeJSON(ee.Dictionary.fromLists(ordered_labs, ee.List(colors)))
+                          .replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
+                          .replace('}', '', 'g' ).getInfo());
+    return ee.List(colors);
     }
   });
 print(button);
-  
-  
+
+print(ui.Label({
+                            value: 'Sections 2 & 3',
+                            style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '16px',
+                                    textAlign: 'center'
+                                    }
+                          }));      
 
 
 ///////////////////////////////////////////////
@@ -354,8 +372,8 @@ step_1_button.onClick(function(){
   var h_bands = Hhot.bandNames();
 
   // Training polygons
-  var t_poly_c = ee.FeatureCollection(class_ref_cont);
-  var t_poly_h = ee.FeatureCollection(class_ref_hist);
+  var t_poly_c = ee.FeatureCollection(class_ref_cont).sort(label);
+  var t_poly_h = ee.FeatureCollection(class_ref_hist).sort(label);
 
   // Overlay the points on the imagery to get training for HOT
   var sample_CHOT = Chot.select(bands).sampleRegions({
@@ -431,10 +449,7 @@ step_1_button.onClick(function(){
                          fontSize: '18px',
                          textAlign: 'center'}
                 }));
-  var bandDict = {'B1': 'B1', 'B2': 'B2', 'B3': 'B3', 'B4': 'B4', 'B5': 'B5', 'B6': 'B6', 'B7': 'B7',
-                  'SR': 'SR', 'NDVI': 'NDVI', 'NDWI': 'NDWI', 'MNDWI': 'MNDWI',
-                  'CMRI': 'CMRI', 'MMRI': 'MMRI', 'SAVI': 'SAVI', 'OSAVI': 'OSAVI',
-                  'EVI': 'EVI', 'MRI': 'MRI', 'SMRI': 'SMRI', 'LSWI': 'LSWI', 'NDTI': 'NDTI', 'EBBI': 'EBBI'};
+  var bandDict = ee.Dictionary.fromLists(bands,bands).getInfo();
   // Create drop-down menu to select CHOT Band
   var Chot_band_charts = ui.Select({
                             placeholder: "Select Cont. HOT Band",
@@ -574,13 +589,13 @@ step_1_button.onClick(function(){
                   });
 
   var chot_bands = ui.Button('View LS Bands');
-  chot_bands.onClick(function(){specSp.ls_candles(sample_CHOT, label, label2, "Cont. HOT")});
+  chot_bands.onClick(function(){specSp.ls_candles(sample_CHOT, label, label2, "Cont. HOT", colors.getInfo())});
   var clot_bands = ui.Button('View LS Bands');
-  clot_bands.onClick(function(){specSp.ls_candles(sample_CLOT, label, label2, "Cont. LOT")});
+  clot_bands.onClick(function(){specSp.ls_candles(sample_CLOT, label, label2, "Cont. LOT", colors.getInfo())});
   var hhot_bands = ui.Button('View LS Bands');
-  hhot_bands.onClick(function(){specSp.ls_candles(sample_HHOT, label, label2, "Hist. HOT")});
+  hhot_bands.onClick(function(){specSp.ls_candles(sample_HHOT, label, label2, "Hist. HOT", colors.getInfo())});
   var hlot_bands = ui.Button('View LS Bands');
-  hlot_bands.onClick(function(){specSp.ls_candles(sample_HLOT, label, label2, "Hist. LOT")});
+  hlot_bands.onClick(function(){specSp.ls_candles(sample_HLOT, label, label2, "Hist. LOT", colors.getInfo())});
 
 
   print(cont_lab);
@@ -607,7 +622,9 @@ print(step_1_button);
 // all of the standard quantitative classification accuracy metrics are 
 // printed to the cosnole.
 
-var step_2_button = ui.Button('Sec. 3.) Begin Classification');
+
+var step_2_button = ui.Button('Sec. 3.) Classification');
+
 
 var trees = 1000;
 var splits = 1; 
@@ -624,50 +641,93 @@ step_2_button.onClick(function(){
                          fontSize: '18px',
                          textAlign: 'center'}
                 }));
-  print('Bands used for classification:');
-  
-  // Update the image masks
-  Chot = Chot.updateMask(final_mask);
-  Clot = Clot.updateMask(final_mask);
-  Hhot = Hhot.updateMask(final_mask);
-  Hlot = Hlot.updateMask(final_mask);
-        
-  // Training polygons
-  var t_poly_c = ee.FeatureCollection(class_ref_cont);
-  var t_poly_h = ee.FeatureCollection(class_ref_hist);
-  // Isolate the bands to use in the classification
-  var bands = ee.List(['B1', 'B2', 'B3', 'B4', 'B5', 'B7']).cat(indx);
-  print(bands); 
-  
-  print('Console will populate with accuracy metrics. The Tasks tab'+
-        '\nwill turn yellow when the classifications are complete and'+
-        '\nready to export to the asset folder. The classification(s)'+
-        '\nwill be automatically added to the map viewer to explore.');
-  
-  // Classification using RF
-  // Contemporary
-  if(HOT_cont_out === true){ var Chot_class = RFclass.ChotClassify(Chot, 
-                                    t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds);}
-  if( LOT_cont_out === true){ var CLot_class = RFclass.ClotClassify(Clot, 
-                                        t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds);}
-  if(combo_cont_out === true){ var Ccom_class = RFclass.CcomClassify(Chot, 
-                                  Clot, t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds);}
-                                 
-  // Historic
-  if( HOT_hist_out === true){ var Hhot_class = RFclass.HhotClassify(Hhot, 
-                  class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds);}
-  if(LOT_hist_out === true){ var Hlot_class = RFclass.HlotClassify(Hlot, 
-                  class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds);}
-  if(combo_hist_out === true){var Hcom_class = RFclass.HcomClassify(Hhot,
-      Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds);}
+  print('Select the bands to be used for classification:');
 
+
+  // Quickly re-select the indices from Module 1
+
+  // Generate the empty index list
+  var indx = ee.List([]);
+  
+  // List of reference indices
+  var OG_band_list = ui.data.ActiveList(Chot.bandNames().remove('B6').getInfo());
+
+  // Create checkboxes 
+  OG_band_list.forEach(function(x){
+    var ind_box = ui.Checkbox(x, false);
+    ind_box.onChange(function(checked) {
+    // Add/remove the index to the list
+    if (checked === true){indx = indx.add(x);
+    } else {indx = indx.remove(x);}}); 
+    print(ind_box);
   });
+  
+  // Print instructions
+  print('Print the band/index list to review \nclassification inputs selected');
+
+  var button2 = ui.Button({
+    label: 'View Band/Index Input',
+    onClick: function() {
+      alert('Classification Band/Index Input:' +
+              ee.String.encodeJSON(indx.distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
+                            .replace('}', '', 'g' ).getInfo());
+      return ee.List(indx);
+      }
+    });
+  print(button2);
+
+
+  var step_2a_button = ui.Button('Start Classification');
+  step_2a_button.onClick(function(){
+
+
+    // Update the image masks
+    Chot = Chot.updateMask(final_mask);
+    Clot = Clot.updateMask(final_mask);
+    Hhot = Hhot.updateMask(final_mask);
+    Hlot = Hlot.updateMask(final_mask);
+          
+    // Training polygons
+    var t_poly_c = ee.FeatureCollection(class_ref_cont);
+    var t_poly_h = ee.FeatureCollection(class_ref_hist);
+    // Isolate the bands to use in the classification
+    var bands = ee.List(indx);
+    print(bands); 
+    
+    print('Console will populate with accuracy metrics. The Tasks tab'+
+          '\nwill turn yellow when the classifications are complete and'+
+          '\nready to export to the asset folder. The classification(s)'+
+          '\nwill be automatically added to the map viewer to explore.');
+    
+    // Classification using RF
+    // Contemporary
+    if(HOT_cont_out === true){ var Chot_class = RFclass.ChotClassify(Chot, 
+                                    t_poly_c, label, bands, ROI, trees, 
+                                    splits, leafpop, bag, nodes, seeds, colors);}
+    if( LOT_cont_out === true){ var CLot_class = RFclass.ClotClassify(Clot, 
+                                    t_poly_c, label, bands, ROI, trees, 
+                                    splits, leafpop, bag, nodes, seeds, colors);}
+    if(combo_cont_out === true){ var Ccom_class = RFclass.CcomClassify(Chot, 
+                                    Clot, t_poly_c, label, bands, ROI, trees, 
+                                    splits, leafpop, bag, nodes, seeds, colors);}
+                                 
+    // Historic
+    if( HOT_hist_out === true){ var Hhot_class = RFclass.HhotClassify(Hhot, 
+                                  class_ref_type, use_cont_spec, Chot, t_poly_h, 
+                                  t_poly_c, label, bands, ROI, trees, 
+                                  splits, leafpop, bag, nodes, seeds, colors);}
+   if(LOT_hist_out === true){ var Hlot_class = RFclass.HlotClassify(Hlot, 
+                                  class_ref_type, use_cont_spec, Clot, t_poly_h, 
+                                  t_poly_c, label, bands, ROI, trees, 
+                                  splits, leafpop, bag, nodes, seeds, colors);}
+    if(combo_hist_out === true){var Hcom_class = RFclass.HcomClassify(Hhot,
+                                  Hlot, class_ref_type, use_cont_spec, Chot, Clot,
+                                  t_poly_h, t_poly_c, label, bands, ROI, trees, 
+                                  splits, leafpop, bag, nodes, seeds, colors);}
+
+   });
+  print(step_2a_button);
+});
 print(step_2_button);
 
 /*
