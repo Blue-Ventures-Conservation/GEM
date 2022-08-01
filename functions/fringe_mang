@@ -1,6 +1,6 @@
 /*
 
-This is the fringe mangrove module, which is part of the BVC GEM v1.1 library.
+This is the fringe mangrove module, which is part of the BVC GEM v1.2 library.
 If fringe mangroves are included the ROI is doubles for areas less than 10m in
 elevation.
 
