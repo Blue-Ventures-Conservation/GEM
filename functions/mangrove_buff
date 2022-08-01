@@ -1,6 +1,6 @@
 /*
 
-This is the mangrove buffer module, which is part of the BVC GEM v1.1 library.
+This is the mangrove buffer module, which is part of the BVC GEM v1.2 library.
 It is used to support decsions made around how to automatically select a shoreline
 buffer. 
 
