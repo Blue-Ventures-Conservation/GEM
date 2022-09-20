@@ -46,7 +46,7 @@ users, step-by-step, through the three modules which comprise the tool:
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment 
 
->This module enables the user to choose from the calculate spectral indices (from Module 1) 
+>This module enables the user to choose from the calculated spectral indices (from Module 1) 
 >to use as classification inputs, explore the spectral relationships within and between 
 >user-defined map classes, undertakes multi-date (i.e., historic and contemporary) 
 >supervised classifications, and assesses land cover map accuracies. Exploring spectral 
@@ -69,7 +69,7 @@ independently in GEE. These scripts have been included for potentially
 interested users to understand how certain intermediate products are 
 generated or statistics calculated. The inclusion of these scripts is 
 further discussed in the ‘OPERATION’ section of this document (below), 
-which also provides further detail on how to best run the GEMv for your 
+which also provides further detail on how to best run the GEM for your 
 own personal use. The most convenient way will be to follow the three 
 hyper-links and use the captured code. However, this Git repository can 
 also be copied and saved as scripts in your own personal GEE script 
@@ -114,12 +114,12 @@ others, like the coastal tidal zone, are very location-specific. The code is wel
 commented to help aid in the determination of the optimal parameters to set before 
 running, but it is important to remember how the default parameters were selected.
 Importantly, all parameters can be changed by the user to meet their needs - the 
-Myanmar pilot serves as a beginning to end demonstration of how the tool works. 
+Myanmar pilot serves as a beginning-to-end demonstration of how the tool works. 
 
 ## OPERATION
 Before the GEM can be used, the user must request developer access to GEE. 
 This can be done by following this [link](https://signup.earthengine.google.com/) 
-and filling out a simple request form. Approval typically takes one or two business 
+and filling out a simple request form. Approval typically takes 1-2 business 
 days. Once your Google account has been granted access to GEE, you can use the GEM.
 
 GEE is free to use for academic and not for profit enterprises. For commercial 
@@ -175,7 +175,7 @@ It will be important that you do not change the variable name and that you
 associate the correct script path with the corresponding variable. If this is 
 not done for all 13 function scripts the GEM will not work properly, likely 
 producing errors. The names of each function script are close to the variable 
-names that they were written for. If there is a mix up, look back at the Github 
+names that they were written for. If there is a mix up, look back at the GitHub 
 page and reference the three module scripts.
 
 After you have opened the links or saved the GEM locally, there are detailed 
@@ -207,7 +207,7 @@ their intimate first-hand knowledge to derive representative CRAs.
 
 The most common errors that may occur (outside of user variable/input errors) are 
 server-side memory issues. While GEE is a free service, it does have its limits, 
-chiefly the allocation of server space for user initiated tasks. These will often 
+chiefly the allocation of server space for user-initiated tasks. These will often 
 be expressed as time-out or memory capacity errors. Errors which occur while trying 
 to visualize a layer in the GUI can often be overridden by zooming in/out and/or 
 panning the frame slightly to reload the map layers. The visualization errors are 
