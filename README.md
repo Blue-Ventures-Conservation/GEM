@@ -42,7 +42,7 @@ users, step-by-step, through the three modules which comprise the tool:
 >to their specific project requirements and preferences (e.g. years of interest, 
 >months of interest, cloud cover, etc.). It is in Module 1 that the user can 
 >choose to calculate a number of mangrove and non-mangrove specific spectral indices.
->All imagery is sourced from the Landsat archives (Missions 4, 5, 7, & 8). 
+>All imagery is sourced from the Landsat archives (Missions 4, 5, 7, 8, & 9). 
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment 
 
