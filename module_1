@@ -305,7 +305,7 @@ var cloud_cover = 15;
 
 */
 
-var cloud_mask = 'mile';
+var cloud_mask = 'mild';
 
 /*
 2.F) Tidal Zone  
