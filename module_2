@@ -426,20 +426,20 @@ step_1_button.onClick(function(){
   var chot_cor_but = ui.Button('View CHOT Index Band Correlation');
   chot_cor_but.onClick(function(){
     print('Cont. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Chot, indx, t_poly_c);});
+    InCor.pearson_cor_mat(Chot, bands, t_poly_c);});
   var clot_cor_but = ui.Button('View CLOT Index Band Correlation');
   clot_cor_but.onClick(function(){
     print('Cont. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Clot, indx, t_poly_c);
+    InCor.pearson_cor_mat(Clot, bands, t_poly_c);
     });
   var hhot_cor_but = ui.Button('View HHOT Index Band Correlation');
   hhot_cor_but.onClick(function(){
     print('Hist. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hhot, indx, t_poly_h);});
+    InCor.pearson_cor_mat(Hhot, bands, t_poly_h);});
   var hlot_cor_but = ui.Button('View HLOT Index Band Correlation');
   hlot_cor_but.onClick(function(){
     print('Hist. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hlot, indx, t_poly_h);});
+    InCor.pearson_cor_mat(Hlot, bands, t_poly_h);});
   // Create correlation panel
   var cor_panel = ui.Panel({layout: ui.Panel.Layout.flow('horizontal')});
   cor_panel.add(chot_cor_but).add(clot_cor_but).add(hhot_cor_but).add(hlot_cor_but);
