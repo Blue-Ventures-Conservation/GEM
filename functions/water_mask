@@ -26,7 +26,7 @@ if (combo_water_mask === true){
       }).rename(['MNDWI']).lt(0.09);
   
   // unify the images, select values greater than 1
-  var h2o_mask = MNDWI_cont.add(MNDWI_hist).gte(1);
+  var h2o_mask = MNDWI_cont.add(MNDWI_hist).gt(1);
   
   // export
   return h2o_mask;
