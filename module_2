@@ -143,7 +143,7 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
 var class_ref_cont = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2020_210224";
 var class_ref_hist = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2020_210224";
 // Landcover labels for the classifier
-var class_label_numeric = 'ID';
+var class_label_numeric = 'Classvalue';
 var class_label_character = 'Classname';
 
 
