@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: July 1, 2022
+Last updated: February 13, 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -140,8 +140,8 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
           var class_ref = **PATH**; (Path to the CRAs)
 */
 
-var class_ref_cont = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2020_210224";
-var class_ref_hist = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2020_210224";
+var class_ref_cont = "users/courtf/CRA/TAB_CRA_2020_210224_binary";
+var class_ref_hist = "users/courtf/CRA/TAB_CRA_2000_210301_binary";
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';
 var class_label_character = 'Classname';
@@ -361,13 +361,49 @@ print(ui.Label({
 
 var step_1_button = ui.Button('Sec. 2.) View Spectral Space \n and Ref. Data Relationships');
 step_1_button.onClick(function(){
-
+  
   print(ui.Label({value:'Module 2: Section 2',
-                  style:{fontWeight: 'bold',
-                         fontSize: '18px',
-                         textAlign: 'center'}
+                style:{fontWeight: 'bold',
+                        fontSize: '18px',
+                        textAlign: 'center'}
                 }));
-                
+  print('Select the bands to be used for Pearson correlation:');
+  // Quickly re-select the indices from Module 1
+
+  // Generate the empty index list
+  var indx = ee.List([]);
+  
+  // List of reference indices
+  var OG_band_list = ui.data.ActiveList(Chot.bandNames().remove('B6').getInfo());
+
+  // Create checkboxes 
+  OG_band_list.forEach(function(x){
+    var ind_box = ui.Checkbox(x, false);
+    ind_box.onChange(function(checked) {
+    // Add/remove the index to the list
+    if (checked === true){indx = indx.add(x);
+    } else {indx = indx.remove(x);}}); 
+    print(ind_box);
+  });
+  
+  // Print instructions
+  print('Print the band/index list to review \ncorrelation inputs selected');
+  
+    var button2 = ui.Button({
+    label: 'View Band/Index Input',
+    onClick: function() {
+      alert('Correlation Band/Index Input:' +
+              ee.String.encodeJSON(indx.distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
+                            .replace('}', '', 'g' ).getInfo());
+      return ee.List(indx);
+      }
+    });
+  print(button2);
+
+
+  var step_1a_button = ui.Button('Start Spectral Analysis');
+  step_1a_button.onClick(function(){
+
   var bands = Chot.bandNames();
   var h_bands = Hhot.bandNames();
 
@@ -382,7 +418,6 @@ step_1_button.onClick(function(){
     scale: 30, 
     tileScale: 16
   });
-
 
   // Overlay the points on the imagery to get training for HOT
   var sample_CLOT = Clot.select(bands).sampleRegions({
@@ -426,20 +461,20 @@ step_1_button.onClick(function(){
   var chot_cor_but = ui.Button('View CHOT Index Band Correlation');
   chot_cor_but.onClick(function(){
     print('Cont. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Chot, bands, t_poly_c);});
+    InCor.pearson_cor_mat(Chot, indx, t_poly_c);});
   var clot_cor_but = ui.Button('View CLOT Index Band Correlation');
   clot_cor_but.onClick(function(){
     print('Cont. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Clot, bands, t_poly_c);
+    InCor.pearson_cor_mat(Clot, indx, t_poly_c);
     });
   var hhot_cor_but = ui.Button('View HHOT Index Band Correlation');
   hhot_cor_but.onClick(function(){
     print('Hist. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hhot, bands, t_poly_h);});
+    InCor.pearson_cor_mat(Hhot, indx, t_poly_h);});
   var hlot_cor_but = ui.Button('View HLOT Index Band Correlation');
   hlot_cor_but.onClick(function(){
     print('Hist. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hlot, bands, t_poly_h);});
+    InCor.pearson_cor_mat(Hlot, indx, t_poly_h);});
   // Create correlation panel
   var cor_panel = ui.Panel({layout: ui.Panel.Layout.flow('horizontal')});
   cor_panel.add(chot_cor_but).add(clot_cor_but).add(hhot_cor_but).add(hlot_cor_but);
@@ -609,6 +644,8 @@ step_1_button.onClick(function(){
         "\nthe spectral relationships between landcover classes.");
   print(scatter_panel.add(samp_lab).add(Sample_scat).add(x_lab).add(bandX_drop)
                      .add(y_lab).add(bandY_drop).add(scat_button));
+  });
+  print(step_1a_button);
 });
 print(step_1_button);
 
