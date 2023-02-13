@@ -15,7 +15,13 @@ var mat = bands.map(function(band){
         var outList = ee.List([band]);
         var base = img.select([band]).rename(['base']);
       
-
+       var B1cor = ee.Algorithms.If(bands.contains('B1'), img.select(['B1']).addBands(base).reduceRegion({
+            reducer: ee.Reducer.pearsonsCorrelation(),
+              geometry: geom,
+              scale: 30,
+              maxPixels: 1e13,
+              tileScale: 4
+              }).get('correlation'));
        var B2cor = ee.Algorithms.If(bands.contains('B2'), img.select(['B2']).addBands(base).reduceRegion({
             reducer: ee.Reducer.pearsonsCorrelation(),
               geometry: geom,
@@ -157,7 +163,7 @@ var mat = bands.map(function(band){
               tileScale: 4
               }).get('correlation'));
 
-var row = outList.cat(ee.List([B2cor, B3cor, B4cor,
+var row = outList.cat(ee.List([B1cor, B2cor, B3cor, B4cor,
                   B5cor, B6cor, B7cor, SRcor, NDVIcor, NDWIcor,
                   MNDWIcor, CMRIcor, MMRIcor, SAVIcor, 
                   OSAVIcor, EVIcor, MRIcor, SMRIcor,
