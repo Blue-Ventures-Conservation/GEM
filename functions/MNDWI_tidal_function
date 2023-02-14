@@ -21,7 +21,10 @@ exports.doc = 'The MNDWI tidal condition module is to calculate mean MNDWI along
 
 
 // defining our function to filter shore reflectance
-exports.shoreRefl = function(img, zone, roi){
+exports.shoreRefl = function(img, roi, min_avg){
+  if (min_avg === null) {
+    min_avg = 0;
+  }
   
   // import the PLASAT dataset and create an land mask
   var land_mask = ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR')
@@ -42,7 +45,7 @@ exports.shoreRefl = function(img, zone, roi){
     // reduce the image to the buffered shoreline, calculating a MNDWI
     var cum_val = masked_MNDWI.reduceRegion({ 
                     reducer: ee.Reducer.mean(),
-                    geometry: zone,
+                    geometry: roi,
                     scale: 100,
                     maxPixels: 1e15,
                     bestEffort: true,
@@ -55,7 +58,7 @@ exports.shoreRefl = function(img, zone, roi){
     return img.set('MNDWI', ee.Number(cum_sum));
   });
   
-  return img_p1;
+  return img_p1.filter(ee.Filter.gte('MNDWI', min_avg));
 };
 
 
