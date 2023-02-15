@@ -21,7 +21,7 @@ exports.doc = 'The MNDWI tidal condition module is to calculate mean MNDWI along
 
 
 // defining our function to filter shore reflectance
-exports.shoreRefl = function(img, roi, min_avg){
+exports.shoreRefl = function(img, zone, roi, min_avg){
   if (min_avg === null) {
     min_avg = -1;
   }
@@ -45,7 +45,7 @@ exports.shoreRefl = function(img, roi, min_avg){
     // reduce the image to the buffered shoreline, calculating a MNDWI
     var cum_val = masked_MNDWI.reduceRegion({ 
                     reducer: ee.Reducer.mean(),
-                    geometry: roi,
+                    geometry: zone,
                     scale: 100,
                     maxPixels: 1e15,
                     bestEffort: true,
