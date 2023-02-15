@@ -23,7 +23,7 @@ exports.doc = 'The MNDWI tidal condition module is to calculate mean MNDWI along
 // defining our function to filter shore reflectance
 exports.shoreRefl = function(img, roi, min_avg){
   if (min_avg === null) {
-    min_avg = 0;
+    min_avg = -1;
   }
   
   // import the PLASAT dataset and create an land mask
