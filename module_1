@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: July 1, 2022
+Last updated: February 14, 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -328,9 +328,37 @@ var cloud_mask = 'mild';
 
 var tidal_zone = 1000;
 
+/*
+2.G) MNDWI Minimum Average
+    When calculating the MNDWI that determines the high and low tide imagery,
+    the GEM allows users to specify a minimum average value for the MNDWI
+    required for an image to be included in the dataset. There is an ongoing
+    issue with atmospheric haze that can affect images, artificially raising
+    the SWIR band value for pixels over the ocean. This can cause pixels over
+    the ocean to appear as land, when the SWIR value is high enough. Because
+    we already mask out all the land within the ROI, and are fairly confident
+    that the average value of the MNDWI across any image should lean more
+    heavily toward water, we can cut off the extremely low average values for
+    MNDWI on images that are affected by atmospheric haze. By default, the value
+    of -1 implies that no images will be filtered out in this way. Increasing the
+    value will more aggressively filter out images that have low MNDWI values.
+    
+    In some cases, when viewing the water mask at the end of module 1, you may
+    notice large amounts of land within your ROI that should be ocean. Try
+    increasing this parameter in that case, up to perhaps a max of 0.5 or so.
+    Much of the time, you shouldn'y need to touch this parameter, even if
+    you have land showing in the ocean in your water mask. As long as that
+    land is outside your ROI, it won't affect the subsequent analysis.
+    
+    Enter:
+        var min_avg = -1; (MNDWI filter value)
+*/
+
+var min_avg = -1;
+
 
 /*
-2.G) Water Mask
+2.H) Water Mask
      The GEM offers the option to mask out water pixels using the modified 
      normalized difference water index (MNDWI). The MNDWI is calculated for the 
      entire ROI and water pixels are removed based on a threshold established 
@@ -360,7 +388,7 @@ var combo_water_mask = true;
 
 /*
 
-2.H) Topographic Thresholds
+2.I) Topographic Thresholds
      To threshold the data, the user has several options: 1.) The known mangrove
      extent can be used to extract the 99th percentile for slope and elevation,
      this is then used to generate a topographic mask for the input data. OR 2.) 
@@ -390,7 +418,7 @@ var slope = 16;
 
 
 /*
-2.I) Inland Fringing Mangroves
+2.J) Inland Fringing Mangroves
      Studies have shown that inland stands of mangroves may be found at low-lying
      elevations which are far from the coastline. For a comprehensive investigation,
      these exclaves must attempt to be captured. To do so, the ROI can be expanded 
@@ -412,7 +440,7 @@ var inland_mang = false;
 
 
 /*
-2.J) Spectral Indices
+2.K) Spectral Indices
      There are numerous mangrove-specific, vegetation-specific, and 
      environmental indices which can be used to aid the classification. Below is
      the included list of indices which the user may select from. The user will 
@@ -695,11 +723,10 @@ step_1_button.onClick(function(){
                                               cloud_cover, month_start, month_end, cloud_mask),
                                           ls_imagery.LSimagery_sans7(ROI, historic_start_year, historic_end_year,
                                               cloud_cover, month_start, month_end, cloud_mask));
-      print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
-      print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
                                               
       // Calculate tidal conditions
-      cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI);
+      cont_imagery = shoreRefl.shoreRefl(cont_imagery, ROI, min_avg);
+      print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
       
       // Build the contemporary BAP composites
@@ -720,7 +747,8 @@ step_1_button.onClick(function(){
       });
       
       // Determing tidal conditions
-      hist_imagery = shoreRefl.shoreRefl(hist_imagery, tidalArea, ROI);
+      hist_imagery = shoreRefl.shoreRefl(hist_imagery, ROI, min_avg);
+      print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
       hist_imagery = shoreRefl.tide_bands(hist_imagery);
       
       // Build the historic BAP composites
