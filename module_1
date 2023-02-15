@@ -725,7 +725,7 @@ step_1_button.onClick(function(){
                                               cloud_cover, month_start, month_end, cloud_mask));
                                               
       // Calculate tidal conditions
-      cont_imagery = shoreRefl.shoreRefl(cont_imagery, ROI, min_avg);
+      cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI, min_avg);
       print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
       
@@ -747,7 +747,7 @@ step_1_button.onClick(function(){
       });
       
       // Determing tidal conditions
-      hist_imagery = shoreRefl.shoreRefl(hist_imagery, ROI, min_avg);
+      hist_imagery = shoreRefl.shoreRefl(hist_imagery, tidalArea, ROI, min_avg);
       print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
       hist_imagery = shoreRefl.tide_bands(hist_imagery);
       
