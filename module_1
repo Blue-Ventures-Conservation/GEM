@@ -337,19 +337,19 @@ var tidal_zone = 1000;
     the SWIR band value for pixels over the ocean. This can cause pixels over
     the ocean to appear as land, when the SWIR value is high enough. Because
     we already mask out all the land within the ROI, and are fairly confident
-    that the average value of the MNDWI across any image should lean more
-    heavily toward water, we can cut off the extremely low average values for
-    MNDWI on images that are affected by atmospheric haze. By default, the value
+    that the average value of the MNDWI across any land-masked image should
+    lean more heavily toward water, we can cut off the extremely low average values
+    for MNDWI on images that are affected by atmospheric haze. By default, the value
     of -1 implies that no images will be filtered out in this way. Increasing the
     value will more aggressively filter out images that have low MNDWI values.
-    
+   
     In some cases, when viewing the water mask at the end of module 1, you may
     notice large amounts of land within your ROI that should be ocean. Try
     increasing this parameter in that case, up to perhaps a max of 0.5 or so.
-    Much of the time, you shouldn'y need to touch this parameter, even if
+    Much of the time, you shouldn't need to touch this parameter, even if
     you have land showing in the ocean in your water mask. As long as that
     land is outside your ROI, it won't affect the subsequent analysis.
-    
+   
     Enter:
         var min_avg = -1; (MNDWI filter value)
 */
