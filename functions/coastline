@@ -13,7 +13,7 @@ exports.coast_In = function(cst, cst_path, roi){
   
   
     // use the roi to clip the world boundary polygons
-    var area = ee.FeatureCollection('USDOS/LSIB/2013')
+    var area = ee.FeatureCollection('USDOS/LSIB/2017')
     .filterBounds(roi).geometry();
     
     // convert the polygon to a coordinate list
