@@ -552,7 +552,7 @@ right.addLayer(ee.FeatureCollection(new_grid), {}, 'grid');
 left.addLayer(ee.FeatureCollection(new_grid), {}, 'grid');
 
 // Use a DateSlider to create annual composites of this collection.
-var collection = ee.ImageCollection('LANDSAT/LC08/C01/T1');
+var collection = ee.ImageCollection('LANDSAT/LC08/C02/T1');
 // Use the start of the collection and now to bound the slider.
 var start = ee.Image(collection.first()).date().get('year').format();
 var now = Date.now();
