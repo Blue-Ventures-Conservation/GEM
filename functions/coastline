@@ -3,7 +3,7 @@
 This is the coastline generation module, which is part of the BVC GEM v1.2 library.
 Either creates or ingests the vector based coastline used withing the GEM tool.
 
-Last update: 14-03-2022
+Last update: 14-07-2023
 
 */
 
@@ -16,10 +16,12 @@ exports.coast_In = function(cst, cst_path, roi){
     var area = ee.FeatureCollection('USDOS/LSIB/2017')
     .filterBounds(roi).geometry();
     
-    // convert the polygon to a coordinate list
-    var area_coords = area.dissolve().coordinates().flatten();
+    // convert the geometries to a coordinate list
+    var area_coords = area.geometries().map(function (geo) {
+      return ee.Geometry(geo).coordinates();
+    }).flatten();
     // use the coordinates to create a sting geometry
-    var area_point =  ee.Geometry.MultiPoint(area_coords);  
+    var area_point = ee.Geometry.MultiPoint(area_coords);  
 
     // select points in roi and convert to coordinate list
     var coast = area_point.intersection(roi, ee.ErrorMargin(1));
