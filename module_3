@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: May 30, 2023
+Last updated: August 17, 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -160,6 +160,28 @@ var class_label_character = 'Classname';  //<<<------<<<< Text Column
 var class_no = 5;                        // (numeric, land class 
                                           //   number from 'class_label_numeric')
 
+
+
+/*
+Define sub-regions within your ROI to calaculate the dynamics for.
+
+The ROI from module 1 is included by default. You can add further sub-regions to the analysis
+by uploading your own shapefile as a table asset to GEE, or by drawing shapes on the map and then
+adding them to this object in the same format as for the ROI, as shown in the example below:
+
+  var region_geometries = {
+    "ROI": ROI,
+    "Sub Region 1": sub_region_shape,
+  };
+  
+  Give your region a meaningful name, as the name is used to label the outputs.
+*/
+
+var region_geometries = {
+  "ROI": ROI,
+  // add more regions here like so:
+  //    "Another Region": region_variable,
+};
 
 
 
