@@ -378,65 +378,75 @@ Map.centerObject(Chot_image);
 var cmang = cont_res.eq(class_no).clip(c1);
 var hmang = hist_res.eq(class_no).clip(c1); 
 
-// Gain
-var mang_gain = cmang.subtract(hmang).eq(1).selfMask();
-Map.addLayer(mang_gain.clip(ROI), {palette: 'E1DD7B'}, 'gain');
-var area_gain = ee.Image.pixelArea().updateMask(mang_gain);
-var gain = area_gain.reduceRegion({
+for (var key in region_geometries) {
+  print(ui.Label({value: key+' Dynamics',
+                  style:{fontWeight: 'bold',
+                         fontSize: '14px',
+                         textAlign: 'center'}
+                }));
+  
+  var geo = region_geometries[key];
+  
+  // Gain
+  var mang_gain = cmang.subtract(hmang).eq(1).selfMask();
+  Map.addLayer(mang_gain.clip(geo), {palette: 'E1DD7B'}, key+' gain');
+  var area_gain = ee.Image.pixelArea().updateMask(mang_gain);
+  var gain = area_gain.reduceRegion({
                                      reducer: ee.Reducer.sum(),
-                                     geometry: ROI, 
+                                     geometry: geo, 
                                      scale: 30,
                                      maxPixels: 1e13,
                                      bestEffort: true
                                      });
-print('Area(km²) of Mangrove gain: ', ee.Number(gain.get('area')).divide(1e6));                                     
-// Loss
-var mang_loss = hmang.subtract(cmang).eq(1).selfMask();
-Map.addLayer(mang_loss.clip(ROI), {palette: 'red'}, 'loss');
-var area_loss = ee.Image.pixelArea().updateMask(mang_loss);
-var loss = area_loss.reduceRegion({
+  print('Area(km²) of Mangrove gain: ', ee.Number(gain.get('area')).divide(1e6));                                     
+  // Loss
+  var mang_loss = hmang.subtract(cmang).eq(1).selfMask();
+  Map.addLayer(mang_loss.clip(geo), {palette: 'red'}, key+' loss');
+  var area_loss = ee.Image.pixelArea().updateMask(mang_loss);
+  var loss = area_loss.reduceRegion({
                                      reducer: ee.Reducer.sum(),
-                                     geometry: ROI, 
+                                     geometry: geo, 
                                      scale: 30,
                                      maxPixels: 1e13,
                                      bestEffort: true
                                      });
-print('Area(km²) of Mangrove loss: ', ee.Number(loss.get('area')).divide(1e6));
-// Persistence
-var mang_per = hmang.eq(1).and(cmang.eq(1)).selfMask();
-Map.addLayer(mang_per.clip(ROI), {palette: '20592A'}, 'persistence');
-var area_per = ee.Image.pixelArea().updateMask(mang_per);
-var per = area_per.reduceRegion({
+  print('Area(km²) of Mangrove loss: ', ee.Number(loss.get('area')).divide(1e6));
+  // Persistence
+  var mang_per = hmang.eq(1).and(cmang.eq(1)).selfMask();
+  Map.addLayer(mang_per.clip(geo), {palette: '20592A'}, key+' persistence');
+  var area_per = ee.Image.pixelArea().updateMask(mang_per);
+  var per = area_per.reduceRegion({
                                      reducer: ee.Reducer.sum(),
-                                     geometry: ROI, 
+                                     geometry: geo, 
                                      scale: 30,
                                      maxPixels: 1e13,
                                      bestEffort: true
                                      });
-print('Area(km²) of Mangrove persistence: ', ee.Number(per.get('area')).divide(1e6));
-Export.image.toDrive({
-            image: mang_per.clip(ROI),
-            description: 'persistence',
-            region: ROI,
+  print('Area(km²) of Mangrove persistence: ', ee.Number(per.get('area')).divide(1e6));
+  Export.image.toDrive({
+            image: mang_per.clip(geo),
+            description: key+' persistence',
+            region: geo,
             scale: 30,
             maxPixels:1e13
            });
-Export.image.toDrive({
-            image: mang_loss.clip(ROI),
-            description: 'loss',
-            region: ROI,
+  Export.image.toDrive({
+            image: mang_loss.clip(geo),
+            description: key+' loss',
+            region: geo,
             scale: 30,
             maxPixels:1e13
            });
-Export.image.toDrive({
-            image: mang_gain.clip(ROI),
-            description: 'gain',
-            region: ROI,
+  Export.image.toDrive({
+            image: mang_gain.clip(geo),
+            description: key+' gain',
+            region: geo,
             scale: 30,
             maxPixels:1e13
            });
-print('Historic Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(loss.get('area')).divide(1e6)).getInfo());
-print('Contemporary Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(gain.get('area')).divide(1e6)).getInfo());
+  print('Historic Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(loss.get('area')).divide(1e6)).getInfo());
+  print('Contemporary Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(gain.get('area')).divide(1e6)).getInfo());
+}
 
 //////////////////////////////////////////////////////
 //////////////   Section 3: QAA    //////////////
