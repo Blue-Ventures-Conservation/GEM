@@ -1,4 +1,4 @@
-# GEEMMM_v1.2
+# GEM_v1.2
 # Google Earth Engine 
 # Mangrove Mapping Methodology v1.2 
 
