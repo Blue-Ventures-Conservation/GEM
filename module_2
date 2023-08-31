@@ -132,9 +132,15 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
      process, but at this time the user must simply identify the classification 
      reference areas that will be used to determine the output land cover classes.
      This is a vector dataset. It can be a multi-point or multi-polygon geometry. 
-     It is also important that the user declares which field the unique class 
-     labels (numeric & character) are recorded in. There should be a unique  
-     integer and character name associated with each CRA class.
+     It is also important that the user declares which field the class labels 
+     (numeric & character) are recorded in. There should be an integer
+     (class_label_numeric) and character (class_label_character) name associated
+     with each CRA class.
+     
+     In addition, there is an optional plot_id_label that is used in some of the
+     charts produced during spectral analysis to show which values belong to
+     specific plots, which can be helpful when tracking down plots that aren't
+     being separated from plots of other classes during classification.
      
      Enter:
           var class_ref = **PATH**; (Path to the CRAs)
@@ -145,6 +151,7 @@ var class_ref_hist = "users/courtf/CRA/TAB_CRA_2000_210301_binary";
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';
 var class_label_character = 'Classname';
+var plot_id_label = "ID";
 
 
 
@@ -296,6 +303,7 @@ var specSp = require('users/yanchojo/GEM_LS9_colors/:modules/spec_area');
 
 var label = class_label_numeric;
 var label2 = class_label_character;
+var label3 = unique_label_numeric;
 
 
 
@@ -414,7 +422,7 @@ step_1_button.onClick(function(){
   // Overlay the points on the imagery to get training for HOT
   var sample_CHOT = Chot.select(bands).sampleRegions({
     collection: t_poly_c,
-    properties: [label, label2],
+    properties: [label, label2, label3],
     scale: 30, 
     tileScale: 16
   });
@@ -422,21 +430,21 @@ step_1_button.onClick(function(){
   // Overlay the points on the imagery to get training for HOT
   var sample_CLOT = Clot.select(bands).sampleRegions({
     collection: t_poly_c,
-    properties: [label, label2],
+    properties: [label, label2, label3],
     scale: 30, 
     tileScale: 16
   });
   // Overlay the points on the imagery to get training for HOT
   var sample_HHOT = Hhot.select(bands).sampleRegions({
     collection: t_poly_h,
-    properties: [label, label2],
+    properties: [label, label2, label3],
     scale: 30, 
     tileScale: 16
   });
   // Overlay the points on the imagery to get training for HOT
   var sample_HLOT = Hlot.select(bands).sampleRegions({
     collection: t_poly_h,
-    properties: [label, label2],
+    properties: [label, label2, label3],
     scale: 30, 
     tileScale: 16
     });
@@ -601,6 +609,13 @@ step_1_button.onClick(function(){
                     .setChartType('ScatterChart')
                     .setOptions({title: 'Spectral Area of ' + samp_title});
     print(Sc_chart);
+    if (label3 !== null && label3 !== "") {
+          var plots_chart =  ui.Chart.feature.groups(data, bandX, bandY, label3)
+                    .setChartType('ScatterChart')
+                    .setOptions({title: 'Spectral Area of ' + samp_title});
+          print(plots_chart);
+    }
+    
   });
             
             
