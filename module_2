@@ -151,7 +151,7 @@ var class_ref_hist = "users/courtf/CRA/TAB_CRA_2000_210301_binary";
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';
 var class_label_character = 'Classname';
-var plot_id_label = "ID";
+var plot_id_label = "";
 
 
 
@@ -418,11 +418,17 @@ step_1_button.onClick(function(){
   // Training polygons
   var t_poly_c = ee.FeatureCollection(class_ref_cont).sort(label);
   var t_poly_h = ee.FeatureCollection(class_ref_hist).sort(label);
+  
+  var prop_labels = [label, label2];
+  
+  if (label3 !== null && label3 !== "") {
+    prop_labels = prop_labels.concat([label3]);
+  }
 
   // Overlay the points on the imagery to get training for HOT
   var sample_CHOT = Chot.select(bands).sampleRegions({
     collection: t_poly_c,
-    properties: [label, label2, label3],
+    properties: prop_labels,
     scale: 30, 
     tileScale: 16
   });
@@ -430,21 +436,21 @@ step_1_button.onClick(function(){
   // Overlay the points on the imagery to get training for HOT
   var sample_CLOT = Clot.select(bands).sampleRegions({
     collection: t_poly_c,
-    properties: [label, label2, label3],
+    properties: prop_labels,
     scale: 30, 
     tileScale: 16
   });
   // Overlay the points on the imagery to get training for HOT
   var sample_HHOT = Hhot.select(bands).sampleRegions({
     collection: t_poly_h,
-    properties: [label, label2, label3],
+    properties: prop_labels,
     scale: 30, 
     tileScale: 16
   });
   // Overlay the points on the imagery to get training for HOT
   var sample_HLOT = Hlot.select(bands).sampleRegions({
     collection: t_poly_h,
-    properties: [label, label2, label3],
+    properties: prop_labels,
     scale: 30, 
     tileScale: 16
     });
