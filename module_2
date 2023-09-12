@@ -424,7 +424,7 @@ step_1_button.onClick(function(){
   });
   
   // Print instructions
-  print('Print the band/index list to review \ncorrelation inputs selected');
+  print('Print the class list to review \nscatter plot inputs selected');
   
     var clz_button = ui.Button({
     label: 'View Class Input',
