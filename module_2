@@ -410,11 +410,12 @@ step_1_button.onClick(function(){
   
   
   print('Select the classes to be used for scatter plots:');
-  var clz = ee.List([]);
+  var clz = ee.FeatureCollection(class_ref_cont).distinct(label).sort(label)
+                                  .aggregate_array(label2);
 
   // Create checkboxes 
   lc_names.forEach(function(x){
-    var clz_box = ui.Checkbox(x, false);
+    var clz_box = ui.Checkbox(x, true);
     clz_box.onChange(function(checked) {
     // Add/remove the class to the list
     if (checked === true){clz = clz.add(x);
