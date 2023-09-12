@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Max Yancho (max@vygeo.ca).
 
 Developed on: June 3, 2020
-Last updated: August 31, 2023
+Last updated: September 12, 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -407,7 +407,34 @@ step_1_button.onClick(function(){
       }
     });
   print(button2);
+  
+  
+  print('Select the classes to be used for scatter plots:');
+  var clz = ee.List([]);
 
+  // Create checkboxes 
+  lc_names.forEach(function(x){
+    var clz_box = ui.Checkbox(x, false);
+    clz_box.onChange(function(checked) {
+    // Add/remove the class to the list
+    if (checked === true){clz = clz.add(x);
+    } else {clz = clz.remove(x);}}); 
+    print(clz_box);
+  });
+  
+  // Print instructions
+  print('Print the band/index list to review \ncorrelation inputs selected');
+  
+    var clz_button = ui.Button({
+    label: 'View Class Input',
+    onClick: function() {
+      alert('Scatter Plot Class Input:' +
+              ee.String.encodeJSON(clz.distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
+                            .replace('}', '', 'g' ).getInfo());
+      return ee.List(clz);
+      }
+    });
+  print(clz_button);
 
   var step_1a_button = ui.Button('Start Spectral Analysis');
   step_1a_button.onClick(function(){
@@ -608,7 +635,7 @@ step_1_button.onClick(function(){
                               }});
   var scat_button = ui.Button('View Scatter Plot');
   scat_button.onClick(function(){
-    var data = ee.List(scat_samp).get(1);
+    var data = ee.FeatureCollection(ee.List(scat_samp).get(1)).filter(ee.Filter.inList(label2, clz));
     var samp_title = ee.List(scat_samp).get(0).getInfo();
 
     var Sc_chart =  ui.Chart.feature.groups(data, bandX, bandY, label2)
