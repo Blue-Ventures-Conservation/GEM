@@ -122,7 +122,26 @@ all visible on your screen before proceeding ***
      "coarse_roi"; this can be done by clicking the newly drawn geometry
      in the script's 'Imports' (located at the top of the script).
 
-1.B) Known Mangrove Extent
+1.B) Set Exclusion Areas
+
+     Define areas within your ROI to exclude from imageyr and subsequent analysis.
+
+     You can add areasd to be excluded (for example: dams and their pools/lakes/reservoirs) from the analysis
+     by uploading your own shapefile as a table asset to GEE, or by drawing shapes on the map and then
+     adding them to this object in the same format as for the 'exclude_geo', as shown in the example below:
+     
+          var exclusion_geometries = [
+            exclude_geo,
+          ];
+*/
+
+var exclusion_geometries = [
+  // add geometries to exclude here, like so:
+  // exclude_geo,
+];
+
+/*
+1.C) Known Mangrove Extent
      The currently known mangrove extent for the study area will play a key role
      in the further identification of methodological variables (such as slope 
      and elevation thresholds). At this time, the user must identify whether GEEEMMM 
@@ -143,7 +162,7 @@ var kmx = true;
 
 /*
 
-1.C) Coastline Data
+1.D) Coastline Data
      The coastline is a very important data set for this workflow. It will be 
      used to define the finalized ROI, as well as to aid in the determination of the
      tidal conditions for each of the landsat images which are to be processed. 
@@ -162,7 +181,7 @@ var cst = true;
 var cst_path = 'users/yanchojo/gadm36_mmr_0_shore';
 
 /*
-1.D) Topographic Data 
+1.E) Topographic Data 
      Another important variable is that of the topographic data. The topographic 
      data will be used to set elevation and slope thresholds before the 
      classification is executed. The default GEM topographic data is from the
@@ -180,7 +199,7 @@ var topo = true;
 var topo_path = 'users/yanchojo/topo';
 
 /*
-1.E) Inclusion of Landsat 7 Data
+1.F) Inclusion of Landsat 7 Data
      The majority of the Landsat 7 collections have been affected by the Scan Line 
      Corrector (SLC) failure on May 31, 2003. This causes missing data values for 
      about 22% of each scene. While the remaining pixels provide high-quality data,
@@ -339,22 +358,22 @@ var tidal_zone = 1000;
     we already mask out all the land within the ROI, and are fairly confident
     that the average value of the MNDWI across any land-masked image should
     lean more heavily toward water, we can cut off the extremely low average values
-    for MNDWI on images that are affected by atmospheric haze. By default, the value
-    of -1 implies that no images will be filtered out in this way. Increasing the
+    for MNDWI on images that are affected by atmospheric haze. A value of -1
+    implies that no images will be filtered out in this way. Increasing the
     value will more aggressively filter out images that have low MNDWI values.
    
     In some cases, when viewing the water mask at the end of module 1, you may
     notice large amounts of land within your ROI that should be ocean. Try
-    increasing this parameter in that case, up to perhaps a max of 0.5 or so.
+    increasing this parameter in that case, up to perhaps a max of 0.75 or so.
     Much of the time, you shouldn't need to touch this parameter, even if
     you have land showing in the ocean in your water mask. As long as that
     land is outside your ROI, it won't affect the subsequent analysis.
    
     Enter:
-        var min_avg = -1; (MNDWI filter value)
+        var min_avg = 0.5; (MNDWI filter value)
 */
 
-var min_avg = -1;
+var min_avg = 0.5;
 
 
 /*
@@ -709,6 +728,9 @@ step_1_button.onClick(function(){
             '\nthe console. Click the buttons to view the '+
             '\nimagery.');
       Map.clear(); // Reset the map
+      for (var i = 0; i < exclusion_geometries.length; i++) {
+        ROI = ROI.difference(exclusion_geometries[i]);
+      }
       Map.addLayer(ROI, {color: '1E266F'}, "ROI"); // Add ROI to map
       
       // Clip the known mangrove extent
@@ -730,10 +752,9 @@ step_1_button.onClick(function(){
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
       
       // Build the contemporary BAP composites
-      var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI');
-      var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI');
-
-
+      var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
+      var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
+      
       // Add the contemporary imagery once it has finished processing 
       Clot.evaluate(function(){
         var add_c_imagery = ui.Button('Add Contemporary Imagery');
@@ -752,9 +773,8 @@ step_1_button.onClick(function(){
       hist_imagery = shoreRefl.tide_bands(hist_imagery);
       
       // Build the historic BAP composites
-      var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic('MNDWI');
-      var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic('inv_MNDWI');
-
+      var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic('MNDWI').clip(ROI);
+      var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
 
       // Add the historic imagery once it has finished processing
       Hlot.evaluate(function(result){
@@ -834,7 +854,7 @@ step_1_button.onClick(function(){
        
         // Export Imagery with indices as bands
         Export.image.toAsset({
-            image: ee.Image(Chot3).clip(ROI),
+            image: ee.Image(Chot3),
             description: 'HOT_Img_contemporary',
             region: ROI,
             scale: 30,
@@ -842,7 +862,7 @@ step_1_button.onClick(function(){
           });
 
         Export.image.toAsset({
-            image: ee.Image(Clot3).clip(ROI),
+            image: ee.Image(Clot3),
             description: 'LOT_Img_contemporary',
             region: ROI,
             scale: 30,
@@ -850,7 +870,7 @@ step_1_button.onClick(function(){
           });
 
         Export.image.toAsset({
-            image: ee.Image(Hhot3).clip(ROI),
+            image: ee.Image(Hhot3),
             description: 'HOT_Img_historic',
             region: ROI,
             scale: 30,
@@ -858,7 +878,7 @@ step_1_button.onClick(function(){
           });
 
         Export.image.toAsset({
-            image: ee.Image(Hlot3).clip(ROI),
+            image: ee.Image(Hlot3),
             description: 'LOT_Img_historic',
             region: ROI,
             scale: 30,
