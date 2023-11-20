@@ -9,7 +9,7 @@ dsm_id: determines whether the user will use the GEE JAXA topographic dataset
 topo_mask_func: the topographic data is used to generate a pixel masck, based
                 on elevation and slope thresholds.
 
-Last update: Novemeber 6th, 2023
+Last update: November 20th, 2023
 
 */
 exports.dsm_id = function(topo, topo_path){
@@ -17,7 +17,7 @@ exports.dsm_id = function(topo, topo_path){
   // topo is true/false user identified boolean value 
   var topo_t = function(){
       // when 'TRUE' the topo data from GEE will be ingested
-      return ee.Image("JAXA/ALOS/AW3D30/V3_2").select('AVE_DSM').rename('elev');
+      return ee.ImageCollection("JAXA/ALOS/AW3D30/V3_2").select('DSM').mosaic().rename("elev");
   
   };
 
