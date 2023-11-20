@@ -9,10 +9,10 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (max@vygeo.ca).
+Mr. Court Fowler (courtland.fowler@blueventures.org).
 
-Developed on: June 3, 2020
-Last updated: October 24, 2023
+Developed on: 3 June 2020
+Last updated: 20 November 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -124,9 +124,9 @@ all visible on your screen before proceeding ***
 
 1.B) Set Exclusion Areas
 
-     Define areas within your ROI to exclude from imageyr and subsequent analysis.
+     Define areas within your ROI to exclude from imagery and subsequent analysis.
 
-     You can add areasd to be excluded (for example: dams and their pools/lakes/reservoirs) from the analysis
+     You can add areas to be excluded from the analysis (for example: dams and their pools/lakes/reservoirs) 
      by uploading your own shapefile as a table asset to GEE, or by drawing shapes on the map and then
      adding them to this object in the same format as for the 'exclude_geo', as shown in the example below:
      
@@ -238,8 +238,8 @@ var ls_7_in = true;
           var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2019;
-var contemporary_end_year = 2021;
+var contemporary_start_year = 2021;
+var contemporary_end_year = 2023;
 
 /*
 2.B) Historic Years
@@ -255,7 +255,7 @@ var contemporary_end_year = 2021;
 */
 
 var historic_start_year = 1998;
-var historic_end_year = 2001;
+var historic_end_year = 2000;
 
 /*
 2.C) Months of Interest 
@@ -303,7 +303,7 @@ var month_end = 8;
 
 */
 
-var cloud_cover = 15;
+var cloud_cover = 10;
 
 /*
 2.E) Cloud Mask
@@ -364,16 +364,16 @@ var tidal_zone = 1000;
    
     In some cases, when viewing the water mask at the end of module 1, you may
     notice large amounts of land within your ROI that should be ocean. Try
-    increasing this parameter in that case, up to perhaps a max of 0.75 or so.
+    increasing this parameter in that case, up to a max of approximately 0.75.
     Much of the time, you shouldn't need to touch this parameter, even if
     you have land showing in the ocean in your water mask. As long as that
     land is outside your ROI, it won't affect the subsequent analysis.
    
     Enter:
-        var min_avg = 0.5; (MNDWI filter value)
+        var min_avg = -1; (MNDWI filter value)
 */
 
-var min_avg = 0.5;
+var min_avg = -1;
 
 
 /*
@@ -435,7 +435,6 @@ var mang_topo = true;
 var elevation = 39;
 var slope = 16;
 
-
 /*
 2.J) Inland Fringing Mangroves
      Studies have shown that inland stands of mangroves may be found at low-lying
@@ -454,9 +453,6 @@ var slope = 16;
 */
 
 var inland_mang = false;
-
-
-
 
 /*
 2.K) Spectral Indices
