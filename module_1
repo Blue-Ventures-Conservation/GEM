@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 20 November 2023
+Last updated: 21 November 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -928,7 +928,7 @@ step_1_button.onClick(function(){
           // Add buttons to view the mask outputs
           var topo_mask_butt = ui.Button('View Topo Mask?');
               topo_mask_butt.onClick(function(){
-                Map.addLayer(ee.Image(topo_mask), {}, 'Topographic Mask');});
+                Map.addLayer(ee.Image(topo_mask.clip(ROI)), {}, 'Topographic Mask');});
           var water_mask_butt = ui.Button('View water Mask?');
               water_mask_butt.onClick(function(){
                 Map.addLayer(ee.Image(waterMask), {}, 'Water Mask');});
