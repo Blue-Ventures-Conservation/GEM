@@ -9,10 +9,10 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (max@vygeo.ca).
+Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: June 3, 2020
-Last updated: September 12, 2023
+Last updated: November 24, 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -786,30 +786,44 @@ step_2_button.onClick(function(){
           '\nwill be automatically added to the map viewer to explore.');
     
     // Classification using RF
+    var expanded_colors = ee.Dictionary(t_poly_c.distinct(label).sort(label).aggregate_array(label).iterate(function(next, carry){
+      carry = ee.Dictionary(carry);
+      var pos = ee.Number(carry.get('position'));
+      var color = ee.List(carry.get('colors')).get(pos);
+      var prev = ee.Number(carry.get('prev'));
+      var out = ee.List(carry.get('output'));
+      var diff = ee.Number(ee.Algorithms.If(pos.gt(0), ee.Number(next).subtract(prev), ee.Number(1)));
+      out = out.cat(ee.List.repeat(color, diff));
+      carry = carry.set('prev', ee.Number(next));
+      carry = carry.set('output', out);
+      carry = carry.set('position', pos.add(1));
+      return carry;
+    }, ee.Dictionary({position: ee.Number(0), prev: ee.Number(-1), colors: colors, output: ee.List([])}))).get('output');
+    
     // Contemporary
     if(HOT_cont_out === true){ var Chot_class = RFclass.ChotClassify(Chot, 
                                     t_poly_c, label, bands, ROI, trees, 
-                                    splits, leafpop, bag, nodes, seeds, colors);}
+                                    splits, leafpop, bag, nodes, seeds, expanded_colors);}
     if( LOT_cont_out === true){ var CLot_class = RFclass.ClotClassify(Clot, 
                                     t_poly_c, label, bands, ROI, trees, 
-                                    splits, leafpop, bag, nodes, seeds, colors);}
+                                    splits, leafpop, bag, nodes, seeds, expanded_colors);}
     if(combo_cont_out === true){ var Ccom_class = RFclass.CcomClassify(Chot, 
                                     Clot, t_poly_c, label, bands, ROI, trees, 
-                                    splits, leafpop, bag, nodes, seeds, colors);}
+                                    splits, leafpop, bag, nodes, seeds, expanded_colors);}
                                  
     // Historic
     if( HOT_hist_out === true){ var Hhot_class = RFclass.HhotClassify(Hhot, 
                                   class_ref_type, use_cont_spec, Chot, t_poly_h, 
                                   t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds, colors);}
+                                  splits, leafpop, bag, nodes, seeds, expanded_colors);}
    if(LOT_hist_out === true){ var Hlot_class = RFclass.HlotClassify(Hlot, 
                                   class_ref_type, use_cont_spec, Clot, t_poly_h, 
                                   t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds, colors);}
+                                  splits, leafpop, bag, nodes, seeds, expanded_colors);}
     if(combo_hist_out === true){var Hcom_class = RFclass.HcomClassify(Hhot,
                                   Hlot, class_ref_type, use_cont_spec, Chot, Clot,
                                   t_poly_h, t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds, colors);}
+                                  splits, leafpop, bag, nodes, seeds, expanded_colors);}
 
    });
   print(step_2a_button);
