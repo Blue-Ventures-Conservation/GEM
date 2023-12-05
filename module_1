@@ -666,13 +666,13 @@ step_1_button.onClick(function(){
     var buffer_chart = mangrove_buff.areaChart(mang_buff_img, coarse_roi); 
     
     // Add the mangrove buffer layers to the map
-    Map.addLayer(mang_buff_img.select('35_km'), {palette: ['CC0000']}, '35km_buffer');
-    Map.addLayer(mang_buff_img.select('30_km'), {palette: ['FF780A']}, '30km_buffer');
-    Map.addLayer(mang_buff_img.select('25_km'), {palette: ['FC9F0D']}, '25km_buffer');
-    Map.addLayer(mang_buff_img.select('20_km'), {palette: ['F9CB24']}, '20km_buffer');
-    Map.addLayer(mang_buff_img.select('15_km'), {palette: ['74B800']}, '15km_buffer');
-    Map.addLayer(mang_buff_img.select('10_km'), {palette: ['3E8F00']}, '10km_buffer');
-    Map.addLayer(mang_buff_img.select('05_km'), {palette: ['006600']}, '05km_buffer');
+    Map.addLayer(mang_buff_img.select('35'), {palette: ['CC0000']}, '35km buffer');
+    Map.addLayer(mang_buff_img.select('30'), {palette: ['FF780A']}, '30km buffer');
+    Map.addLayer(mang_buff_img.select('25'), {palette: ['FC9F0D']}, '25km buffer');
+    Map.addLayer(mang_buff_img.select('20'), {palette: ['F9CB24']}, '20km buffer');
+    Map.addLayer(mang_buff_img.select('15'), {palette: ['74B800']}, '15km buffer');
+    Map.addLayer(mang_buff_img.select('10'), {palette: ['3E8F00']}, '10km buffer');
+    Map.addLayer(mang_buff_img.select('05'), {palette: ['006600']}, '5km buffer');
     // Print the chart and table to the console
     print("Mangrove Area by Buffer", buffer_table);
     print(buffer_chart);
@@ -681,11 +681,11 @@ step_1_button.onClick(function(){
     var buff_dist = ee.Number(0);
     // List of buffers to choose from
     var buffers = {
-     '01_km': [1000], '02.5_km': [2500], '05_km': [5000], '07.5_km': [7500],
-     '10_km': [10000], '12.5_km': [12500], '15_km': [15000], '17.5_km': [17500],
-     '20_km': [20000], '22.5_km': [22500], '23_km': [23000], '25_km': [25000], '27.5_km': [27500],
-     '30_km': [30000], '32.5_km': [32500], '35_km': [35000], '37.5_km': [37500],
-     '40_km': [40000], '50_km': [50000], '60_km': [60000], '75_km': [75000],
+     '1 km': [1000], '2.5 km': [2500], '5 km': [5000], '7.5 km': [7500],
+     '10 km': [10000], '12.5 km': [12500], '15 km': [15000], '17.5 km': [17500],
+     '20 km': [20000], '22.5 km': [22500], '23 km': [23000], '25 km': [25000], '27.5 km': [27500],
+     '30 km': [30000], '32.5 km': [32500], '35 km': [35000], '37.5 km': [37500],
+     '40 km': [40000], '50 km': [50000], '60 km': [60000], '75 km': [75000],
     };
     // Create drop-down menu to select ROI buffer
     var select_ROI = ui.Select({
