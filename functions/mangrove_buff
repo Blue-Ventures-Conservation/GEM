@@ -29,15 +29,19 @@ exports.mang_buff = function(geom, mang){
   var coast = geom.simplify(1000);
   // create an image collection of various buffered mangroves, using the distance list
   var mangrove_buff = ee.Image(mang)
-                      .addBands(mang.clip(coast.buffer(5000)).rename(['05_km']))
-                      .addBands(mang.clip(coast.buffer(10000)).rename(['10_km']))
-                      .addBands(mang.clip(coast.buffer(15000)).rename(['15_km']))
-                      .addBands(mang.clip(coast.buffer(20000)).rename(['20_km']))
-                      .addBands(mang.clip(coast.buffer(25000)).rename(['25_km']))
-                      .addBands(mang.clip(coast.buffer(30000)).rename(['30_km']))
-                      .addBands(mang.clip(coast.buffer(35000)).rename(['35_km']));
+                      .addBands(mang.clip(coast.buffer(1000)).rename(['01']))
+                      .addBands(mang.clip(coast.buffer(2500)).rename(['02']))
+                      .addBands(mang.clip(coast.buffer(5000)).rename(['05']))
+                      .addBands(mang.clip(coast.buffer(7500)).rename(['07']))
+                      .addBands(mang.clip(coast.buffer(10000)).rename(['10']))
+                      .addBands(mang.clip(coast.buffer(12500)).rename(['12']))
+                      .addBands(mang.clip(coast.buffer(15000)).rename(['15']))
+                      .addBands(mang.clip(coast.buffer(20000)).rename(['20']))
+                      .addBands(mang.clip(coast.buffer(25000)).rename(['25']))
+                      .addBands(mang.clip(coast.buffer(25000)).rename(['30']))
+                      .addBands(mang.clip(coast.buffer(35000)).rename(['35']));
 
-  var bands = mangrove_buff.bandNames().slice(1,8);
+  var bands = mangrove_buff.bandNames().slice(1,12);
   mangrove_buff = mangrove_buff.select(bands);
 
   return mangrove_buff;
@@ -45,7 +49,7 @@ exports.mang_buff = function(geom, mang){
 
 exports.areaTable = function(img, geom){
   
-  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,8);
+  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
   var proc_img = img.select(bands);
 
   var dict_sum = proc_img.reduceRegion({
@@ -63,7 +67,7 @@ exports.areaTable = function(img, geom){
 
 exports.areaChart = function(img, geom){
   
-  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,8);
+  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
   var proc_img = img.select(bands);
 
   var dict_sum = proc_img.reduceRegion({
@@ -81,7 +85,7 @@ exports.areaChart = function(img, geom){
     }).setChartType('ColumnChart')
     .setOptions({
       title: 'Mangrove Area by Buffer',
-      hAxis: {title: 'Shoreline Buffer'},
+      hAxis: {title: 'Shoreline Buffer (km)'},
       vAxis: {title: 'Area (square meters)'},
       legend: { position: "none" },
       lineWidth: 1,
