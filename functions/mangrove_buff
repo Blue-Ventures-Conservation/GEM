@@ -23,13 +23,13 @@ exports.doc = 'The mangrove_buff module is a function to buffer the mangrove ras
     '\n   a graph of the various membership for each of the buffered distances.';
 
 
-exports.mang_buff = function(geom, mang, excludes){
+exports.mang_buff = function(geom, mang, coarse_roi, excludes){
   var clipGeom = function(cst, buf) {
     var buffed = cst.buffer(buf);
     for (var i = 0; i < excludes.length; i++) {
       buffed = buffed.difference(excludes[i]);
     }
-    return buffed;
+    return buffed.intersection(coarse_roi);
   };
  
   // simplify the coastline geometry
