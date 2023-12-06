@@ -4,7 +4,7 @@ This is the mangrove buffer module, which is part of the BVC GEM v1.2 library.
 It is used to support decsions made around how to automatically select a shoreline
 buffer. 
 
-Last update: December 12, 2023
+Last update: December 6, 2023
 
 */
 
@@ -59,7 +59,7 @@ exports.areaTable = function(img, geom, excludes){
   var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
   var proc_img = img.select(bands);
 
-  geom = geom.geometry();
+  geom = ee.FeatureCollection(geom).geometry();
   for (var i = 0; i < excludes.length; i++) {
     geom = geom.difference(excludes[i]);
   }
@@ -81,7 +81,7 @@ exports.areaChart = function(img, geom, excludes){
   var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
   var proc_img = img.select(bands);
 
-  geom = geom.geometry();
+  geom = ee.FeatureCollection(geom).geometry();
   for (var i = 0; i < excludes.length; i++) {
     geom = geom.difference(excludes[i]);
   }
