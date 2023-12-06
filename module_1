@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 21 November 2023
+Last updated: 5 December 2023
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -657,13 +657,13 @@ step_1_button.onClick(function(){
     var indx_list = indx;
 
     // Buffer the known mangrove extent using the coastline
-    var mang_buff_img = mangrove_buff.mang_buff(coast, mang_img);
+    var mang_buff_img = mangrove_buff.mang_buff(coast, mang_img, exclusion_geometries);
 
     // Create a table of the mangrove area
-    var buffer_table = mangrove_buff.areaTable(mang_buff_img, coarse_roi);
+    var buffer_table = mangrove_buff.areaTable(mang_buff_img, coarse_roi, exclusion_geometries);
 
     // Graphically display mangrove area table
-    var buffer_chart = mangrove_buff.areaChart(mang_buff_img, coarse_roi); 
+    var buffer_chart = mangrove_buff.areaChart(mang_buff_img, coarse_roi, exclusion_geometries); 
     
     // Add the mangrove buffer layers to the map
     Map.addLayer(mang_buff_img.select('35'), {palette: ['CC0000']}, '35km buffer');
