@@ -657,7 +657,7 @@ step_1_button.onClick(function(){
     var indx_list = indx;
 
     // Buffer the known mangrove extent using the coastline
-    var mang_buff_img = mangrove_buff.mang_buff(coast, mang_img, exclusion_geometries);
+    var mang_buff_img = mangrove_buff.mang_buff(coast, mang_img, coarse_roi, exclusion_geometries);
 
     // Create a table of the mangrove area
     var buffer_table = mangrove_buff.areaTable(mang_buff_img, coarse_roi, exclusion_geometries);
@@ -691,7 +691,7 @@ step_1_button.onClick(function(){
     var select_ROI = ui.Select({
       items: Object.keys(buffers),
       onChange: function(key) {
-      ROI = coast.buffer(buffers[key][0]);
+      ROI = coast.buffer(buffers[key][0]).intersection(coarse_roi);
       buff_dist = ee.Number(buffers[key][0]);
       }
     });
