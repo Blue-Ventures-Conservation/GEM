@@ -23,23 +23,30 @@ exports.doc = 'The mangrove_buff module is a function to buffer the mangrove ras
     '\n   a graph of the various membership for each of the buffered distances.';
 
 
-exports.mang_buff = function(geom, mang){
+exports.mang_buff = function(geom, mang, excludes){
+  var clipGeom = function(cst, buf) {
+    var buffed = cst.buffer(buf);
+    for (var i = 0; i < excludes.length; i++) {
+      buffed = buffed.difference(excludes[i]);
+    }
+    return buffed;
+  };
  
   // simplify the coastline geometry
   var coast = geom.simplify(1000);
   // create an image collection of various buffered mangroves, using the distance list
   var mangrove_buff = ee.Image(mang)
-                      .addBands(mang.clip(coast.buffer(1000)).rename(['01']))
-                      .addBands(mang.clip(coast.buffer(2500)).rename(['02']))
-                      .addBands(mang.clip(coast.buffer(5000)).rename(['05']))
-                      .addBands(mang.clip(coast.buffer(7500)).rename(['07']))
-                      .addBands(mang.clip(coast.buffer(10000)).rename(['10']))
-                      .addBands(mang.clip(coast.buffer(12500)).rename(['12']))
-                      .addBands(mang.clip(coast.buffer(15000)).rename(['15']))
-                      .addBands(mang.clip(coast.buffer(20000)).rename(['20']))
-                      .addBands(mang.clip(coast.buffer(25000)).rename(['25']))
-                      .addBands(mang.clip(coast.buffer(25000)).rename(['30']))
-                      .addBands(mang.clip(coast.buffer(35000)).rename(['35']));
+                      .addBands(mang.clip(clipGeom(coast, 1000)).rename(['01']))
+                      .addBands(mang.clip(clipGeom(coast, 2500)).rename(['02']))
+                      .addBands(mang.clip(clipGeom(coast, 5000)).rename(['05']))
+                      .addBands(mang.clip(clipGeom(coast, 7500)).rename(['07']))
+                      .addBands(mang.clip(clipGeom(coast, 10000)).rename(['10']))
+                      .addBands(mang.clip(clipGeom(coast, 12500)).rename(['12']))
+                      .addBands(mang.clip(clipGeom(coast, 15000)).rename(['15']))
+                      .addBands(mang.clip(clipGeom(coast, 20000)).rename(['20']))
+                      .addBands(mang.clip(clipGeom(coast, 25000)).rename(['25']))
+                      .addBands(mang.clip(clipGeom(coast, 30000)).rename(['30']))
+                      .addBands(mang.clip(clipGeom(coast, 35000)).rename(['35']));
 
   var bands = mangrove_buff.bandNames().slice(1,12);
   mangrove_buff = mangrove_buff.select(bands);
@@ -47,11 +54,15 @@ exports.mang_buff = function(geom, mang){
   return mangrove_buff;
 };
 
-exports.areaTable = function(img, geom){
+exports.areaTable = function(img, geom, excludes){
   
   var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
   var proc_img = img.select(bands);
 
+  geom = geom.geometry();
+  for (var i = 0; i < excludes.length; i++) {
+    geom = geom.difference(excludes[i]);
+  }
   var dict_sum = proc_img.reduceRegion({
     reducer: ee.Reducer.sum(),
     geometry: geom, 
@@ -65,11 +76,15 @@ exports.areaTable = function(img, geom){
 
 };
 
-exports.areaChart = function(img, geom){
+exports.areaChart = function(img, geom, excludes){
   
   var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
   var proc_img = img.select(bands);
 
+  geom = geom.geometry();
+  for (var i = 0; i < excludes.length; i++) {
+    geom = geom.difference(excludes[i]);
+  }
   var dict_sum = proc_img.reduceRegion({
     reducer: ee.Reducer.sum(),
     geometry: geom, 
