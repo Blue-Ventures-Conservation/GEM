@@ -194,7 +194,7 @@ var class_ref_type = false;
   historic classification outputs in 1.D to 'false'. However, if this is the case the dynamics
   analysis in Module 3 will not work properly (since there will only be one land cover map).
   
-          **NOTE: Default if 'false'. Do not switch to 'true' unless certain.**
+          **NOTE: Default is 'false'. Do not switch to 'true' unless certain.**
   
        Enter:
           var use_cont_spec = true; (uses the contemporary trained classifier to 
