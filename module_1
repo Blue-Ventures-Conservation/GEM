@@ -971,7 +971,7 @@ step_1_button.onClick(function(){
           
           // Create Final Mask Button
           var final_mask_butt = ui.Button('View final Mask?');
-              final_mask_butt.onClick(function(){Map.addLayer(ee.Image(final_mask), {}, 'Final Mask');});
+              final_mask_butt.onClick(function(){Map.addLayer(ee.Image(final_mask).clip(ROI), {}, 'Final Mask');});
               
           // Create Panel
           var mask_panel = ui.Panel({
