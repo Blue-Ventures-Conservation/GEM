@@ -3,18 +3,18 @@
 This is the coastline generation module, which is part of the BVC GEM v1.2 library.
 Either creates or ingests the vector based coastline used withing the GEM tool.
 
-Last update: 14-07-2023
+Last update: 12-12-2023
 
 */
 
 exports.coast_In = function(cst, cst_path, roi){ 
   
   var cst_t = function(){
-  
-  
+    var mainlands = ee.FeatureCollection('projects/sat-io/open-datasets/shoreline/mainlands');
+    var big_islands = ee.FeatureCollection('projects/sat-io/open-datasets/shoreline/big_islands');
+    var small_islands = ee.FeatureCollection('projects/sat-io/open-datasets/shoreline/small_islands');
     // use the roi to clip the world boundary polygons
-    var area = ee.FeatureCollection('USDOS/LSIB/2017')
-    .filterBounds(roi).geometry();
+    var area = mainlands.merge(big_islands).merge(small_islands).filterBounds(roi).geometry();
     
     // convert the geometries to a coordinate list
     var area_coords = area.geometries().map(function (geo) {
