@@ -419,6 +419,32 @@ function mapDynamics(key, label, loss, pers, gain) {
   Map.addLayer(gain, {palette: 'green'}, label +' gain in ' + key);
 }
 
+function conversionChart(label, areas, colors) {
+    var chartLabels = ee.List([]);
+    var chartVals = ee.List([]);
+    for (var i = 0; i < areas.length; i++) {
+      var area = areas[i];
+      chartLabels = chartLabels.add(area.name);
+      chartVals = chartVals.add(area.area);
+    }
+    
+    var pairs = chartLabels.zip(chartVals);
+    var triplets = pairs.map(function(pair){
+      var i = pairs.indexOf(pair);
+      return ee.List(pair).add(colors.get(i));
+    });
+
+    triplets = triplets.insert(0, ['Label', 'Hectares', { role: 'style' }]);
+    
+    print(ui.Chart(triplets.getInfo()).setChartType('ColumnChart')
+    .setOptions({
+      title: label,
+      hAxis: {title: 'Other classes'},
+      vAxis: {title: 'Area (ha)'},
+      legend: { position: "none" }
+    }));
+}
+
 for (var key in region_geometries) {
   var geo = region_geometries[key];
   
@@ -513,80 +539,11 @@ for (var key in region_geometries) {
     print("Area(ha) of " + lab + " persistence: ", data.pers);
     print("Area(ha) of " + lab + " gain: ", data.gain);
     
-    print(
-      ui.Label({
-        value: '"' + lab + '" conversion to other classes:',
-        style: {
-          fontWeight: 'bold',
-          fontSize: '14px',
-          textAlign: 'center'
-        }
-      })
-    );
+    var chartColors = colors.splice(pos, 1);
     var convs = data.conv;
-    var froms = convs.from;
-    
-    var fromChartVals = ee.List([]);
-    var fromChartLabels = ee.List([]);
-    for (var f = 0; f < froms.length; f++) {
-      var ff = froms[f];
-      var fname = ff.name;
-      var farea = ff.area;
-      fromChartVals = fromChartVals.add(farea);
-      fromChartLabels = fromChartLabels.add(fname);
-    }
-    
-    var fchart = ui.Chart.array.values({
-      array: fromChartVals,
-      axis: 0,
-      xLabels: fromChartLabels
-    }).setChartType('ColumnChart')
-    .setOptions({
-      title: lab + ' conversion to other classes',
-      hAxis: {title: 'Other classes'},
-      vAxis: {title: 'Area (ha)'},
-      legend: { position: "none" },
-      lineWidth: 1,
-      pointSize: 3
-    });
-    print(fchart);
-    
-    print(
-      ui.Label({
-        value: 'Other class conversion to "' + lab + '":',
-        style: {
-          fontWeight: 'bold',
-          fontSize: '14px',
-          textAlign: 'center'
-        }
-      })
-    );
-    var tos = convs.to;
-    
-    var toChartVals = ee.List([]);
-    var toChartLabels = ee.List([]);
-    for (var t = 0; t < tos.length; t++) {
-      var tt = tos[t];
-      var tname = tt.name;
-      var tarea = tt.area;
-      toChartVals = toChartVals.add(tarea);
-      toChartLabels = toChartLabels.add(tname);
-    }
-    
-    var tchart = ui.Chart.array.values({
-      array: toChartVals,
-      axis: 0,
-      xLabels: toChartLabels
-    }).setChartType('ColumnChart')
-    .setOptions({
-      title: 'Other class conversion to ' + lab,
-      hAxis: {title: 'Other classes'},
-      vAxis: {title: 'Area (ha)'},
-      legend: { position: "none" },
-      lineWidth: 1,
-      pointSize: 3
-    });
-    print(tchart);
+
+    conversionChart('"' + lab + '" conversion to other classes', convs.from, chartColors);
+    conversionChart('Other class conversion to "' + lab + '"', convs.to, chartColors);
   }
 }
 
