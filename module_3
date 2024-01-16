@@ -10,10 +10,10 @@ This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
 directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser 
 (trevor@blueventures.org). Questions about the code can be directed to 
-Mr. Max Yancho (max@vygeo.ca).
+Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: June 3, 2020
-Last updated: August 17, 2023
+Last updated: January 16, 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -145,17 +145,18 @@ the script) and renaming.
 Lastly, the classification reference areas (CRAs) needs to be added to
 accurately label the various layers and classification inputs. In addition 
 to the CRAs, the numeric land cover class number needs to be provided for 
-which ever land cover class will be tested in the dynamics analysis 
-(e.g., Closed Canopy Mangroves = 11). If there are multiple classes of
-interest, change the 'class_no' value and re-run Module 3. The dynamics 
-assesment does not need to be a mangrove class, it can be any of the CRAs
-land cover classes represent in both land cover maps.
+which ever land cover class will be mapped and exported in the dynamics analysis 
+(e.g., Closed Canopy Mangroves = 11). Calculations of change across all classes are
+performed and displayed in the console. The class_no variable is only for which
+class to map and produce exports of Loss, Persistence and Gain. The dynamics assesment
+does not need to be a mangrove class, it can be any of the CRAs land cover classes
+represent in both land cover maps.
 */
 
 
 var class_ref = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2016_210226_v2";
 // Landcover labels for the classifier
-var class_label_numeric = 'Classvalue';           //<<<------<<<< Numeric Column
+var class_label_numeric = 'Classvalue';   //<<<------<<<< Numeric Column
 var class_label_character = 'Classname';  //<<<------<<<< Text Column
 var class_no = 5;                        // (numeric, land class 
                                           //   number from 'class_label_numeric')
@@ -199,8 +200,8 @@ Enter:
 
 */
 
-var large_grid_scale = 50000;
-var nested_grid_scale = 5000;
+var large_grid_scale = 30000;
+var nested_grid_scale = 3000;
 
 
 /*
@@ -375,77 +376,179 @@ Map.addLayer(Hlot_image.updateMask(final_mask).clip(c1), vis, 'Historic Low Tide
 Map.centerObject(Chot_image);
 
 // Cont. mangrove
-var cmang = cont_res.eq(class_no).clip(c1);
-var hmang = hist_res.eq(class_no).clip(c1); 
+cont_res = cont_res.clip(c1);
+hist_res = hist_res.clip(c1);
+
+var sorted = ee.FeatureCollection(class_ref).distinct(label).sort(label);
+var sortedValues = sorted.aggregate_array(label);
+var sortedNames = sorted.aggregate_array(label2);
+var sorteds = ee.List([sortedValues, sortedNames]).getInfo();
+sortedValues = sorteds[0];
+sortedNames = sorteds[1];
+
+function maskArea(mask, geo) {
+  var area = ee.Image.pixelArea().updateMask(ee.Image(mask));
+  return ee.Number(area.reduceRegion({
+    reducer: ee.Reducer.sum(),
+    geometry: geo,
+    scale: 30,
+    maxPixels: 1e13,
+    bestEffort: true
+  }).get('area')).divide(1e4);
+}
+
+function exportDyn(img, descrip, geo) {
+  Export.image.toDrive({
+    image: img,
+    description: descrip,
+    region: geo,
+    scale: 30,
+    maxPixels:1e13
+  });
+}
+
+function exportDynamics(key, label, geo, loss, pers, gain) {
+  exportDyn(loss, label + " loss in " + key, geo);
+  exportDyn(pers, label + " persistence in " + key, geo);
+  exportDyn(gain, label + " gain in " + key, geo);
+}
+
+function mapDynamics(key, label, loss, pers, gain) {
+  Map.addLayer(loss, {palette: 'red'}, label + ' loss in ' + key);
+  Map.addLayer(pers, {palette: 'blue'}, label + ' persistence in ' + key);
+  Map.addLayer(gain, {palette: 'green'}, label +' gain in ' + key);
+}
 
 for (var key in region_geometries) {
-  print(ui.Label({value: key+' Dynamics',
-                  style:{fontWeight: 'bold',
-                         fontSize: '14px',
-                         textAlign: 'center'}
-                }));
-  
   var geo = region_geometries[key];
   
-  // Gain
-  var mang_gain = cmang.subtract(hmang).eq(1).selfMask();
-  Map.addLayer(mang_gain.clip(geo), {palette: 'E1DD7B'}, key+' gain');
-  var area_gain = ee.Image.pixelArea().updateMask(mang_gain);
-  var gain = area_gain.reduceRegion({
-                                     reducer: ee.Reducer.sum(),
-                                     geometry: geo, 
-                                     scale: 30,
-                                     maxPixels: 1e13,
-                                     bestEffort: true
-                                     });
-  print('Area(km²) of Mangrove gain: ', ee.Number(gain.get('area')).divide(1e6));                                     
-  // Loss
-  var mang_loss = hmang.subtract(cmang).eq(1).selfMask();
-  Map.addLayer(mang_loss.clip(geo), {palette: 'red'}, key+' loss');
-  var area_loss = ee.Image.pixelArea().updateMask(mang_loss);
-  var loss = area_loss.reduceRegion({
-                                     reducer: ee.Reducer.sum(),
-                                     geometry: geo, 
-                                     scale: 30,
-                                     maxPixels: 1e13,
-                                     bestEffort: true
-                                     });
-  print('Area(km²) of Mangrove loss: ', ee.Number(loss.get('area')).divide(1e6));
-  // Persistence
-  var mang_per = hmang.eq(1).and(cmang.eq(1)).selfMask();
-  Map.addLayer(mang_per.clip(geo), {palette: '20592A'}, key+' persistence');
-  var area_per = ee.Image.pixelArea().updateMask(mang_per);
-  var per = area_per.reduceRegion({
-                                     reducer: ee.Reducer.sum(),
-                                     geometry: geo, 
-                                     scale: 30,
-                                     maxPixels: 1e13,
-                                     bestEffort: true
-                                     });
-  print('Area(km²) of Mangrove persistence: ', ee.Number(per.get('area')).divide(1e6));
-  Export.image.toDrive({
-            image: mang_per.clip(geo),
-            description: key+' persistence',
-            region: geo,
-            scale: 30,
-            maxPixels:1e13
-           });
-  Export.image.toDrive({
-            image: mang_loss.clip(geo),
-            description: key+' loss',
-            region: geo,
-            scale: 30,
-            maxPixels:1e13
-           });
-  Export.image.toDrive({
-            image: mang_gain.clip(geo),
-            description: key+' gain',
-            region: geo,
-            scale: 30,
-            maxPixels:1e13
-           });
-  print('Historic Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(loss.get('area')).divide(1e6)).getInfo());
-  print('Contemporary Class Area: ', ee.Number(per.get('area')).divide(1e6).add(ee.Number(gain.get('area')).divide(1e6)).getInfo());
+  var classImgs = ee.List([]);
+  for (var p = 0; p < sortedValues.length; p++) {
+    var n = sortedValues[p];
+    classImgs = classImgs.add(ee.Dictionary({
+      cont: cont_res.eq(n).eq(1),
+      hist: hist_res.eq(n).eq(1)
+    }));
+  }
+  
+  print(
+    ui.Label({
+      value: 'Dynamics in: ' + key,
+      style: {
+        fontWeight: 'bold',
+        fontSize: '16px',
+        textAlign: 'center'
+      }
+    })
+  );
+  
+  for (var pos = 0; pos < sortedValues.length; pos++) {
+    var num = sortedValues[pos];
+    var lab = sortedNames[pos];
+    var cimgs = ee.Dictionary(classImgs.get(pos));
+    var contClass = ee.Image(cimgs.get("cont"));
+    var histClass = ee.Image(cimgs.get("hist"));
+    
+    var to = ee.List([]);
+    var from = ee.List([]);
+    for (var p2 = 0; p2 < sortedValues.length; p2++) {
+      if (p2 == pos) {
+        continue;
+      }
+      
+      var cs = ee.Dictionary(classImgs.get(p2));
+      var cc = ee.Image(cs.get("cont"));
+      var hc = ee.Image(cs.get("hist"));
+      
+      var nm = sortedNames[p2];
+      
+      to = to.add(ee.Dictionary({
+        name: nm,
+        area: maskArea(histClass.and(cc).selfMask(), geo),
+      }));
+      from = from.add(ee.Dictionary({
+        name: nm,
+        area: maskArea(contClass.and(hc).selfMask(), geo),
+      }));
+    }
+    
+    var lossMask = histClass.subtract(contClass).eq(1).selfMask();
+    var lossArea = ee.Number(maskArea(lossMask, geo));
+    var perMask = histClass.and(contClass).selfMask();
+    var perArea = ee.Number(maskArea(perMask, geo));
+    var gainMask = contClass.subtract(histClass).eq(1).selfMask();
+    var gainArea = ee.Number(maskArea(gainMask, geo));
+    
+    if (class_no == num) {
+      mapDynamics(key, lab, lossMask, perMask, gainMask);
+      exportDynamics(key, lab, geo, lossMask, perMask, gainMask);
+    }
+    
+    var data = ee.Dictionary({
+      name: lab,
+      loss: lossArea,
+      pers: perArea,
+      gain: gainArea,
+      hist: perArea.add(lossArea),
+      cont: perArea.add(gainArea),
+      conv: {
+        to: to,
+        from: from,
+      }
+    }).getInfo();
+    
+    print(
+      ui.Label({
+        value: 'Class ' + num + ':  ' + lab + ':',
+        style: {
+          fontWeight: 'bold',
+          fontSize: '16px',
+          textAlign: 'center'
+        }
+      })
+    );
+    print("Historical area(ha) of " + lab + ":", data.hist);
+    print("Contemporary area(ha) of " + lab + ":", data.cont);
+    print("Area(ha) of " + lab + " loss: ", data.loss);
+    print("Area(ha) of " + lab + " persistence: ", data.pers);
+    print("Area(ha) of " + lab + " gain: ", data.gain);
+    
+    print(
+      ui.Label({
+        value: '"' + lab + '" conversion to other classes:',
+        style: {
+          fontWeight: 'bold',
+          fontSize: '14px',
+          textAlign: 'center'
+        }
+      })
+    );
+    var convs = data.conv;
+    var froms = convs.from;
+    for (var f = 0; f < froms.length; f++) {
+      var ff = froms[f];
+      var fname = ff.name;
+      var farea = ff.area;
+      print('Area(ha) of ' + lab + ' converted to ' + fname + ":", farea);
+    }
+    print(
+      ui.Label({
+        value: 'Other class conversion to "' + lab + '":',
+        style: {
+          fontWeight: 'bold',
+          fontSize: '14px',
+          textAlign: 'center'
+        }
+      })
+    );
+    var tos = convs.to;
+    for (var t = 0; t < tos.length; t++) {
+      var tt = tos[t];
+      var tname = tt.name;
+      var tarea = tt.area;
+      print('Area(ha) of ' + tname + ' converted to ' + lab + ":", tarea);
+    }
+  }
 }
 
 //////////////////////////////////////////////////////
