@@ -464,11 +464,11 @@ for (var key in region_geometries) {
       
       to = to.add(ee.Dictionary({
         name: nm,
-        area: maskArea(histClass.and(cc).selfMask(), geo),
+        area: maskArea(contClass.and(hc).selfMask(), geo),
       }));
       from = from.add(ee.Dictionary({
         name: nm,
-        area: maskArea(contClass.and(hc).selfMask(), geo),
+        area: maskArea(histClass.and(cc).selfMask(), geo),
       }));
     }
     
@@ -525,12 +525,32 @@ for (var key in region_geometries) {
     );
     var convs = data.conv;
     var froms = convs.from;
+    
+    var fromChartVals = ee.List([]);
+    var fromChartLabels = ee.List([]);
     for (var f = 0; f < froms.length; f++) {
       var ff = froms[f];
       var fname = ff.name;
       var farea = ff.area;
-      print('Area(ha) of ' + lab + ' converted to ' + fname + ":", farea);
+      fromChartVals = fromChartVals.add(farea);
+      fromChartLabels = fromChartLabels.add(fname);
     }
+    
+    var fchart = ui.Chart.array.values({
+      array: fromChartVals,
+      axis: 0,
+      xLabels: fromChartLabels
+    }).setChartType('ColumnChart')
+    .setOptions({
+      title: lab + ' conversion to other classes',
+      hAxis: {title: 'Other classes'},
+      vAxis: {title: 'Area (ha)'},
+      legend: { position: "none" },
+      lineWidth: 1,
+      pointSize: 3
+    });
+    print(fchart);
+    
     print(
       ui.Label({
         value: 'Other class conversion to "' + lab + '":',
@@ -542,12 +562,31 @@ for (var key in region_geometries) {
       })
     );
     var tos = convs.to;
+    
+    var toChartVals = ee.List([]);
+    var toChartLabels = ee.List([]);
     for (var t = 0; t < tos.length; t++) {
       var tt = tos[t];
       var tname = tt.name;
       var tarea = tt.area;
-      print('Area(ha) of ' + tname + ' converted to ' + lab + ":", tarea);
+      toChartVals = toChartVals.add(tarea);
+      toChartLabels = toChartLabels.add(tname);
     }
+    
+    var tchart = ui.Chart.array.values({
+      array: toChartVals,
+      axis: 0,
+      xLabels: toChartLabels
+    }).setChartType('ColumnChart')
+    .setOptions({
+      title: 'Other class conversion to ' + lab,
+      hAxis: {title: 'Other classes'},
+      vAxis: {title: 'Area (ha)'},
+      legend: { position: "none" },
+      lineWidth: 1,
+      pointSize: 3
+    });
+    print(tchart);
   }
 }
 
