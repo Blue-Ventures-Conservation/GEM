@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: June 3, 2020
-Last updated: January 16, 2024
+Last updated: January 18, 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -147,9 +147,15 @@ accurately label the various layers and classification inputs. In addition
 to the CRAs, the numeric land cover class number needs to be provided for 
 which ever land cover class will be mapped and exported in the dynamics analysis 
 (e.g., Closed Canopy Mangroves = 11). Calculations of change across all classes are
-performed and displayed in the console. The class_no variable is only for which
-class to map and produce exports of Loss, Persistence and Gain. The dynamics assesment
-does not need to be a mangrove class, it can be any of the CRAs land cover classes
+performed and displayed in the console. The 'class_nos' variable allows you to combine
+multiple classes to be treated as one in the analysis if, for example, you have several
+classes for different types of mangroves, but want to see Loss, Persistence and Gain
+for all those classes as a group. The maps and exports will be generated for the class(es)
+defined in the 'class_nos' variable. If only one class is defined, the name for that class
+is used in the analysis, otherwise the variable 'combined_name' can be changed to give a name
+to the combined classes in the output.
+
+The dynamics assesment does not need to be a mangrove class, it can be any of the CRAs land cover classes
 represent in both land cover maps.
 */
 
@@ -158,9 +164,8 @@ var class_ref = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2016_
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';   //<<<------<<<< Numeric Column
 var class_label_character = 'Classname';  //<<<------<<<< Text Column
-var class_no = 5;                        // (numeric, land class 
-                                          //   number from 'class_label_numeric')
-
+var class_nos = [5];                   // (numeric, land class numbers from 'class_label_numeric')
+var combined_name = 'Mangroves';
 
 
 /*
@@ -385,6 +390,8 @@ var sortedNames = sorted.aggregate_array(label2);
 var sorteds = ee.List([sortedValues, sortedNames]).getInfo();
 sortedValues = sorteds[0];
 sortedNames = sorteds[1];
+var class_num = class_nos[0];
+var classColors = colors;
 
 function maskArea(mask, geo) {
   var area = ee.Image.pixelArea().updateMask(ee.Image(mask));
@@ -441,8 +448,36 @@ function conversionChart(label, areas, colors) {
       title: label,
       hAxis: {title: 'Other classes'},
       vAxis: {title: 'Area (ha)'},
-      legend: { position: "none" }
+      legend: {position: "none"}
     }));
+}
+
+if (class_nos.length > 1) {
+  var cni = sortedValues.indexOf(class_num);
+  sortedNames[cni] = combined_name;
+  var cont_combo = cont_res.eq(class_num).multiply(class_num);
+  var hist_combo = hist_res.eq(class_num).multiply(class_num);
+  var cont_neg = cont_res.neq(class_num);
+  var hist_neg = hist_res.neq(class_num);
+  
+  for (var i = 1; i < class_nos.length; i++) {
+    var cn = class_nos[i];
+    var idx = sortedValues.indexOf(cn);
+    sortedValues.splice(idx, 1);
+    sortedNames.splice(idx, 1);
+    classColors = classColors.splice(idx, 1);
+    cont_combo = cont_combo.add(cont_res.eq(cn).multiply(class_num));
+    hist_combo = hist_combo.add(hist_res.eq(cn).multiply(class_num));
+    cont_neg = cont_neg.and(cont_res.neq(cn));
+    hist_neg = hist_neg.and(hist_res.neq(cn));
+  }
+  
+  // combine 'class_nos' values within classified imagery:
+  // first, multiply by the mask to remove combined area
+  // then add the combined area back, but all with the same value
+  // (the first number in class_nos)
+  cont_res = cont_res.multiply(cont_neg).add(cont_combo);
+  hist_res = hist_res.multiply(hist_neg).add(hist_combo);
 }
 
 for (var key in region_geometries) {
@@ -452,8 +487,8 @@ for (var key in region_geometries) {
   for (var p = 0; p < sortedValues.length; p++) {
     var n = sortedValues[p];
     classImgs = classImgs.add(ee.Dictionary({
-      cont: cont_res.eq(n).eq(1),
-      hist: hist_res.eq(n).eq(1)
+      cont: cont_res.eq(n),
+      hist: hist_res.eq(n)
     }));
   }
   
@@ -471,6 +506,7 @@ for (var key in region_geometries) {
   for (var pos = 0; pos < sortedValues.length; pos++) {
     var num = sortedValues[pos];
     var lab = sortedNames[pos];
+    
     var cimgs = ee.Dictionary(classImgs.get(pos));
     var contClass = ee.Image(cimgs.get("cont"));
     var histClass = ee.Image(cimgs.get("hist"));
@@ -505,7 +541,7 @@ for (var key in region_geometries) {
     var gainMask = contClass.subtract(histClass).eq(1).selfMask();
     var gainArea = ee.Number(maskArea(gainMask, geo));
     
-    if (class_no == num) {
+    if (class_num == num) {
       mapDynamics(key, lab, lossMask, perMask, gainMask);
       exportDynamics(key, lab, geo, lossMask, perMask, gainMask);
     }
@@ -539,7 +575,7 @@ for (var key in region_geometries) {
     print("Area(ha) of " + lab + " persistence: ", data.pers);
     print("Area(ha) of " + lab + " gain: ", data.gain);
     
-    var chartColors = colors.splice(pos, 1);
+    var chartColors = classColors.splice(pos, 1);
     var convs = data.conv;
 
     conversionChart('"' + lab + '" conversion to other classes', convs.from, chartColors);
