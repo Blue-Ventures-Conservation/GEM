@@ -4,7 +4,7 @@ This is the mangrove buffer module, which is part of the BVC GEM v1.2 library.
 It is used to support decsions made around how to automatically select a shoreline
 buffer. 
 
-Last update: December 6, 2023
+Last update: February 3, 2024
 
 */
 
@@ -36,17 +36,17 @@ exports.mang_buff = function(geom, mang, coarse_roi, excludes){
   var coast = geom.simplify(1000);
   // create an image collection of various buffered mangroves, using the distance list
   var mangrove_buff = ee.Image(mang)
-                      .addBands(mang.clip(clipGeom(coast, 1000)).rename(['01']))
-                      .addBands(mang.clip(clipGeom(coast, 2500)).rename(['02']))
-                      .addBands(mang.clip(clipGeom(coast, 5000)).rename(['05']))
-                      .addBands(mang.clip(clipGeom(coast, 7500)).rename(['07']))
-                      .addBands(mang.clip(clipGeom(coast, 10000)).rename(['10']))
-                      .addBands(mang.clip(clipGeom(coast, 12500)).rename(['12']))
-                      .addBands(mang.clip(clipGeom(coast, 15000)).rename(['15']))
-                      .addBands(mang.clip(clipGeom(coast, 20000)).rename(['20']))
-                      .addBands(mang.clip(clipGeom(coast, 25000)).rename(['25']))
-                      .addBands(mang.clip(clipGeom(coast, 30000)).rename(['30']))
-                      .addBands(mang.clip(clipGeom(coast, 35000)).rename(['35']));
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 1000))).rename(['01']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 2500))).rename(['02']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 5000))).rename(['05']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 7500))).rename(['07']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 10000))).rename(['10']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 12500))).rename(['12']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 15000))).rename(['15']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 20000))).rename(['20']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 25000))).rename(['25']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 30000))).rename(['30']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 35000))).rename(['35']));
 
   var bands = mangrove_buff.bandNames().slice(1,12);
   mangrove_buff = mangrove_buff.select(bands);
@@ -55,15 +55,11 @@ exports.mang_buff = function(geom, mang, coarse_roi, excludes){
 };
 
 exports.areaTable = function(img, geom, excludes){
-  
-  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
-  var proc_img = img.select(bands);
-
   geom = ee.FeatureCollection(geom).geometry();
   for (var i = 0; i < excludes.length; i++) {
     geom = geom.difference(excludes[i]);
   }
-  var dict_sum = proc_img.reduceRegion({
+  var dict_sum = img.reduceRegion({
     reducer: ee.Reducer.sum(),
     geometry: geom, 
     scale: 30,
@@ -77,15 +73,11 @@ exports.areaTable = function(img, geom, excludes){
 };
 
 exports.areaChart = function(img, geom, excludes){
-  
-  var bands = ee.Image.pixelArea().addBands(img).bandNames().slice(1,12);
-  var proc_img = img.select(bands);
-
   geom = ee.FeatureCollection(geom).geometry();
   for (var i = 0; i < excludes.length; i++) {
     geom = geom.difference(excludes[i]);
   }
-  var dict_sum = proc_img.reduceRegion({
+  var dict_sum = img.reduceRegion({
     reducer: ee.Reducer.sum(),
     geometry: geom, 
     scale: 30,
@@ -94,14 +86,16 @@ exports.areaChart = function(img, geom, excludes){
     });  
     
   var chart = ui.Chart.array.values({
-      array: dict_sum.values(),
+      array: dict_sum.values().map(function(meters) {
+        return ee.Number(meters).divide(1e4);
+      }),
       axis: 0,
       xLabels: dict_sum.keys()
     }).setChartType('ColumnChart')
     .setOptions({
       title: 'Mangrove Area by Buffer',
       hAxis: {title: 'Shoreline Buffer (km)'},
-      vAxis: {title: 'Area (square meters)'},
+      vAxis: {title: 'Area (ha)'},
       legend: { position: "none" },
       lineWidth: 1,
       pointSize: 3
