@@ -164,7 +164,7 @@ var class_ref = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2016_
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';   //<<<------<<<< Numeric Column
 var class_label_character = 'Classname';  //<<<------<<<< Text Column
-var class_nos = [5];                   // (numeric, land class numbers from 'class_label_numeric')
+var class_nos = [1];                   // (numeric, land class numbers from 'class_label_numeric')
 var combined_name = 'Mangroves';
 
 
@@ -324,7 +324,7 @@ for (var i = 1; i < 277; i++){
   name_list = name_list.add(nm);
 }
 
-var countryName = 'name';
+var countryName = null;
 var country_selector = ui.Select({
   items: name_list.getInfo(),
   placeholder: 'Choose Country',
@@ -341,19 +341,82 @@ print('Please Note: Google Earth Engine refers to the'+
       '\nAdditionally, some names are not listed in alphabetical order'+
       '\nthis too relates to data formatting choices of Earth Engine.');
 
-// Create the QAA button
+
+var dyn_setup_button = ui.Button('Click to Choose Classes for Dynamics');
+dyn_setup_button.onClick(function(){
+if (countryName === null) {
+  alert("Please choose a country");
+  return;
+}
+var c1 = ee.Feature(dataset2.filterMetadata('country_na', 'equals', countryName).first());
+
+var cont_res = cont_class;
+var hist_res = hist_class;
+
+// Setup for Dynamics, combine classes and choose which other classes to show
+cont_res = cont_res.clip(c1);
+hist_res = hist_res.clip(c1);
+
+var sorted = ee.FeatureCollection(class_ref).distinct(label).sort(label);
+var sortedValues = sorted.aggregate_array(label);
+var sortedNames = sorted.aggregate_array(label2);
+var sorteds = ee.List([sortedValues, sortedNames]).getInfo();
+sortedValues = sorteds[0];
+sortedNames = sorteds[1];
+var class_num = class_nos[0];
+var classColors = colors;
+
+if (class_nos.length > 1) {
+  var cni = sortedValues.indexOf(class_num);
+  sortedNames[cni] = combined_name;
+  var cont_combo = cont_res.eq(class_num).multiply(class_num);
+  var hist_combo = hist_res.eq(class_num).multiply(class_num);
+  var cont_neg = cont_res.neq(class_num);
+  var hist_neg = hist_res.neq(class_num);
+  
+  for (var i = 1; i < class_nos.length; i++) {
+    var cn = class_nos[i];
+    var idx = sortedValues.indexOf(cn);
+    sortedValues.splice(idx, 1);
+    sortedNames.splice(idx, 1);
+    classColors = classColors.splice(idx, 1);
+    cont_combo = cont_combo.add(cont_res.eq(cn).multiply(class_num));
+    hist_combo = hist_combo.add(hist_res.eq(cn).multiply(class_num));
+    cont_neg = cont_neg.and(cont_res.neq(cn));
+    hist_neg = hist_neg.and(hist_res.neq(cn));
+  }
+  
+  // combine 'class_nos' values within classified imagery:
+  // first, multiply by the mask to remove combined area
+  // then add the combined area back, but all with the same value
+  // (the first number in class_nos)
+  cont_res = cont_res.multiply(cont_neg).add(cont_combo);
+  hist_res = hist_res.multiply(hist_neg).add(hist_combo);
+}
+
+var targetClassName = sortedNames[sortedValues.indexOf(class_num)];
+
+print('In addition to ' + targetClassName + ', please select which other classes to analyse:');
+
+var included = {};
+sortedNames.forEach(function(sname){
+  included[sname] = true;
+
+  if (sname == targetClassName) {
+    return;
+  }
+  
+  var clz_box = ui.Checkbox(sname, true);
+  clz_box.onChange(function(checked) {
+    included[sname] = checked;
+  });
+  
+  print(clz_box);
+});
+
+// Create the dynamics button
 var dyn_button = ui.Button('Click to View Dynamics');
 dyn_button.onClick(function(){
-
-  var c1 = ee.Feature(dataset2.filterMetadata('country_na', 'equals', countryName).first().getInfo());
-  var styleParams = {
-    fillColor: '00FFFFFF',
-    color: '00909F',
-   width: 3.0,
-  };
-  var c2 = dataset2.filterMetadata('country_na', 'equals', countryName).style(styleParams); 
-  //Map.addLayer(c2, {opacity:0.2}, countryName);
-
 
 // Training polygons
 var t_poly = ee.FeatureCollection(class_ref);
@@ -363,10 +426,7 @@ var values = t_poly.distinct(label).aggregate_array(label).getInfo();
 var names = t_poly.distinct(label2).aggregate_array(label2);
 
 // Redefine the ROI
-var ROI_dis = ROI; 
-
-var cont_res = cont_class;
-var hist_res = hist_class;
+var ROI_dis = ROI;
 
 // Define the layers of interest
   // Contemporary
@@ -383,19 +443,6 @@ Map.addLayer(Clot_image.updateMask(final_mask).clip(c1), vis, 'Contemporary Low 
 Map.addLayer(Hhot_image.updateMask(final_mask).clip(c1), vis, 'Historic High Tide', false);
 Map.addLayer(Hlot_image.updateMask(final_mask).clip(c1), vis, 'Historic Low Tide', false);
 Map.centerObject(Chot_image);
-
-// Cont. mangrove
-cont_res = cont_res.clip(c1);
-hist_res = hist_res.clip(c1);
-
-var sorted = ee.FeatureCollection(class_ref).distinct(label).sort(label);
-var sortedValues = sorted.aggregate_array(label);
-var sortedNames = sorted.aggregate_array(label2);
-var sorteds = ee.List([sortedValues, sortedNames]).getInfo();
-sortedValues = sorteds[0];
-sortedNames = sorteds[1];
-var class_num = class_nos[0];
-var classColors = colors;
 
 function maskArea(mask, geo) {
   var area = ee.Image.pixelArea().updateMask(ee.Image(mask));
@@ -456,34 +503,6 @@ function conversionChart(label, areas, colors) {
     }));
 }
 
-if (class_nos.length > 1) {
-  var cni = sortedValues.indexOf(class_num);
-  sortedNames[cni] = combined_name;
-  var cont_combo = cont_res.eq(class_num).multiply(class_num);
-  var hist_combo = hist_res.eq(class_num).multiply(class_num);
-  var cont_neg = cont_res.neq(class_num);
-  var hist_neg = hist_res.neq(class_num);
-  
-  for (var i = 1; i < class_nos.length; i++) {
-    var cn = class_nos[i];
-    var idx = sortedValues.indexOf(cn);
-    sortedValues.splice(idx, 1);
-    sortedNames.splice(idx, 1);
-    classColors = classColors.splice(idx, 1);
-    cont_combo = cont_combo.add(cont_res.eq(cn).multiply(class_num));
-    hist_combo = hist_combo.add(hist_res.eq(cn).multiply(class_num));
-    cont_neg = cont_neg.and(cont_res.neq(cn));
-    hist_neg = hist_neg.and(hist_res.neq(cn));
-  }
-  
-  // combine 'class_nos' values within classified imagery:
-  // first, multiply by the mask to remove combined area
-  // then add the combined area back, but all with the same value
-  // (the first number in class_nos)
-  cont_res = cont_res.multiply(cont_neg).add(cont_combo);
-  hist_res = hist_res.multiply(hist_neg).add(hist_combo);
-}
-
 for (var key in region_geometries) {
   var geo = region_geometries[key];
   
@@ -510,6 +529,9 @@ for (var key in region_geometries) {
   for (var pos = 0; pos < sortedValues.length; pos++) {
     var num = sortedValues[pos];
     var lab = sortedNames[pos];
+    if (!included[sortedNames[pos]]) {
+      continue;
+    }
     
     var cimgs = ee.Dictionary(classImgs.get(pos));
     var contClass = ee.Image(cimgs.get("cont"));
@@ -518,7 +540,7 @@ for (var key in region_geometries) {
     var to = ee.List([]);
     var from = ee.List([]);
     for (var p2 = 0; p2 < sortedValues.length; p2++) {
-      if (p2 == pos) {
+      if (p2 == pos || !included[sortedNames[p2]]) {
         continue;
       }
       
@@ -951,6 +973,8 @@ Export.table.toDrive({collection:mini_cells,
 print(QAA_button);
 });
 print(dyn_button);
+});
+print(dyn_setup_button);
 
 // At the end of the workflow, the user should have started exporting:
 //    1.) Loss Image 
