@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: June 3, 2020
-Last updated: January 18, 2024
+Last updated: February 19, 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -291,12 +291,16 @@ print('Print the index list to review indices selected');
 var button = ui.Button({
   label: 'Print Colour List',
   onClick: function() {
-    var ordered_labs = ee.FeatureCollection(class_ref).distinct(label).sort(label)
-                                  .aggregate_array(label2);
-    alert('Land Cover Color List:' + ee.String.encodeJSON(ee.Dictionary.fromLists(ordered_labs, ee.List(colors)))
-                          .replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
-                          .replace('}', '', 'g' ).getInfo());
-    return ee.List(colors);
+    var lab_colors = ee.FeatureCollection(class_ref).distinct(label).sort(label)
+                                  .aggregate_array(label2).zip(ee.List(colors));
+    alert('Land Cover Color List\n\n' + 
+      ee.String(lab_colors.iterate(function(next, prev) {
+        var pair = ee.List(next);
+        var label = ee.String(pair.get(0));
+        var color = ee.String(pair.get(1));
+        return ee.String(prev).cat(label.cat(': ').cat(color).cat('\n'));
+      }, ee.String(""))).getInfo()
+    );
     }
   });
 print(button);
