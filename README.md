@@ -244,15 +244,19 @@ resolved by simply re-running the script.
 GEM was funded by Blue Ventures Conservation (BVC), with support from
 the UK Government’s International Climate Fund, part of the UK commitment
 to developing countries to help them address the challenges presented by
-climate change and benefit from the opportunities. You may learn more about
-BVC at:    https://blueventures.org/
+climate change and benefit from the opportunities.
+
+You may learn more about BVC at: https://blueventures.org/
+
+And more about the GEM at:
+https://blueventures.org/what-we-do/climate-solutions/blue-forests/gem/
 
 
 ## CONTACT
 
 If there are discovered bugs or issues with the code, or with the directions
-on how to use the tool, you can contact Dr. Trevor Gareth Jones:
-    trevor@blueventures.org
+on how to use the tool, you can contact the GEM team at Blue Ventures:
+    gem@blueventures.org
 
 Please be sure to read the KNOWN ISSUES section of this document before
 contacting the developers.
