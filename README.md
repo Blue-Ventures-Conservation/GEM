@@ -1,6 +1,6 @@
-# GEM_v1.2
+# GEM_v1.3
 # Google Earth Engine 
-# Mangrove Mapping Methodology v1.2 
+# Mangrove Mapping Methodology v1.3
 
 ----------------------------------------------------------------------------------------------------------
 ## INTRODUCTION
@@ -37,7 +37,7 @@ users, step-by-step, through the three modules which comprise the tool:
 #### Module 1: Defining the Region of Interest (ROI) and Compositing Imagery 
 
 >This module helps the user to define customized Region of Interest (ROI) 
->boundaries, and select the input imagery to make multi-date (i.e., historic 
+>boundaries, and select the input imagery to make multi-date (i.e., historical 
 >and contemporary) composites. The user adjusts several parameters according 
 >to their specific project requirements and preferences (e.g. years of interest, 
 >months of interest, cloud cover, etc.). It is in Module 1 that the user can 
@@ -48,7 +48,7 @@ users, step-by-step, through the three modules which comprise the tool:
 
 >This module enables the user to choose from the calculated spectral indices (from Module 1) 
 >to use as classification inputs, explore the spectral relationships within and between 
->user-defined map classes, undertakes multi-date (i.e., historic and contemporary) 
+>user-defined map classes, undertakes multi-date (i.e., historical and contemporary) 
 >supervised classifications, and assesses land cover map accuracies. Exploring spectral 
 >relationships is very interactive, and includes the option to examine correlation 
 >between potential spectral indices and separability of classification reference areas 
