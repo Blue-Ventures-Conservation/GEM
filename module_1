@@ -211,7 +211,7 @@ var topo_path = 'users/yanchojo/topo';
           var ls_7_in = true; (to include the Landsat 7 data)
           var ls_7_in = false; (to exclude the Landsat 7 data)
 */
-var ls_7_in = true;
+var ls_7_in = false;
 
 ////////////////////////////////////////////////////////////
 ////////      Section 1, Step 2: User Variables     ////////
@@ -275,7 +275,10 @@ var historic_end_year = 2000;
      decision around the selection of seasonal month range. If the user needs to
      learn more about the seasonality of the study area they may refer to the
      RiceAtlas database as one source of seasonality info (Laborte et al, 2017). 
-     (https://www.nature.com/articles/sdata201774)
+     (https://www.nature.com/articles/sdata201774).
+     
+     A month range for contemporary years and another for historic years can be
+     provided, as seasons may shift over the course of decades.
      
      Note: If a single month is desired, put the same month for both variables.
      
@@ -283,12 +286,18 @@ var historic_end_year = 2000;
           (Jan = 1, Feb = 2, Mar = 3, Apr = 4, May = 5, Jun = 6, Jul = 7, Aug = 8,
           Sep = 9, Oct = 10, Nov = 11, Dec = 12)
           
-          var month_start = 1; **To select the whole year set to 1**
-          var month_end = 12; **To select the whole year set to 12**
+          var contemporary_month_start = 1; **To select the whole year set to 1**
+          var contemporary_month_end = 12; **To select the whole year set to 12**
+          
+          var historic_month_start = 1; **To select the whole year set to 1**
+          var historic_month_end = 12; **To select the whole year set to 12**
 */
 
-var month_start = 6;
-var month_end = 8;
+var contemporary_month_start = 6;
+var contemporary_month_end = 8;
+
+var historic_month_start = 6;
+var historic_month_end = 8;
 
 /*
 2.D) Cloud Cover limit  
@@ -733,14 +742,14 @@ step_1_button.onClick(function(){
       var kn_mang_ext = mang_img.clip(ROI);
       
       // Create hist./cont. image collections
-      var cont_imagery = ee.Algorithms.If(ls_imagery.LSimagery(ROI, contemporary_start_year, contemporary_end_year,
-                                              cloud_cover, month_start, month_end, cloud_mask), 
+      var cont_imagery = ee.Algorithms.If(ls_7_in, ls_imagery.LSimagery(ROI, contemporary_start_year, contemporary_end_year,
+                                              cloud_cover, contemporary_month_start, contemporary_month_end, cloud_mask), 
                                           ls_imagery.LSimagery_sans7(ROI, contemporary_start_year, contemporary_end_year,
-                                              cloud_cover, month_start, month_end, cloud_mask));
-      var hist_imagery = ee.Algorithms.If(ls_imagery.LSimagery(ROI, historic_start_year, historic_end_year,
-                                              cloud_cover, month_start, month_end, cloud_mask),
+                                              cloud_cover, contemporary_month_start, contemporary_month_end, cloud_mask));
+      var hist_imagery = ee.Algorithms.If(ls_7_in, ls_imagery.LSimagery(ROI, historic_start_year, historic_end_year,
+                                              cloud_cover, historic_month_start, historic_month_end, cloud_mask),
                                           ls_imagery.LSimagery_sans7(ROI, historic_start_year, historic_end_year,
-                                              cloud_cover, month_start, month_end, cloud_mask));
+                                              cloud_cover, historic_month_start, historic_month_end, cloud_mask));
                                               
       // Calculate tidal conditions
       cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI, min_avg);
