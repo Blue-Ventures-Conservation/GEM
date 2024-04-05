@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 4 April 2024
+Last updated: 5 April 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -296,8 +296,8 @@ var historic_end_year = 2000;
 var contemporary_month_start = 6;
 var contemporary_month_end = 8;
 
-var historic_month_start = 6;
-var historic_month_end = 8;
+var historic_month_start = 5;
+var historic_month_end = 9;
 
 /*
 2.D) Cloud Cover limit  
@@ -312,7 +312,7 @@ var historic_month_end = 8;
 
 */
 
-var cloud_cover = 10;
+var cloud_cover = 15;
 
 /*
 2.E) Cloud Mask
@@ -360,16 +360,19 @@ var tidal_zone = 1000;
 2.G) MNDWI Minimum Average
     When calculating the MNDWI that determines the high and low tide imagery,
     the GEM allows users to specify a minimum average value for the MNDWI
-    required for an image to be included in the dataset. There is an ongoing
-    issue with atmospheric haze that can affect images, artificially raising
-    the SWIR band value for pixels over the ocean. This can cause pixels over
-    the ocean to appear as land, when the SWIR value is high enough. Because
-    we already mask out all the land within the ROI, and are fairly confident
-    that the average value of the MNDWI across any land-masked image should
-    lean more heavily toward water, we can cut off the extremely low average values
-    for MNDWI on images that are affected by atmospheric haze. A value of -1
-    implies that no images will be filtered out in this way. Increasing the
-    value will more aggressively filter out images that have low MNDWI values.
+    required for an image to be used when determining the water mask.
+    
+    There is an ongoing issue with atmospheric haze that can affect images,
+    artificially raising the SWIR band value for pixels over the ocean.
+    
+    This can cause pixels over the ocean to appear as land, when the SWIR value
+    is high enough. Because we already mask out all the land within the ROI,
+    and are fairly confident that the average value of the MNDWI across any
+    land-masked image should lean more heavily toward water, we can cut off the
+    extremely low average values for MNDWI on images that are affected by
+    atmospheric haze. A value of -1 implies that no images will be filtered out
+    in this way. Increasing the value will more aggressively filter out images
+    that have low MNDWI values.
    
     In some cases, when viewing the water mask at the end of module 1, you may
     notice large amounts of land within your ROI that should be ocean. Try
@@ -382,7 +385,7 @@ var tidal_zone = 1000;
         var min_avg = -1; (MNDWI filter value)
 */
 
-var min_avg = -1;
+var min_avg = 0.5;
 
 
 /*
@@ -752,7 +755,7 @@ step_1_button.onClick(function(){
                                               cloud_cover, historic_month_start, historic_month_end, cloud_mask));
                                               
       // Calculate tidal conditions
-      cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI, min_avg);
+      cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI, null);
       print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
       
@@ -773,7 +776,7 @@ step_1_button.onClick(function(){
       });
       
       // Determing tidal conditions
-      hist_imagery = shoreRefl.shoreRefl(hist_imagery, tidalArea, ROI, min_avg);
+      hist_imagery = shoreRefl.shoreRefl(hist_imagery, tidalArea, ROI, null);
       print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
       hist_imagery = shoreRefl.tide_bands(hist_imagery);
       
@@ -854,7 +857,6 @@ step_1_button.onClick(function(){
         Clot3 = ee.Image(Clot3).float();
         Hhot3 = ee.Image(Hhot3).float();
         Hlot3 = ee.Image(Hlot3).float();
-        print(Hlot3);
         var test = ee.Image(Hlot3).addBands(ee.Image.constant(2));              
        
         // Export Imagery with indices as bands
@@ -922,9 +924,11 @@ step_1_button.onClick(function(){
                                     mang_topo, elevation, slope);
           
           // Use low tide images to create water mask
+          var clot_water = cont_imagery.filter(ee.Filter.gte('MNDWI', min_avg)).qualityMosaic('inv_MNDWI').clip(ROI);
+          var hlot_water = hist_imagery.filter(ee.Filter.gte('MNDWI', min_avg)).qualityMosaic('inv_MNDWI').clip(ROI);
           
           if(remove_water === true){
-              var waterMask = water.water_mask(Hlot3, Clot3, combo_water_mask);
+              var waterMask = water.water_mask(hlot_water, clot_water, combo_water_mask);
             }else{
               var waterMask = ee.Image(1);
             }
