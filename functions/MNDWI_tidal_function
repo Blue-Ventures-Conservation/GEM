@@ -46,7 +46,7 @@ exports.shoreRefl = function(img, zone, roi, min_avg){
     var cum_val = masked_MNDWI.reduceRegion({ 
                     reducer: ee.Reducer.mean(),
                     geometry: zone,
-                    scale: 30 * 3,
+                    scale: 100,
                     maxPixels: 1e15,
                     bestEffort: true,
                     tileScale: 16 
