@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 5 April 2024
+Last updated: 16 April 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -238,7 +238,7 @@ var ls_7_in = false;
           var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2021;
+var contemporary_start_year = 2022;
 var contemporary_end_year = 2023;
 
 /*
@@ -254,8 +254,8 @@ var contemporary_end_year = 2023;
 
 */
 
-var historic_start_year = 1998;
-var historic_end_year = 2000;
+var historic_start_year = 2019;
+var historic_end_year = 2020;
 
 /*
 2.C) Months of Interest 
@@ -293,8 +293,8 @@ var historic_end_year = 2000;
           var historic_month_end = 12; **To select the whole year set to 12**
 */
 
-var contemporary_month_start = 6;
-var contemporary_month_end = 8;
+var contemporary_month_start = 5;
+var contemporary_month_end = 9;
 
 var historic_month_start = 5;
 var historic_month_end = 9;
@@ -312,7 +312,7 @@ var historic_month_end = 9;
 
 */
 
-var cloud_cover = 15;
+var cloud_cover = 85;
 
 /*
 2.E) Cloud Mask
@@ -385,7 +385,7 @@ var tidal_zone = 1000;
         var min_avg = -1; (MNDWI filter value)
 */
 
-var min_avg = 0.5;
+var min_avg = 0.75;
 
 
 /*
