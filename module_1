@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 16 April 2024
+Last updated: 17 April 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -312,7 +312,7 @@ var historic_month_end = 9;
 
 */
 
-var cloud_cover = 85;
+var cloud_cover = 15;
 
 /*
 2.E) Cloud Mask
@@ -385,7 +385,7 @@ var tidal_zone = 1000;
         var min_avg = -1; (MNDWI filter value)
 */
 
-var min_avg = 0.75;
+var min_avg = 0.5;
 
 
 /*
