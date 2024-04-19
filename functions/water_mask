@@ -4,7 +4,7 @@ This is the water mask module, which is part of the BVC GEM v1.2 library.
 This function generates a pixel-based water mask using the MNDWI index,
 set at a threshold of 0.09.
 
-Last update: 22-06-2022
+Last update: 18 April 2024
 
 */
 
@@ -26,7 +26,7 @@ if (combo_water_mask === true){
       }).rename(['MNDWI']).lt(0.09);
   
   // unify the images, select values greater than 1
-  var h2o_mask = MNDWI_cont.add(MNDWI_hist).gt(1);
+  var h2o_mask = MNDWI_cont.add(MNDWI_hist).gte(1);
   
   // export
   return h2o_mask;
