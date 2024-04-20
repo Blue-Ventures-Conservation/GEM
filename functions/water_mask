@@ -4,7 +4,7 @@ This is the water mask module, which is part of the BVC GEM v1.2 library.
 This function generates a pixel-based water mask using the MNDWI index,
 set at a threshold of 0.09.
 
-Last update: 18 April 2024
+Last update: 20 April 2024
 
 */
 
@@ -13,23 +13,31 @@ exports.water_mask = function(hist_img, cont_img, combo_water_mask){
 
 
 if (combo_water_mask === true){
-  // create contemporary MNDWI Image
   var MNDWI_cont = cont_img.expression('(B2 - B5)/(B2 + B5)', {
       'B2': cont_img.select('B2'),
       'B5': cont_img.select('B5')
       }).rename(['MNDWI']).lt(0.09);
+  var NDWI_cont = cont_img.expression('(B2 - B4)/(B2 + B4)', {
+      'B2': cont_img.select('B2'),
+      'B4': cont_img.select('B4')
+      }).rename(['NDWI']).lt(0.20);
+      
+  var cont_water = MNDWI_cont.add(NDWI_cont).gt(1);
   
     // create historic MNDWI Image
   var MNDWI_hist = hist_img.expression('(B2 - B5)/(B2 + B5)', {
       'B2': hist_img.select('B2'),
       'B5': hist_img.select('B5')
       }).rename(['MNDWI']).lt(0.09);
+  var NDWI_hist = hist_img.expression('(B2 - B4)/(B2 + B4)', {
+      'B2': cont_img.select('B2'),
+      'B4': cont_img.select('B4')
+      }).rename(['NDWI']).lt(0.20);
+      
+  var hist_water = MNDWI_hist.add(NDWI_hist).gt(1);
   
   // unify the images, select values greater than 1
-  var h2o_mask = MNDWI_cont.add(MNDWI_hist).gte(1);
-  
-  // export
-  return h2o_mask;
+  return cont_water.add(hist_water).gte(1);
 } else {
   var single_water = hist_img.expression('(B2 - B5)/(B2 + B5)', {
       'B2': hist_img.select('B2'),
