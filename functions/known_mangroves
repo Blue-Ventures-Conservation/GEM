@@ -4,7 +4,7 @@ This is the known mangrove dataset module, which is part of the BVC GEM v1.2 lib
 It either calls from GEE or ingests the raster-based known mangrove extent
 data used withing the GEM tool.
 
-Last update: 14-03-2022
+Last update: 22 April 2024
 
 */
 
@@ -13,10 +13,11 @@ exports.known_mang = function(kmx){
   var kmx_t = function(){
       
         // when 'TRUE' the mangrove data from GEE will be ingested
-        var mang_ext = ee.ImageCollection('LANDSAT/MANGROVE_FORESTS');
-        var mang_img = mang_ext.reduce(ee.Reducer.mean());
+        var giri = ee.ImageCollection('LANDSAT/MANGROVE_FORESTS').mean();
+        var gmw = ee.Image("projects/earthengine-legacy/assets/projects/sat-io/open-datasets/GMW/union/gmw_v3_mng_union");
+        var both = giri.blend(gmw);
 
-        return mang_img;
+        return both;
   
   };
 
