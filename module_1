@@ -925,7 +925,9 @@ step_1_button.onClick(function(){
           
           // Use low tide images to create water mask
           var clot_water = cont_imagery.filter(ee.Filter.gte('MNDWI', min_avg)).qualityMosaic('inv_MNDWI').clip(ROI);
+          print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
           var hlot_water = hist_imagery.filter(ee.Filter.gte('MNDWI', min_avg)).qualityMosaic('inv_MNDWI').clip(ROI);
+          print('No. Historic Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
           
           if(remove_water === true){
               var waterMask = water.water_mask(hlot_water, clot_water, combo_water_mask);
