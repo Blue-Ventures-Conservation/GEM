@@ -11,8 +11,8 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 (trevor@blueventures.org). Questions about the code can be directed to 
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
-Developed on: June 3, 2020
-Last updated: November 24, 2023
+Developed on: 3 June 2020
+Last updated: 25 April 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -377,20 +377,25 @@ step_1_button.onClick(function(){
                 }));
   print('Select the bands to be used for Pearson correlation:');
   // Quickly re-select the indices from Module 1
+  var blist = Chot.bandNames().remove('B6').getInfo();
 
   // Generate the empty index list
-  var indx = ee.List([]);
+  var indx = ee.List.repeat("", blist.length);
   
   // List of reference indices
-  var OG_band_list = ui.data.ActiveList(Chot.bandNames().remove('B6').getInfo());
+  var OG_band_list = ui.data.ActiveList(blist);
 
   // Create checkboxes 
   OG_band_list.forEach(function(x){
     var ind_box = ui.Checkbox(x, false);
     ind_box.onChange(function(checked) {
-    // Add/remove the index to the list
-    if (checked === true){indx = indx.add(x);
-    } else {indx = indx.remove(x);}}); 
+      // Add/remove the index to the list
+      if (checked === true) {
+        indx = indx.set(blist.indexOf(x), x);
+      } else {
+        indx = indx.set(blist.indexOf(x), "");
+      }
+    }); 
     print(ind_box);
   });
   
@@ -401,7 +406,7 @@ step_1_button.onClick(function(){
     label: 'View Band/Index Input',
     onClick: function() {
       alert('Correlation Band/Index Input:' +
-              ee.String.encodeJSON(indx.distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
+              ee.String.encodeJSON(indx.filter(ee.Filter.neq('item', "")).distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
                             .replace('}', '', 'g' ).getInfo());
       return ee.List(indx);
       }
@@ -500,23 +505,28 @@ step_1_button.onClick(function(){
         '\nto view the index band correlation matrix'+
         '\nfor that composite.');         
   // Create correlation buttons
+  
+  function corelationIndices() {
+    return indx.filter(ee.Filter.neq('item', "")).distinct();
+  }
+  
   var chot_cor_but = ui.Button('View CHOT Index Band Correlation');
   chot_cor_but.onClick(function(){
     print('Cont. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Chot, indx, t_poly_c);});
+    InCor.pearson_cor_mat(Chot, corelationIndices(), t_poly_c);});
   var clot_cor_but = ui.Button('View CLOT Index Band Correlation');
   clot_cor_but.onClick(function(){
     print('Cont. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Clot, indx, t_poly_c);
+    InCor.pearson_cor_mat(Clot, corelationIndices(), t_poly_c);
     });
   var hhot_cor_but = ui.Button('View HHOT Index Band Correlation');
   hhot_cor_but.onClick(function(){
     print('Hist. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hhot, indx, t_poly_h);});
+    InCor.pearson_cor_mat(Hhot, corelationIndices(), t_poly_h);});
   var hlot_cor_but = ui.Button('View HLOT Index Band Correlation');
   hlot_cor_but.onClick(function(){
     print('Hist. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hlot, indx, t_poly_h);});
+    InCor.pearson_cor_mat(Hlot, corelationIndices(), t_poly_h);});
   // Create correlation panel
   var cor_panel = ui.Panel({layout: ui.Panel.Layout.flow('horizontal')});
   cor_panel.add(chot_cor_but).add(clot_cor_but).add(hhot_cor_but).add(hlot_cor_but);
