@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 17 April 2024
+Last updated: 6 May 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -238,7 +238,7 @@ var ls_7_in = false;
           var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2022;
+var contemporary_start_year = 2021;
 var contemporary_end_year = 2023;
 
 /*
@@ -254,7 +254,7 @@ var contemporary_end_year = 2023;
 
 */
 
-var historic_start_year = 2019;
+var historic_start_year = 2018;
 var historic_end_year = 2020;
 
 /*
@@ -753,11 +753,26 @@ step_1_button.onClick(function(){
                                               cloud_cover, historic_month_start, historic_month_end, cloud_mask),
                                           ls_imagery.LSimagery_sans7(ROI, historic_start_year, historic_end_year,
                                               cloud_cover, historic_month_start, historic_month_end, cloud_mask));
-                                              
+      
+      // function for adding bands inspectable bands for the date of each pixel
+      function datePixels(img) {
+          var segs = ee.List(ee.String(img.get('system:index')).trim().split("_").iterate(function(item, prev) {
+            return ee.Algorithms.If(ee.String(item).length().gt(1), ee.List(prev).add(item), prev);
+          }, ee.List([])));
+          // true when Landsat, false implies Sentinel-2
+          var str = ee.String(ee.Algorithms.If(ee.String(segs.get(0)).length().eq(4), segs.get(2), ee.String(segs.get(0)).split('T').get(0)));
+          var year = ee.Number.parse(str.slice(0, 4));
+          var month = ee.Number.parse(str.slice(4, 6));
+          var day = ee.Number.parse(str.slice(6, 8));
+          var date = ee.Date.fromYMD(year, month, day);
+          return img.addBands(ee.Image([date.get('day'), date.get('month'), date.get('year')]).rename(['day', 'month', 'year']).cast({'day':'byte', 'month':'byte', 'year':'short'}));
+      }
+      
       // Calculate tidal conditions
       cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI, null);
       print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
       cont_imagery = shoreRefl.tide_bands(cont_imagery);
+      cont_imagery = cont_imagery.map(datePixels);
       
       // Build the contemporary BAP composites
       var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
@@ -779,6 +794,7 @@ step_1_button.onClick(function(){
       hist_imagery = shoreRefl.shoreRefl(hist_imagery, tidalArea, ROI, null);
       print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
       hist_imagery = shoreRefl.tide_bands(hist_imagery);
+      hist_imagery = hist_imagery.map(datePixels);
       
       // Build the historic BAP composites
       var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic('MNDWI').clip(ROI);
@@ -796,10 +812,10 @@ step_1_button.onClick(function(){
         print(add_h_imagery);
       });
       
-      Chot = Chot.select('B1','B2','B3','B4','B5','B6','B7');
-      Clot = Clot.select('B1','B2','B3','B4','B5','B6','B7');
-      Hhot = Hhot.select('B1','B2','B3','B4','B5','B6','B7');
-      Hlot = Hlot.select('B1','B2','B3','B4','B5','B6','B7');
+      Chot = Chot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
+      Clot = Clot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
+      Hhot = Hhot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
+      Hlot = Hlot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
       
       
       ///////////////
