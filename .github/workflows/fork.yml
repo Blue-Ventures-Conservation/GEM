@@ -1,0 +1,4 @@
+name: Fork Notification
+
+# Controls when the workflow will run
+on: [fork]
