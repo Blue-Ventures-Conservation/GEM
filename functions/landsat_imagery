@@ -84,8 +84,6 @@ function get_imagery(ignore_ls7, force_ls7, roi, year1, year2, cloudCoverLimit, 
   if (ls7m2 < 10) {
     m2 = "0" + m2;
   }
-  print(ignore_ls7);
-  print(year1 + '-' + m1 +'-01' + ' to ' + ls7y2 + '-' + ls7m2 + '-' + ls7d2);
   var col7 =  ee.ImageCollection("LANDSAT/LE07/C02/T1_L2") 
     .filterBounds(roi)
     // filter to the set cloud cover
