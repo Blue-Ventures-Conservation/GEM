@@ -204,12 +204,12 @@ var topo_path = 'users/yanchojo/topo';
      Corrector (SLC) failure on May 31, 2003. This causes missing data values for 
      about 22% of each scene. While the remaining pixels provide high-quality data,
      the missing data values can potentially create artifacts in the output Landsat
-     composites. To include or exclude the Landsat 7 archive toggle the variable 
-     'ls_7_in'; between 'true' (to include) and 'false' (to exclude).
+     composites. To include or exclude the Landsat 7 later than May 31, 2003, toggle
+     the variable 'ls_7_in'; between 'true' (to include) and 'false' (to exclude).
      
      Enter:
-          var ls_7_in = true; (to include the Landsat 7 data)
-          var ls_7_in = false; (to exclude the Landsat 7 data)
+          var ls_7_in = true; (to include the error-prone Landsat 7 data)
+          var ls_7_in = false; (to exclude the error-prone Landsat 7 data)
 */
 var ls_7_in = false;
 
@@ -745,14 +745,10 @@ step_1_button.onClick(function(){
       var kn_mang_ext = mang_img.clip(ROI);
       
       // Create hist./cont. image collections
-      var cont_imagery = ee.Algorithms.If(ls_7_in, ls_imagery.LSimagery(ROI, contemporary_start_year, contemporary_end_year,
-                                              cloud_cover, contemporary_month_start, contemporary_month_end, cloud_mask), 
-                                          ls_imagery.LSimagery_sans7(ROI, contemporary_start_year, contemporary_end_year,
-                                              cloud_cover, contemporary_month_start, contemporary_month_end, cloud_mask));
-      var hist_imagery = ee.Algorithms.If(ls_7_in, ls_imagery.LSimagery(ROI, historic_start_year, historic_end_year,
-                                              cloud_cover, historic_month_start, historic_month_end, cloud_mask),
-                                          ls_imagery.LSimagery_sans7(ROI, historic_start_year, historic_end_year,
-                                              cloud_cover, historic_month_start, historic_month_end, cloud_mask));
+      var cont_imagery = ls_imagery.LSimagery_smart_ls7(ls_7_in, ROI, contemporary_start_year, contemporary_end_year,
+                                              cloud_cover, contemporary_month_start, contemporary_month_end, cloud_mask);
+      var hist_imagery = ls_imagery.LSimagery_smart_ls7(ls_7_in, ROI, historic_start_year, historic_end_year,
+                                              cloud_cover, historic_month_start, historic_month_end, cloud_mask);
       
       // function for adding bands inspectable bands for the date of each pixel
       function datePixels(img) {
