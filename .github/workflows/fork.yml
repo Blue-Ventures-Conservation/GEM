@@ -2,3 +2,9 @@ name: Fork Notification
 
 # Controls when the workflow will run
 on: [fork]
+jobs:
+  forked:
+     name: Fork Notification
+     runs-on: ubuntu-latest
+     steps:
+       - run: echo "GEEMMM was forked"
