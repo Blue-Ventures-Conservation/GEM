@@ -777,15 +777,17 @@ step_1_button.onClick(function(){
       // Build the contemporary BAP composites
       var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
       var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
+      var chot_vis = Chot;
+      var clot_vis = Clot;
       
       // Add the contemporary imagery once it has finished processing 
-      Clot.evaluate(function(){
+      clot_vis.evaluate(function(){
         var add_c_imagery = ui.Button('Add Contemporary Imagery');
         add_c_imagery.onClick(function(){
         // Add to Map
           var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
-          Map.addLayer(Chot, vis, 'Contemporary High Tide');
-          Map.addLayer(Clot, vis, 'Contemporary Low Tide');
+          Map.addLayer(chot_vis, vis, 'Contemporary High Tide');
+          Map.addLayer(clot_vis, vis, 'Contemporary Low Tide');
         });
         print(add_c_imagery);
       });
@@ -799,23 +801,25 @@ step_1_button.onClick(function(){
       // Build the historic BAP composites
       var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic('MNDWI').clip(ROI);
       var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
+      var hhot_vis = Hhot;
+      var hlot_vis = Hlot;
 
       // Add the historic imagery once it has finished processing
-      Hlot.evaluate(function(result){
+      hlot_vis.evaluate(function(result){
         var add_h_imagery = ui.Button('Add Historic Imagery');
         add_h_imagery.onClick(function(){
           // Add to Map
           var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
-          Map.addLayer(Hhot, vis, 'Historic High Tide');
-          Map.addLayer(Hlot, vis, 'Historic Low Tide');
+          Map.addLayer(hhot_vis, vis, 'Historic High Tide');
+          Map.addLayer(hlot_vis, vis, 'Historic Low Tide');
         });
         print(add_h_imagery);
       });
       
-      Chot = Chot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
-      Clot = Clot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
-      Hhot = Hhot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
-      Hlot = Hlot.select('B1','B2','B3','B4','B5','B6','B7','day','month','year');
+      Chot = Chot.select('B1','B2','B3','B4','B5','B6','B7');
+      Clot = Clot.select('B1','B2','B3','B4','B5','B6','B7');
+      Hhot = Hhot.select('B1','B2','B3','B4','B5','B6','B7');
+      Hlot = Hlot.select('B1','B2','B3','B4','B5','B6','B7');
       
       
       ///////////////
