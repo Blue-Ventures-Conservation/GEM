@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 25 April 2024
+Last updated: 6 May 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -311,7 +311,7 @@ var lc_names = ui.data.ActiveList(ee.FeatureCollection(class_ref_cont).distinct(
                                   .aggregate_array(label2).getInfo());
 
 var colList = {'purple':'purple', 'red':'red','pink':'pink','orange':'orange',
-               'yellow':'yellow', 'green': 'green', 'lightgreen':'lightgreen',
+               'yellow':'yellow', 'darkgreen':'darkgreen', 'green': 'green', 'lightgreen':'lightgreen',
                'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'brown',
                'black':'black', 'white':'white', 'grey':'grey', 'lightgrey':'lightgrey'};
 
