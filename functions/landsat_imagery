@@ -46,7 +46,7 @@ function filter_ls7(force, roi, cloud_limit, year1, year2, month1, month2) {
     return ee.ImageCollection([]);
   }
   
-  var truncate = year2 > 2003 || (year2 = 2003 && monthsOverlap);
+  var truncate = year2 > 2003 || (year2 == 2003 && monthsOverlap);
   
   var ls7col = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2");
   var dateFiltered = ee.ImageCollection([]);
