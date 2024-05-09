@@ -28,7 +28,7 @@ jobs:
          # Optional plain body:
          body: |
            The new fork was created here:
-           ${{github.event.forkee.homepage}}
+           ${{github.event.forkee.html_url}}
          # Optional recipient of the email response:
          reply_to: do-not-reply@nowhere.com
          # Optional unsigned/invalid certificates allowance:
