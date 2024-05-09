@@ -4,7 +4,30 @@ name: Fork Notification
 on: [fork]
 jobs:
   forked:
-     name: Fork Notification
-     runs-on: ubuntu-latest
-     steps:
-       - run: echo "GEEMMM was forked"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+         # Required mail server address if not connection_url:
+         server_address: smtp.gmail.com
+         # Server port, default 25:
+         server_port: 465
+         # Optional whether this connection use TLS (default is true if server_port is 465)
+         secure: true
+         # Optional (recommended) mail server username:
+         username: ${{secrets.ACTIONSUSERNAME}}
+         # Optional (recommended) mail server password:
+         password: ${{secrets.ACTIONSPASSWORD}}
+         # Required mail subject:
+         subject: GEM was forked!
+         # Required recipients' addresses:
+         to: courtland.fowler@blueventures.org
+         # Required sender full name (address can be skipped):
+         from: GEM # <user@example.com>
+         # Optional plain body:
+         body: The new fork was created here ${{fork.forkee.repository}}
+         # Optional recipient of the email response:
+         reply_to: do-not-reply@nowhere.com
+         # Optional unsigned/invalid certificates allowance:
+         ignore_cert: true
