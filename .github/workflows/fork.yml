@@ -26,7 +26,7 @@ jobs:
          # Required sender full name (address can be skipped):
          from: GEM # <user@example.com>
          # Optional plain body:
-         body: The new fork was created here ${{fork.forkee.repository}}
+         body: The new fork was created here ${{forkee.repository}}
          # Optional recipient of the email response:
          reply_to: do-not-reply@nowhere.com
          # Optional unsigned/invalid certificates allowance:
