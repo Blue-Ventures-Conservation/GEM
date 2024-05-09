@@ -146,7 +146,7 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
->https://code.earthengine.google.com/062dfbf4083f3a64dc5a2b2df1fa7356?noload=true
+>https://code.earthengine.google.com/39388a4d0ffbfcb8dad162e6f850a0a6?noload=true
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
