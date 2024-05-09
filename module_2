@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on: 3 June 2020
-Last updated: 6 May 2024
+Last updated: 9 May 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -311,8 +311,8 @@ var lc_names = ui.data.ActiveList(ee.FeatureCollection(class_ref_cont).distinct(
                                   .aggregate_array(label2).getInfo());
 
 var colList = {'purple':'purple', 'red':'red','pink':'pink','orange':'orange',
-               'yellow':'yellow', 'darkgreen':'darkgreen', 'green': 'green', 'lightgreen':'lightgreen',
-               'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'brown',
+               'yellow':'yellow', 'darkgreen':'darkgreen', 'green': 'limegreen', 'lightgreen':'lightgreen',
+               'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'saddlebrown', 'lightbrown':'burlywood',
                'black':'black', 'white':'white', 'grey':'grey', 'lightgrey':'lightgrey'};
 
 var colors = ee.List.sequence(0,ee.Number(lc_names.length()).subtract(1),1);
@@ -321,7 +321,7 @@ lc_names.forEach(function(x){
   var col_drop = ui.Select({
                               placeholder: ee.String("Select " + x + " Colour").getInfo(),
                               items: Object.keys(colList),
-                              onChange: function(key) { colors = colors.set(lc_names.indexOf(x),key)}
+                              onChange: function(key) { colors = colors.set(lc_names.indexOf(x), colList[key])}
                               });
  print(x);
  print(col_drop);
