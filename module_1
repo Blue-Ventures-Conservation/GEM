@@ -11,8 +11,8 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 (trevor@blueventures.org). Questions about the code can be directed to 
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
-Developed on: 3 June 2020
-Last updated: 7 May 2024
+Developed on:  3 June 2020
+Last updated: 16 May 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -940,10 +940,12 @@ step_1_button.onClick(function(){
                                     mang_topo, elevation, slope);
           
           // Use low tide images to create water mask
-          var clot_water = cont_imagery.filter(ee.Filter.gte('MNDWI', min_avg)).qualityMosaic('inv_MNDWI').clip(ROI);
+          var clot_water = cont_imagery.filter(ee.Filter.gte('MNDWI', min_avg));
           print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
-          var hlot_water = hist_imagery.filter(ee.Filter.gte('MNDWI', min_avg)).qualityMosaic('inv_MNDWI').clip(ROI);
+          clot_water = clot_water.qualityMosaic('inv_MNDWI').clip(ROI);
+          var hlot_water = hist_imagery.filter(ee.Filter.gte('MNDWI', min_avg));
           print('No. Historic Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
+          hlot_water = hlot_water.qualityMosaic('inv_MNDWI').clip(ROI);
           
           if(remove_water === true){
               var waterMask = water.water_mask(hlot_water, clot_water, combo_water_mask);
