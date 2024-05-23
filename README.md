@@ -1,6 +1,6 @@
-# GEM_v1.3
+# GEM_v1.4
 # Google Earth Engine 
-# Mangrove Mapping Methodology v1.3
+# Mangrove Mapping Methodology v1.4
 
 ----------------------------------------------------------------------------------------------------------
 ## INTRODUCTION
