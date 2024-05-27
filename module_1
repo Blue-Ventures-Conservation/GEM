@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 May 2024
+Last updated: 27 May 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -199,12 +199,17 @@ var topo = true;
 var topo_path = 'users/yanchojo/topo';
 
 /*
-1.F) Inclusion of Landsat 7 Data
+1.F) Optional Inclusion of Error-Prone Landsat 7 Data
      The majority of the Landsat 7 collections have been affected by the Scan Line 
      Corrector (SLC) failure on May 31, 2003. This causes missing data values for 
      about 22% of each scene. While the remaining pixels provide high-quality data,
      the missing data values can potentially create artifacts in the output Landsat
-     composites. To include or exclude the Landsat 7 later than May 31, 2003, toggle
+     composites.
+     
+     The GEM uses Landsat 7 data from before the failure automatically, this flag
+     only changes whether data after the failure is included.
+     
+     To include or exclude the Landsat 7 later than May 31, 2003, toggle
      the variable 'ls_7_in'; between 'true' (to include) and 'false' (to exclude).
      
      Enter:
