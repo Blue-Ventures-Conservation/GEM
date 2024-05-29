@@ -12,8 +12,8 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 (trevor@blueventures.org). Questions about the code can be directed to 
 Court Fowler (courtland.fowler@blueventures.org).
 
-Developed on: June 3, 2020
-Last updated: February 19, 2024
+Developed on:  3 June 2020
+Last updated: 28 May 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -160,7 +160,7 @@ represent in both land cover maps.
 */
 
 
-var class_ref = "users/yanchojo/madagascar_inputs/TAB/updated_CRAs/TAB_CRA_2016_210226_v2";
+var class_ref = "users/courtf/CRA/TAB_CRA_2020_210224_binary";
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';   //<<<------<<<< Numeric Column
 var class_label_character = 'Classname';  //<<<------<<<< Text Column
@@ -269,8 +269,8 @@ var lc_names = ui.data.ActiveList(ee.FeatureCollection(class_ref).distinct(label
                                   .aggregate_array(label2).getInfo());
 
 var colList = {'purple':'purple', 'red':'red','pink':'pink','orange':'orange',
-               'yellow':'yellow', 'green': 'green', 'lightgreen':'lightgreen',
-               'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'brown',
+               'yellow':'yellow', 'darkgreen':'darkgreen', 'green':'limegreen', 'lightgreen':'lightgreen',
+               'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'saddlebrown', 'lightbrown':'burlywood',
                'black':'black', 'white':'white', 'grey':'grey', 'lightgrey':'lightgrey'};
 
 var colors = ee.List.sequence(0,ee.Number(lc_names.length()).subtract(1),1);
@@ -279,7 +279,7 @@ lc_names.forEach(function(x){
   var col_drop = ui.Select({
                               placeholder: ee.String("Select " + x + " Colour").getInfo(),
                               items: Object.keys(colList),
-                              onChange: function(key) { colors = colors.set(lc_names.indexOf(x),key)}
+                              onChange: function(key) { colors = colors.set(lc_names.indexOf(x), colList[key])}
                               });
  print(x);
  print(col_drop);
@@ -576,7 +576,7 @@ for (var key in region_geometries) {
     var gainArea = ee.Number(maskArea(gainMask, geo));
     
     if (class_num == num) {
-      mapDynamics(key, lab, lossMask, perMask, gainMask);
+      mapDynamics(key, lab, lossMask.clip(geo), perMask.clip(geo), gainMask.clip(geo));
       exportDynamics(key, lab, geo, lossMask, perMask, gainMask);
     }
     
