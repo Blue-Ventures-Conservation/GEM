@@ -3,7 +3,7 @@
 This is the contemporary imagery module, which is part of the BVC GEM v1.2+ library.
 It is used to collect recent Landsat 8 imagery for the area of interest.
 
-Last update: 7 May 2024
+Last update: 29 May 2024
 
 */
 
@@ -46,7 +46,7 @@ function filter_ls7(force, roi, cloud_limit, year1, year2, month1, month2) {
     return ee.ImageCollection([]);
   }
   
-  var truncate = year2 > 2003 || (year2 == 2003 && monthsOverlap);
+  var truncate = !force && (year2 > 2003 || (year2 == 2003 && monthsOverlap));
   
   var ls7col = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2");
   var dateFiltered = ee.ImageCollection([]);
