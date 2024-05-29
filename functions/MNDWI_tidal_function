@@ -4,10 +4,9 @@ This is the MNDWI tidal condition module, which is part of the BVC GEM v1.2 libr
 It is used calculate the MNDWI along the shoreline of input images and save the mean 
 MNDWI value as an image metadata property.
 
-Last update: 20 April 2024
+Last update: 28 May 2024
 
 */
-
 
 
 exports.doc = 'The MNDWI tidal condition module is to calculate mean MNDWI along the input image shoreline.' +
@@ -49,22 +48,6 @@ exports.shoreRefl = function(images, zone, roi, min_avg){
     return img.set('MNDWI', ee.Number(mndwi));
   });
   
-  img_p1 = img_p1.map(function(img){
-    var ndwi = ee.Image(img).expression('(B2 - B4)/(B2 + B4)', {
-      'B2': img.select('B2'),
-      'B4': img.select('B4')
-      }).rename(['NDWI']).updateMask(land_mask).reduceRegion({ 
-                    reducer: ee.Reducer.mean(),
-                    geometry: zone,
-                    scale: 100,
-                    maxPixels: 1e15,
-                    bestEffort: true,
-                    tileScale: 16 
-                    }).get('NDWI');
-      
-    return img.set('NDWI', ee.Number(ndwi));
-  });
-  
   return img_p1.filter(ee.Filter.gte('MNDWI', min_avg));
 };
 
@@ -73,15 +56,14 @@ exports.tide_bands = function(images){
   return ee.ImageCollection(images)
     // then add a band to each image called MNDWI (created from the shoreRefl function)
     .map(function(img){ img = ee.Image(img);
-      return img.addBands(img.metadata("MNDWI")).addBands(img.metadata("NDWI"));
+      return img.addBands(img.metadata("MNDWI"));
       })
     // create an inverse MNDWI to be used for high-tide conditions
     .map( function(img){ img = ee.Image(img);
-      return img.set("inv_MNDWI", ee.Number(img.get("MNDWI")).multiply(-1)).set("inv_NDWI", ee.Number(img.get("NDWI")).multiply(-1)); 
+      return img.set("inv_MNDWI", ee.Number(img.get("MNDWI")).multiply(-1)); 
       })
     // create an inverse MNDWI band for high-tide conditions
     .map(function(img){ img = ee.Image(img);
-      return img.addBands(img.metadata("inv_MNDWI")).addBands(img.metadata("inv_NDWI"));
+      return img.addBands(img.metadata("inv_MNDWI"));
   });
 };
-
