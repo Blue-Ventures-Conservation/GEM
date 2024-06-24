@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 27 May 2024
+Last updated: 24 June 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -29,7 +29,7 @@ will be hosted by a Blue Ventures Conservation Google account.
 
 Welcome to Module 1 of the GEM. This module is used to: 1.) Identify 
 the precise region of interest (ROI) used in the GEM, 2.) generate Landsat 
-image composites, 3.) calculate any desired spectral indices for the generated 
+image composites, 3.) calculate desired spectral indices for the generated 
 composites and 4.) create a unified mask to remove water pixels or pixels 
 associated with extreme topography from classification. This module outputs up to
 four image composites (depending on user preference: high- and  low-tide for 
@@ -206,8 +206,9 @@ var topo_path = 'users/yanchojo/topo';
      the missing data values can potentially create artifacts in the output Landsat
      composites.
      
-     The GEM uses Landsat 7 data from before the failure automatically, this flag
-     only changes whether data after the failure is included.
+     The GEM uses Landsat 7 data from before the failure automatically (Landsat 7
+     began acquiring images on 18 April 1999), this flag only changes whether data
+     after the failure is included.
      
      To include or exclude the Landsat 7 later than May 31, 2003, toggle
      the variable 'ls_7_in'; between 'true' (to include) and 'false' (to exclude).
@@ -239,12 +240,12 @@ var ls_7_in = false;
      variables.
      
      Enter:
-          var contemporary_start_year = 2014; (Older Contemporary year)
-          var Contemporary_end_year = 2018; (More recent Contemporary year)
+          var contemporary_start_year = 2022; (Older Contemporary year)
+          var Contemporary_end_year = 2024; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2021;
-var contemporary_end_year = 2023;
+var contemporary_start_year = 2022;
+var contemporary_end_year = 2024;
 
 /*
 2.B) Historic Years
@@ -254,13 +255,13 @@ var contemporary_end_year = 2023;
      Note: If a single year is desired, put the same year for both variables.
   
      Enter:
-          var historic_start_year = 2004; (Older Historic year)
-          var historic_end_year = 2008; (More recent Historic year)
+          var historic_start_year = 2012; (Older Historic year)
+          var historic_end_year = 2014; (More recent Historic year)
 
 */
 
-var historic_start_year = 2018;
-var historic_end_year = 2020;
+var historic_start_year = 2012;
+var historic_end_year = 2014;
 
 /*
 2.C) Months of Interest 
@@ -313,7 +314,7 @@ var historic_month_end = 9;
      (https://www.usgs.gov/core-science-systems/nli/landsat/cfmask-algorithm)
     
      Enter:
-          var cloud_cover = 10; (%, 0-100, Integer)
+          var cloud_cover = 15; (%, 0-100, Integer)
 
 */
 
