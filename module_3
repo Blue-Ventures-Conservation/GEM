@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 28 May 2024
+Last updated: 13 July 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -312,7 +312,7 @@ print(ui.Label({value:'Module 3: Section 2',
                          fontSize: '18px',
                          textAlign: 'center'}
                 }));
-print('Select the Country');
+print('Optional: Select the Country\n(to limit analysis to be within its borders).');
 var dataset = ee.FeatureCollection('USDOS/LSIB/2017');
 var dataset2 = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017');
 var name_list = ee.List([]); //set up empty list
@@ -344,18 +344,25 @@ print('Please Note: Google Earth Engine refers to the'+
 
 var dyn_setup_button = ui.Button('Click to Choose Classes for Dynamics');
 dyn_setup_button.onClick(function(){
-if (countryName === null) {
-  alert("Please choose a country");
-  return;
-}
-var c1 = ee.Feature(dataset2.filterMetadata('country_na', 'equals', countryName).first());
 
 var cont_res = cont_class;
 var hist_res = hist_class;
 
+var chot_masked = Chot_image.updateMask(final_mask);
+var clot_masked = Clot_image.updateMask(final_mask);
+var hhot_masked = Hhot_image.updateMask(final_mask);
+var hlot_masked = Hlot_image.updateMask(final_mask);
+if (countryName !== null) {
+  var c1 = ee.Feature(dataset2.filterMetadata('country_na', 'equals', countryName).first());
+  cont_res = cont_res.clip(c1);
+  hist_res = hist_res.clip(c1);
+  chot_masked = chot_masked.clip(c1);
+  clot_masked = clot_masked.clip(c1);
+  hhot_masked = hhot_masked.clip(c1);
+  hlot_masked = hlot_masked.clip(c1);
+}
+
 // Setup for Dynamics, combine classes and choose which other classes to show
-cont_res = cont_res.clip(c1);
-hist_res = hist_res.clip(c1);
 
 var sorted = ee.FeatureCollection(class_ref).distinct(label).sort(label);
 var sortedValues = sorted.aggregate_array(label);
@@ -438,10 +445,11 @@ var ROI_dis = ROI;
     }
     
 var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
-Map.addLayer(Chot_image.updateMask(final_mask).clip(c1), vis, 'Contemporary High Tide');
-Map.addLayer(Clot_image.updateMask(final_mask).clip(c1), vis, 'Contemporary Low Tide', false);
-Map.addLayer(Hhot_image.updateMask(final_mask).clip(c1), vis, 'Historic High Tide', false);
-Map.addLayer(Hlot_image.updateMask(final_mask).clip(c1), vis, 'Historic Low Tide', false);
+
+Map.addLayer(chot_masked, vis, 'Contemporary High Tide');
+Map.addLayer(clot_masked, vis, 'Contemporary Low Tide', false);
+Map.addLayer(hhot_masked, vis, 'Historic High Tide', false);
+Map.addLayer(hlot_masked, vis, 'Historic Low Tide', false);
 Map.centerObject(Chot_image);
 
 function maskArea(mask, geo) {
@@ -669,10 +677,10 @@ left.setOptions("SATELLITE");
 
 
 // Add the Landsat imagery to the map
-right.addLayer(Chot_image.updateMask(final_mask), vis, 'Contemporary High Tide');
-right.addLayer(Clot_image.updateMask(final_mask), vis, 'Contemporary Low Tide', false);
-right.addLayer(Hhot_image.updateMask(final_mask), vis, 'Historic High Tide', false);
-right.addLayer(Hlot_image.updateMask(final_mask), vis, 'Historic Low Tide', false);
+right.addLayer(chot_masked, vis, 'Contemporary High Tide');
+right.addLayer(clot_masked, vis, 'Contemporary Low Tide', false);
+right.addLayer(hhot_masked, vis, 'Historic High Tide', false);
+right.addLayer(hlot_masked, vis, 'Historic Low Tide', false);
 
 // ADD ROI
 // Add the ROI to the all maps, in red outline with no fill
