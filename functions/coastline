@@ -14,7 +14,7 @@ exports.coast_In = function(cst, cst_path, roi){
     var big_islands = ee.FeatureCollection('projects/sat-io/open-datasets/shoreline/big_islands');
     var small_islands = ee.FeatureCollection('projects/sat-io/open-datasets/shoreline/small_islands');
     // use the roi to clip the world boundary polygons
-    var area = mainlands.merge(big_islands).merge(small_islands).filterBounds(roi).geometry();
+    var area = mainlands.merge(big_islands).merge(small_islands).filterBounds(roi);
     
     // dissolve and then convert the geometries to a coordinate list
     var area_coords = ee.Geometry.MultiPolygon(area.geometry().geometries()).dissolve().coordinates().flatten();
