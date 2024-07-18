@@ -523,57 +523,40 @@ var conversionSelectors = [];
 
 function conversionData(conv, sortedNames) {
   var dat = {};
-  var selectors = [];
+  var fromSelectors = [];
+  var toSelectors = [];
   
-  var fromIndex = 0;
+  var toFrmIndex = 0;
   for (var i in sortedNames) {
-    var fromName = sortedNames[i];
-    if (!included[fromName]) {
+    var name = sortedNames[i];
+    if (!included[name]) {
       continue;
     }
     
-    var fromKey = "Conversion from " + fromName;
-    selectors.push(fromKey);
+    var fromKey = "Conversion from " + name;
+    var toKey = "Conversion to " + name;
+    fromSelectors.push(fromKey);
+    toSelectors.push(toKey);
     
-    if (fromIndex >= conv.from.length) {
+    if (!(toFrmIndex < conv.from.length && toFrmIndex < conv.to.length)) {
       dat[fromKey] = null;
-      continue;
-    }
-    
-    var from = conv.from[fromIndex];
-    if (from.name != fromName) {
-      dat[fromKey] = null;
-    } else {
-      dat[fromKey] = from.area;
-      fromIndex++;
-    }
-  }
-  
-  var toIndex = 0;
-  for (var j in sortedNames) {
-    var toName = sortedNames[j];
-    if (!included[toName]) {
-      continue;
-    }
-    
-    var toKey = "Conversion to " + toName;
-    selectors.push(toKey);
-    
-    if (toIndex >= conv.to.length) {
       dat[toKey] = null;
       continue;
     }
     
-    var to = conv.to[toIndex];
-    if (to.name != toName) {
-      dat[toKey] = null;
-    } else {
+    var to = conv.to[toFrmIndex];
+    var from = conv.from[toFrmIndex];
+    if (from.name == name && to.name == name) {
       dat[toKey] = to.area;
-      toIndex++;
+      dat[fromKey] = from.area;
+      toFrmIndex++;
+    } else {
+      dat[toKey] = null;
+      dat[fromKey] = null;
     }
   }
   
-  conversionSelectors = selectors;
+  conversionSelectors = fromSelectors.concat(toSelectors);
   
   return dat;
 }
