@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 13 July 2024
+Last updated: 17 July 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -160,7 +160,7 @@ represent in both land cover maps.
 */
 
 
-var class_ref = "users/courtf/CRA/TAB_CRA_2020_210224_binary";
+var class_ref = "users/courtlandfowler/tab_cra_2023_reviewed";
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';   //<<<------<<<< Numeric Column
 var class_label_character = 'Classname';  //<<<------<<<< Text Column
@@ -474,9 +474,9 @@ function exportDyn(img, descrip, geo) {
 }
 
 function exportDynamics(key, label, geo, loss, pers, gain) {
-  exportDyn(loss, label + " loss in " + key, geo);
-  exportDyn(pers, label + " persistence in " + key, geo);
-  exportDyn(gain, label + " gain in " + key, geo);
+  exportDyn(loss, (label + " loss in " + key).split(' ').join('_'), geo);
+  exportDyn(pers, (label + " persistence in " + key).split(' ').join('_'), geo);
+  exportDyn(gain, (label + " gain in " + key).split(' ').join('_'), geo);
 }
 
 function mapDynamics(key, label, loss, pers, gain) {
@@ -518,6 +518,67 @@ function percentChange(hist, cont) {
 function percent(num, denom) {
   return Math.round(((num/denom) * 1e4))/1e2 + "%";
 }
+
+var conversionSelectors = [];
+
+function conversionData(conv, sortedNames) {
+  var dat = {};
+  var selectors = [];
+  
+  var fromIndex = 0;
+  for (var i in sortedNames) {
+    var fromName = sortedNames[i];
+    if (!included[fromName]) {
+      continue;
+    }
+    
+    var fromKey = "Conversion from " + fromName;
+    selectors.push(fromKey);
+    
+    if (fromIndex >= conv.from.length) {
+      dat[fromKey] = null;
+      continue;
+    }
+    
+    var from = conv.from[fromIndex];
+    if (from.name != fromName) {
+      dat[fromKey] = null;
+    } else {
+      dat[fromKey] = from.area;
+      fromIndex++;
+    }
+  }
+  
+  var toIndex = 0;
+  for (var j in sortedNames) {
+    var toName = sortedNames[j];
+    if (!included[toName]) {
+      continue;
+    }
+    
+    var toKey = "Conversion to " + toName;
+    selectors.push(toKey);
+    
+    if (toIndex >= conv.to.length) {
+      dat[toKey] = null;
+      continue;
+    }
+    
+    var to = conv.to[toIndex];
+    if (to.name != toName) {
+      dat[toKey] = null;
+    } else {
+      dat[toKey] = to.area;
+      toIndex++;
+    }
+  }
+  
+  conversionSelectors = selectors;
+  
+  return dat;
+}
+
+var dynamicsData = [];
 
 for (var key in region_geometries) {
   var geo = region_geometries[key];
@@ -589,17 +650,24 @@ for (var key in region_geometries) {
     }
     
     var data = ee.Dictionary({
-      name: lab,
-      loss: lossArea,
-      pers: perArea,
-      gain: gainArea,
-      hist: perArea.add(lossArea),
-      cont: perArea.add(gainArea),
+      Name: lab,
+      Historical: perArea.add(lossArea),
+      Contemporary: perArea.add(gainArea),
+      Loss: lossArea,
+      Persistence: perArea,
+      Gain: gainArea,
       conv: {
         to: to,
         from: from,
       }
     }).getInfo();
+    
+    // the geometry here is just a placeholder, we will export a CSV without it
+    var convDat = conversionData(data.conv, sortedNames);
+    for (var attrname in convDat) {
+      data[attrname] = convDat[attrname];
+    }
+    dynamicsData.push(ee.Feature(ee.Geometry.Point([0, 0]), data));
     
     print(
       ui.Label({
@@ -611,12 +679,12 @@ for (var key in region_geometries) {
         }
       })
     );
-    print("Historical area (ha) of " + lab + ":", data.hist);
-    print("Contemporary area (ha) of " + lab + ":", data.cont);
-    print("Percent change in area of " + lab, "from historical to contemporary:", percentChange(data.hist, data.cont));
-    print("Area (ha) of " + lab + " loss: ", data.loss + " [" + percent(data.loss, data.hist) + "]");
-    print("Area (ha) of " + lab + " persistence: ", data.pers + " [" + percent(data.pers, data.hist) + "]");
-    print("Area (ha) of " + lab + " gain: ", data.gain + " [" + percent(data.gain, data.hist) + "]");
+    print("Historical area (ha) of " + lab + ":", data.Historical);
+    print("Contemporary area (ha) of " + lab + ":", data.Contemporary);
+    print("Percent change in area of " + lab, "from historical to contemporary:", percentChange(data.Historical, data.Contemporary));
+    print("Area (ha) of " + lab + " loss: ", data.Loss + " [" + percent(data.Loss, data.Historical) + "]");
+    print("Area (ha) of " + lab + " persistence: ", data.Persistence + " [" + percent(data.Persistence, data.Historical) + "]");
+    print("Area (ha) of " + lab + " gain: ", data.Gain + " [" + percent(data.Gain, data.Histoircal) + "]");
     
     var chartColors = classColors.splice(pos, 1);
     var convs = data.conv;
@@ -625,6 +693,12 @@ for (var key in region_geometries) {
     conversionChart('Other class conversion to "' + lab + '"', convs.to, chartColors);
   }
 }
+
+Export.table.toDrive({
+  description: 'Dynamics_Table',
+  collection: ee.FeatureCollection(dynamicsData),
+  selectors: ['Name', 'Historical', 'Contemporary', 'Loss', 'Persistence', 'Gain'].concat(conversionSelectors)
+});
 
 //////////////////////////////////////////////////////
 //////////////   Section 3: QAA    //////////////
