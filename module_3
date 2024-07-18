@@ -650,7 +650,8 @@ for (var key in region_geometries) {
     }
     
     var data = ee.Dictionary({
-      Name: lab,
+      Region: key,
+      Class: lab,
       Historical: perArea.add(lossArea),
       Contemporary: perArea.add(gainArea),
       Loss: lossArea,
@@ -697,7 +698,7 @@ for (var key in region_geometries) {
 Export.table.toDrive({
   description: 'Dynamics_Table',
   collection: ee.FeatureCollection(dynamicsData),
-  selectors: ['Name', 'Historical', 'Contemporary', 'Loss', 'Persistence', 'Gain'].concat(conversionSelectors)
+  selectors: ['Region', 'Class', 'Historical', 'Contemporary', 'Loss', 'Persistence', 'Gain'].concat(conversionSelectors)
 });
 
 //////////////////////////////////////////////////////
