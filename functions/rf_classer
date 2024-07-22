@@ -4,7 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: July 1, 2022
+Last update: July 22, 2024
 
 
 use_cont_spec, Chot, Clot, t_poly_h, t_poly_c,
@@ -272,15 +272,17 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, sp
 
   // Classify the LOT image.
   var classified_CCOM = Ccom.classify(CCOM_trained_classifier);
-  
-  Export.image.toAsset({
-              image: classified_CCOM.clip(ROI),
-              description: 'Combine_Classification_contemporary',
-              assetId: 'Combine_Classification_contemporary',
-              region: ROI,
-              scale: 30,
-              maxPixels:1e13
-              });  
+  var exportFunc = function() {
+    Export.image.toAsset({
+            image: classified_CCOM.clip(ROI),
+            description: 'Combine_Classification_contemporary',
+            assetId: 'Combine_Classification_contemporary',
+            region: ROI,
+            scale: 30,
+            maxPixels:1e13
+    });
+  };
+  exportFunc();
               
   classified_CCOM.evaluate(function(){
               
@@ -306,6 +308,11 @@ exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, sp
               var CCOM_testAccuracy = validated_CCOM.errorMatrix(label, 'classification');
               print('Combine Cont. Validation error matrix: ', CCOM_testAccuracy);
               print('Combine Cont. Validation overall accuracy: ', CCOM_testAccuracy.accuracy());
+              var button = ui.Button({
+                label: 'Export Contemporary Classified Imagery',
+                onClick: exportFunc,
+              });
+              print(button);
   });  
             
   return classified_CCOM;
@@ -578,15 +585,18 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot,
 
   // Classify the HOT image.
   var classified_HCOM = Hcom.classify(HCOM_trained_classifier);
-            
-  Export.image.toAsset({
-              image: classified_HCOM.clip(ROI),
-              description: 'Combine_Classification_historic',
-              assetId: 'Combine_Classification_historic',
-              region: ROI,
-              scale: 30,
-              maxPixels:1e13
-              });              
+  
+  var exportFunc = function() {
+    Export.image.toAsset({
+            image: classified_HCOM.clip(ROI),
+            description: 'Combine_Classification_historic',
+            assetId: 'Combine_Classification_historic',
+            region: ROI,
+            scale: 30,
+            maxPixels:1e13
+    });
+  };
+  exportFunc();
               
   classified_HCOM.evaluate(function(){
     
@@ -612,6 +622,12 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot,
               var HCOM_testAccuracy = validated_HCOM.errorMatrix(label, 'classification');
               print('Combine Hist. Validation error matrix: ', HCOM_testAccuracy);
               print('Combine Hist. Validation overall accuracy: ', HCOM_testAccuracy.accuracy());
+              
+              var button = ui.Button({
+                label: 'Export Historical Classified Imagery',
+                onClick: exportFunc,
+              });
+              print(button);
   });  
   return classified_HCOM;
  
