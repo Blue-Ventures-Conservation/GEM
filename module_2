@@ -11,8 +11,8 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 (trevor@blueventures.org). Questions about the code can be directed to 
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
-Developed on: 3 June 2020
-Last updated: 9 May 2024
+Developed on:  3 June 2020
+Last updated: 21 August 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -146,8 +146,8 @@ by clicking the automatic 'image' name (see top of the script) and renaming.
           var class_ref = **PATH**; (Path to the CRAs)
 */
 
-var class_ref_cont = "users/courtf/CRA/TAB_CRA_2020_210224_binary";
-var class_ref_hist = "users/courtf/CRA/TAB_CRA_2000_210301_binary";
+var class_ref_cont = "projects/gem-project-378721/assets/users/4FRqmoJouHUQmYudmpUq9tN5Ob52/TAB_CRA_2020_210224_binary";
+var class_ref_hist = "projects/gem-project-378721/assets/users/4FRqmoJouHUQmYudmpUq9tN5Ob52/TAB_CRA_2000_210301_binary";
 // Landcover labels for the classifier
 var class_label_numeric = 'Classvalue';
 var class_label_character = 'Classname';
@@ -297,7 +297,7 @@ var combo_hist_out = true;     // Combination historical Imagery
 // Required Modules
 // Functions are brought into GEM Module 2 through the require() function
 
-var RFclass = require('users/yanchojo/GEM_LS9_colors/:modules/rf_classer');
+var RFclass = require('users/courtlandfowler/gemv2:rf_classer');
 var InCor = require('users/yanchojo/GEM_LS9_colors/:modules/input_correlation');
 var specSp = require('users/yanchojo/GEM_LS9_colors/:modules/spec_area');
 
@@ -457,36 +457,15 @@ step_1_button.onClick(function(){
   if (label3 !== null && label3 !== "") {
     prop_labels = prop_labels.concat([label3]);
   }
+  
+  var imagery_scale = Chot.projection().nominalScale();
 
   // Overlay the points on the imagery to get training for HOT
-  var sample_CHOT = Chot.select(bands).sampleRegions({
-    collection: t_poly_c,
-    properties: prop_labels,
-    scale: 30, 
-    tileScale: 16
-  });
+  var sample_CHOT = RFclass.sample_image(Chot.select(bands), t_poly_c, prop_labels, imagery_scale);
+  var sample_CLOT = RFclass.sample_image(Clot.select(bands), t_poly_c, prop_labels, imagery_scale);
+  var sample_HHOT = RFclass.sample_image(Hhot.select(bands), t_poly_h, prop_labels, imagery_scale);
+  var sample_HLOT = RFclass.sample_image(Hlot.select(bands), t_poly_h, prop_labels, imagery_scale);
 
-  // Overlay the points on the imagery to get training for HOT
-  var sample_CLOT = Clot.select(bands).sampleRegions({
-    collection: t_poly_c,
-    properties: prop_labels,
-    scale: 30, 
-    tileScale: 16
-  });
-  // Overlay the points on the imagery to get training for HOT
-  var sample_HHOT = Hhot.select(bands).sampleRegions({
-    collection: t_poly_h,
-    properties: prop_labels,
-    scale: 30, 
-    tileScale: 16
-  });
-  // Overlay the points on the imagery to get training for HOT
-  var sample_HLOT = Hlot.select(bands).sampleRegions({
-    collection: t_poly_h,
-    properties: prop_labels,
-    scale: 30, 
-    tileScale: 16
-    });
   var header = ui.Label({
                           value: 'View the Spectral Relationships of the Reference Data',
                           style: {
@@ -788,7 +767,6 @@ step_2_button.onClick(function(){
     var t_poly_h = ee.FeatureCollection(class_ref_hist);
     // Isolate the bands to use in the classification
     var bands = ee.List(indx);
-    print(bands); 
     
     print('Console will populate with accuracy metrics. The Tasks tab'+
           '\nwill turn yellow when the classifications are complete and'+
@@ -811,26 +789,26 @@ step_2_button.onClick(function(){
     }, ee.Dictionary({position: ee.Number(0), prev: ee.Number(-1), colors: colors, output: ee.List([])}))).get('output');
     
     // Contemporary
-    if(HOT_cont_out === true){ var Chot_class = RFclass.ChotClassify(Chot, 
+    if (HOT_cont_out === true) { RFclass.ChotClassify(Chot, 
                                     t_poly_c, label, bands, ROI, trees, 
                                     splits, leafpop, bag, nodes, seeds, expanded_colors);}
-    if( LOT_cont_out === true){ var CLot_class = RFclass.ClotClassify(Clot, 
+    if (LOT_cont_out === true) { RFclass.ClotClassify(Clot, 
                                     t_poly_c, label, bands, ROI, trees, 
                                     splits, leafpop, bag, nodes, seeds, expanded_colors);}
-    if(combo_cont_out === true){ var Ccom_class = RFclass.CcomClassify(Chot, 
+    if (combo_cont_out === true) { RFclass.CcomClassify(Chot, 
                                     Clot, t_poly_c, label, bands, ROI, trees, 
                                     splits, leafpop, bag, nodes, seeds, expanded_colors);}
                                  
     // Historical
-    if( HOT_hist_out === true){ var Hhot_class = RFclass.HhotClassify(Hhot, 
+    if (HOT_hist_out === true) { RFclass.HhotClassify(Hhot, 
                                   class_ref_type, use_cont_spec, Chot, t_poly_h, 
                                   t_poly_c, label, bands, ROI, trees, 
                                   splits, leafpop, bag, nodes, seeds, expanded_colors);}
-   if(LOT_hist_out === true){ var Hlot_class = RFclass.HlotClassify(Hlot, 
+    if (LOT_hist_out === true) { RFclass.HlotClassify(Hlot, 
                                   class_ref_type, use_cont_spec, Clot, t_poly_h, 
                                   t_poly_c, label, bands, ROI, trees, 
                                   splits, leafpop, bag, nodes, seeds, expanded_colors);}
-    if(combo_hist_out === true){var Hcom_class = RFclass.HcomClassify(Hhot,
+    if (combo_hist_out === true) { RFclass.HcomClassify(Hhot,
                                   Hlot, class_ref_type, use_cont_spec, Chot, Clot,
                                   t_poly_h, t_poly_c, label, bands, ROI, trees, 
                                   splits, leafpop, bag, nodes, seeds, expanded_colors);}

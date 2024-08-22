@@ -1,0 +1,341 @@
+/*
+
+This is the imagery module, which is part of the GEM v2 library.
+It is used to collect Landsat 4, 5, 8, 9 and Sentinel 2 imagery for a region of interest.
+
+Last update: 21 August 2024
+
+*/
+
+exports.doc = 'The imagery module is used to collect images for the ROI.' +
+    '\n The output is an image collection ready to be sorted into high and low tide groups.' +
+    '\n If the start year & month is after 4/2017, you weill get 10m Sentinel-2 imagery, otherwise 30m Landsat.' +
+    '\n It includes:' +
+    '\n' +
+    '\n get_imagery(roi, cloudCoverLimit, year1, year2, month_1, month_2, cloud_mask, band_names):' +
+    '\n   @param {boolean} force_ls: whether to force the use of landsat even when the date indicates S2' +
+    '\n   @param {boolean} ls_7_in: whether to include Landsat 7 imagery beyond the scan line error date' +
+    '\n   @param {ee.Geometry} roi: the region of interest, produced by GEM' +
+    '\n   @param {numeric} cloudCoverLimit: percentage of allowable cloud cover' +
+    '\n   @param {numeric} year1: oldest year of interest' +
+    '\n   @param {numeric} year2: most recent year of interest' +
+    '\n   @param {numeric} month_1: oldest month of interest (1:12)' +
+    '\n   @param {numeric} month_2: most recent month of interest (1:12)' +
+    '\n   @param {character} cloud_mask: how clouds are removed. Valid inputs are none, mild, and aggressive' +
+    '\n   @param {ee.Geometry} the buffered coastline containing the tidally active zone' +
+    '\n   @return {array} An image collection with clouds removed at index 0 and the native scale of the imagery at index 1';
+
+exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, end_year, start_month, end_month, cloud_mask, tidal_area) {
+  // bnames: six names for [Blue, Green, Red, NIR, SWIR1, SWIR2]
+  var bnames = ['B1','B2','B3','B4','B5','B7'];
+  function filter_func(cloud_prop) {
+    return function(name) {
+      return filter_collection(ls_7_in, name, roi, cloud_prop, cloud_limit, start_year, end_year, start_month, end_month);
+    };
+  }
+  
+  if (!force_ls && exports.should_use_s2(start_year, start_month)) {
+    var s2_images = collect_sentinel2(cloud_mask, bnames, roi, tidal_area, filter_func(s2_cloud_property));
+    return [s2_images, s2_scale];
+  } else {
+    var ls_images = collect_landsat(cloud_mask, bnames, roi, tidal_area, filter_func(ls_cloud_property));
+    return [ls_images, ls_scale];
+  }
+};
+
+exports.should_use_s2 = function(start_year, start_month) {
+  return (start_year > s2_start_year) || (start_year == s2_start_year  && start_month >= s2_start_month);
+};
+
+exports.water_index = 'NDWI';
+exports.inverse_water_index = 'inv_NDWI';
+exports.mod_water_index = 'MNDWI';
+exports.inverse_mod_water_index = 'inv_MNDWI';
+
+var s2_start_year = 2018;
+var s2_start_month = 12;
+
+var ls_scale = 30;
+var s2_scale = 10;
+
+var s2_qa_pixel = "QA60";
+var ls_qa_pixel = "QA_PIXEL";
+
+var ls4 = "LANDSAT/LT04/C02/T1_L2";
+var ls5 = "LANDSAT/LT05/C02/T1_L2";
+var ls7 = "LANDSAT/LE07/C02/T1_L2";
+var ls8 = "LANDSAT/LC08/C02/T1_L2";
+var ls9 = "LANDSAT/LC09/C02/T1_L2";
+var ls_cloud_property = 'CLOUD_COVER';
+
+var oli_bands = ee.List(['SR_B2','SR_B3','SR_B4','SR_B5','SR_B6','SR_B7','ST_B10']);
+var etm_bands = ee.List(['SR_B1','SR_B2','SR_B3','SR_B4','SR_B5','SR_B7','ST_B6']);
+var ls_tir_rename = 'Heat';
+
+var s2 = "COPERNICUS/S2_SR_HARMONIZED";
+var s2_bands = ee.List(['B2','B3','B4','B8','B11','B12']);
+var s2_cloud_property = 'CLOUDY_PIXEL_PERCENTAGE';
+
+function filter_collection(force_ls7, collection_name, roi, cloud_property, cloud_limit, year1, year2, month1, month2) {
+  if (collection_name == ls7) {
+    return filter_ls7(force_ls7, roi, cloud_property, cloud_limit, year1, year2, month1, month2);
+  }
+  
+  var y2 = year2 + 1;
+  return ee.ImageCollection(collection_name)
+    .filterBounds(roi)
+    .filterMetadata(cloud_property, 'not_greater_than', cloud_limit)
+    .filterDate(year1 + '-01-01', y2 + '-01-01')
+    .filter(ee.Filter.calendarRange(month1, month2, 'month')); // handles wrapping if month1 > month2
+}
+
+function filter_ls7(force, roi, cloud_property, cloud_limit, year1, year2, month1, month2) {
+  var justMay = month1 == 5 && month2 == 5;
+  var normal = month1 < month2;
+  var wrapping = month1 > month2;
+  var monthRangeOverlaps = (wrapping && month1 <= 5) || (wrapping && month2 >= 5) || (normal && month1 <= 5);
+  var monthsOverlap = justMay || monthRangeOverlaps;
+  var overlaps = year1 < 2003 || (year1 == 2003 && monthsOverlap);
+  if (!force && !overlaps) {
+    return ee.ImageCollection([]);
+  }
+  
+  var truncate = !force && (year2 > 2003 || (year2 == 2003 && monthsOverlap));
+  
+  var ls7col = ee.ImageCollection(ls7);
+  var dateFiltered = ee.ImageCollection([]);
+  if (truncate) {
+    var fullYears = ee.ImageCollection([]);
+    if (year1 < 2003) {
+      fullYears = ls7col.filterDate(year1 +'-01-01', '2003-01-01')
+        .filter(ee.Filter.calendarRange(month1, month2, 'month'));
+    }
+    
+    var truncated = ls7col.filterDate('2003-01-01', '2003-05-30')
+      .filter(ee.Filter.calendarRange(month1, 5, 'month'));
+    
+    dateFiltered = truncated.merge(fullYears);
+  } else {
+    var y2 = year2 + 1;
+    dateFiltered = ls7col.filterDate(year1 + '-01-01', y2 + '-01-01')
+      .filter(ee.Filter.calendarRange(month1, month1, 'month'));
+  }
+  
+  return dateFiltered.filterBounds(roi)
+    .filterMetadata(cloud_property, 'not_greater_than', cloud_limit);
+}
+
+function collect_landsat(cloud_mask, band_names, roi, tidal_area, filter) {
+  var col4 = ee.ImageCollection(filter(ls4));
+  var col5 = ee.ImageCollection(filter(ls5));
+  var col7 = ee.ImageCollection(filter(ls7));
+  var col8 = ee.ImageCollection(filter(ls8));
+  var col9 = ee.ImageCollection(filter(ls9));
+  
+  var etms = col7.merge(col5.merge(col4));
+  
+  var names = ee.List(band_names);
+  var renames = names.cat([ls_tir_rename, ls_qa_pixel]);
+  
+  var images = col9.merge(col8).select(oli_bands.add(ls_qa_pixel), renames).merge(
+    convert_to_oli(names, etms.select(etm_bands.add(ls_qa_pixel), renames))
+  ).map(function(image) {
+    var optical = image.select(names).multiply(0.0000275).add(-0.2);
+    var thermal = image.select(ls_tir_rename).multiply(0.00341802).add(149.0);
+    return image.addBands(optical, null, true).addBands(thermal, null, true);
+  });
+  
+  // Fix float type error (is this still necessary?)
+  function fixFloat(image){
+    var specCast = image.select(band_names).cast(ee.Dictionary.fromLists(names, ee.List.repeat('float', 6)));
+    return image.addBands(specCast, null, true);
+  }
+  
+  // Clamp SWIR1 (this affects water masking psoitively)
+  var swir1 = ee.String(names.get(4));
+  images = clamp(images.map(fixFloat), swir1, renames);
+  images = shore_reflectance(roi, images, tidal_area, band_names, ls_scale);
+  images = images.map(datePixels);
+  if (cloud_mask == 'aggressive') {
+    images = aggro_landsat_cloud_mask(band_names, mild_landsat_cloud_mask(images));
+  } else {
+    images = mild_landsat_cloud_mask(images);
+  }
+  
+  return images.select(names);
+}
+
+var etm_coeffs = {
+  itcps: ee.Image.constant([0.0003, 0.0088, 0.0061, 0.0412, 0.0254, 0.0172]).multiply(10000),
+  slopes: ee.Image.constant([0.8474, 0.8483, 0.9047, 0.8462, 0.8937, 0.9071])
+};
+
+function convert_to_oli(optical_bands, images) {
+  // Transform TM/ETM+ iamges to OLI values
+  function etm_to_oli(img) {
+    return img.select(optical_bands)
+      .multiply(etm_coeffs.slopes)
+      .add(etm_coeffs.itcps)
+      .round()
+      .toShort()
+      .addBands(img.select(ls_tir_rename, ls_qa_pixel));
+  }
+  
+  return images.map(etm_to_oli);
+}
+
+function clamp(images, clamp_band, bands) {
+  return images.map(function(image) {
+    var clamped = image.select(clamp_band).clamp(0,1);
+    return clamped.addBands(image.select(bands));
+  });
+}
+
+function collect_sentinel2(cloud_mask, band_names, roi, tidal_area, filter) {
+  var names = ee.List(band_names);
+  var renames = names.add(s2_qa_pixel);
+
+  var images = ee.ImageCollection(filter(s2)).select(s2_bands.add(s2_qa_pixel), names.add(s2_qa_pixel))
+  .map(function(image) {
+    var optical = image.select(names).divide(10000);
+    return image.addBands(optical, null, true);
+  });
+
+  images = shore_reflectance(roi, images, tidal_area, band_names, s2_scale);
+  images = images.map(datePixels);
+  
+  // Sentinel-2 just uses CloudScore+ for both mild/aggressive
+  images = s2_cloud_mask(images);
+  
+  return images.select(names);
+}
+
+// cloud masking
+
+function mild_landsat_cloud_mask(images) {
+  return images.map(function(img){
+    // Bits 3 and 5 are cloud shadow and cloud, respectively.
+    var cloudShadowBitMask = (1 << 3);
+    var cloudsBitMask = (1 << 5);
+    // Get the pixel QA band.
+    var qa = img.select(ls_qa_pixel);
+    // Both flags should be set to zero, indicating clear conditions.
+    var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+      .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    
+    // Define a kernel.
+    var kernel = ee.Kernel.gaussian({radius: 10});
+    
+    // Perform an erosion followed by a dilation, display.
+    var opened = mask.focal_min({kernel: kernel, iterations: 1});
+    
+    return img.updateMask(opened);
+  });
+}
+
+function aggro_landsat_cloud_mask(optical_bands, images) {
+  return images.map(function(image) {
+    var blue_wt = image.select(optical_bands[0]).gte(0.0284615);
+    var green_wt = image.select(optical_bands[1]).gte(0.0284615);
+    var red_wt = image.select(optical_bands[2]).gte(0.0284615);
+    var heat_wt = image.select(ls_tir_rename).lte(0.0450904);
+    var weight_mask = blue_wt.add(green_wt).add(red_wt).add(heat_wt).gte(4).eq(0);
+    
+    // Define a kernel.
+    var kernel = ee.Kernel.gaussian({radius: 3});
+    
+    // Perform an erosion followed by a dilation, display.
+    weight_mask = weight_mask
+      .focal_min({kernel: kernel, iterations: 1});
+
+    return image.updateMask(weight_mask);
+  });
+}
+
+
+// unused, kept for posterity
+function mild_s2_cloud_mask(images) {
+  return images.map(function(img){
+    // Bits 10 and 11 are clouds and cirrus, respectively.
+    var cloudBitMask = (1 << 10);
+    var cirrusBitMask = (1 << 11);
+    // Get the pixel QA band.
+    var qa = img.select(s2_qa_pixel);
+    // Both flags should be set to zero, indicating clear conditions.
+    var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
+      .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+    
+    return img.updateMask(mask);
+  });
+}
+
+function s2_cloud_mask(images) {
+  return images.linkCollection(ee.ImageCollection('GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED'), ['cs']).map(function(img) {
+    return img.updateMask(img.select('cs').gte(0.60));
+  });
+}
+
+// Tidal functions
+
+function shore_reflectance(roi, images, tidal_area, band_names, scale) {
+  // import the PLASAT dataset and create an land mask
+  var land_mask = ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR')
+    .filter(ee.Filter.date('2018-01-01', '2019-01-01'))
+    .mosaic().clip(roi)
+    .select('qa').eq(50);
+    
+  var mndwi = exports.mod_water_index;
+  var ndwi = exports.water_index;
+    
+  var img_p1 = ee.ImageCollection(images).map(function(img){
+    // create MNDWI Image
+    var num = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
+      'B2': img.select(band_names[1]),
+      'B5': img.select(band_names[4])
+      }).rename([mndwi]).updateMask(land_mask).reduceRegion({ 
+                    reducer: ee.Reducer.mean(),
+                    geometry: tidal_area,
+                    scale: 100,
+                    maxPixels: 1e15,
+                    bestEffort: true,
+                    tileScale: 16 
+                    }).get(mndwi);
+      
+    return img.set(mndwi, ee.Number(num));
+  });
+  
+  return tide_bands(img_p1.filter(ee.Filter.gte(mndwi, -1)));
+}
+
+function tide_bands(images) {
+  var mndwi = exports.mod_water_index;
+  var imndwi = exports.inverse_mod_water_index;
+  var ndwi = exports.water_index;
+  var indwi = exports.inverse_water_index;
+  return ee.ImageCollection(images)
+  // add a band to each image called MNDWI (created from the shoreRefl function)
+  .map(function(img) {
+    return img.addBands(img.metadata(mndwi));
+  })
+  // create an inverse MNDWI to be used for high-tide conditions
+  .map(function(img) {
+    return img.set(imndwi, ee.Number(img.get(mndwi)).multiply(-1)); 
+  })
+  // create an inverse MNDWI band for high-tide conditions
+  .map(function(img) {
+    return img.addBands(img.metadata(imndwi));
+  });
+}
+
+function datePixels(img) {
+	var segs = ee.List(ee.String(img.get('system:index')).trim().split("_").iterate(function(item, prev) {
+	return ee.Algorithms.If(ee.String(item).length().gt(1), ee.List(prev).add(item), prev);
+	}, ee.List([])));
+	// true when Landsat, false implies Sentinel-2
+	var str = ee.String(ee.Algorithms.If(ee.String(segs.get(0)).length().eq(4), segs.get(2), ee.String(segs.get(0)).split('T').get(0)));
+	var year = ee.Number.parse(str.slice(0, 4));
+	var month = ee.Number.parse(str.slice(4, 6));
+	var day = ee.Number.parse(str.slice(6, 8));
+	var date = ee.Date.fromYMD(year, month, day);
+	return img.addBands(ee.Image([date.get('day'), date.get('month'), date.get('year')]).rename(['day', 'month', 'year']).cast({'day':'byte', 'month':'byte', 'year':'short'}));
+}
