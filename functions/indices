@@ -4,7 +4,7 @@ This is the indices module, which is part of the BVC GEM v1.2  library.
 It is used to support the generation of spectral indices for the selected 
 image data seers
 
-Last update: 23-06-2022
+Last update: 21 August 2024
 
 */
 
@@ -227,14 +227,7 @@ exports.addIndex_simple = function(indx_list, image){
                              }).rename(['NDTI']);
                         return NDTI;
                         };   
-                        
-   var EBBI_func = function(img){
-                        var EBBI = ee.Image(img.select('B5').subtract(img.select('B4')))
-                                .divide((ee.Image(img.select('B5').add(img.select('B6')))).sqrt().multiply(10))
-                                .rename(['EBBI']);
-                        return EBBI;
-                        };
-                        
+
 //Chot = ee.Algorithms.If(indx_list.contains('MRI'), ee.Image(Chot).addBands(indx_mod.MRI(Chot, Clot)));
   // add SR if in list
   image = ee.Image(ee.Algorithms.If(indx_list.contains('SR'), ee.Image(image).addBands(SR_func(image)), image));
@@ -268,9 +261,6 @@ exports.addIndex_simple = function(indx_list, image){
   
   // add NDTI if in list
   image = ee.Image(ee.Algorithms.If(indx_list.contains('NDTI'), ee.Image(image).addBands(NDTI_func(image)), image));
-  
-  // add EBBI if in list
-  image = ee.Image(ee.Algorithms.If(indx_list.contains('EBBI'), ee.Image(image).addBands(EBBI_func(image)), image));
   
   return ee.Image(image);
   };

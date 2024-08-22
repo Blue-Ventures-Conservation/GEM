@@ -1,13 +1,11 @@
-/*
 
-This is the Random Forest image classification module, which is part 
+s is the Random Forest image classification module, which is part 
 of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: July 22, 2024
+Last update: 21 August 2024
 
-
-use_cont_spec, Chot, Clot, t_poly_h, t_poly_c,
+TODO: export buttons
 */
 
 
@@ -87,25 +85,39 @@ exports.doc = 'The Random Forest Classification module is used'+
     '\n   @return {ee.Image} Single band raster image';
 
 // Contemporary High-tide Classification  
-exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
-  
+exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors) {
+  classify('HOT_Classification_Contemporary', Chot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
+};
+
+// Contemporary Low-tide Classification
+exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors) {
+  classify('LOT_Classification_Contemporary', Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
+};
+
+// Contemporary Combine Classification
+exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
+  Chot = Chot.select(bands);
+  Clot = Clot.select(bands);
+  var Ccom = Chot.addBands(Clot);
+  bands = Ccom.bandNames();
+  classify('Combined_Classification_Contemporary', Ccom, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
+};
+
+function classify(name, img, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors) {
+  var props = [label];
+  var scale = img.projection().nominalScale();
   // Overlay the points on the imagery to get training for HOT
-   var sample_CHOT = Chot.select(bands).sampleRegions({
-              collection: t_poly,
-              properties: [label],
-              scale: 30, 
-              tileScale: 16
-            });
+  var sample = exports.sample_image(img.select(bands), t_poly, props, scale);
 
   //add random column to training data
-  sample_CHOT = sample_CHOT.randomColumn({ seed: 1 });
+  sample = sample.randomColumn({ seed: 1 });
   // select 70% to train
-  var CHOT_training = sample_CHOT.filter(ee.Filter.lt('random', 0.7));
+  var training = sample.filter(ee.Filter.lt('random', 0.7));
   // reserve 30% to validate
-  var CHOT_validation = sample_CHOT.filter(ee.Filter.gte('random', 0.7));
+  var validation = sample.filter(ee.Filter.gte('random', 0.7));
 
   // Train a RF classifier for the HOT image
-  var CHOT_trained_classifier = ee.Classifier.smileRandomForest(
+  var trained_classifier = ee.Classifier.smileRandomForest(
                                     {numberOfTrees: trees,
                                     variablesPerSplit: splits,
                                     minLeafPopulation: leafpop,
@@ -114,25 +126,25 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, 
                                     seed: seeds
                                     })
                                     .train({
-                                          features: CHOT_training,
+                                          features: training,
                                           classProperty: label,
                                           inputProperties: bands
                                           });
   
 
-  // Classify the HOT image.
-  var classified_CHOT = Chot.classify(CHOT_trained_classifier);
+  // Classify the image.
+  var classified = img.classify(trained_classifier);
             
   Export.image.toAsset({
-              image: classified_CHOT.clip(ROI),
-              description: 'HOT_Classification_contemporary',
-              assetId: 'HOT_Classification_contemporary',
+              image: classified.clip(ROI),
+              description: name,
+              assetId: name,
               region: ROI,
-              scale: 30,
+              scale: scale,
               maxPixels:1e13
               });
               
-  classified_CHOT.evaluate(function(){
+  classified.evaluate(function() {
               
               var min_no = t_poly.reduceColumns({
                                  reducer: ee.Reducer.min(),
@@ -142,493 +154,98 @@ exports.ChotClassify = function(Chot, t_poly, label, bands, ROI, trees, splits, 
                                  selectors: [label]}).get('max');
               
               
-              Map.addLayer(classified_CHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: colors.getInfo()}, 'HOT_Classification_contemporary');
+              Map.addLayer(classified.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
+                          palette: colors.getInfo()}, name);
               
               // Get a confusion matrix resubstitution accuracy.
-              var CHOT_trainAccuracy = CHOT_trained_classifier.confusionMatrix();
+              var trainAccuracy = trained_classifier.confusionMatrix();
               
-              print('CHOT resubstitution error matrix: ', CHOT_trainAccuracy);
-              print('CHOT Training overall accuracy: ', CHOT_trainAccuracy.accuracy());
+              print(name + ' Resubstitution error matrix: ', trainAccuracy);
+              print(name + ' Resubstitution overall accuracy: ', trainAccuracy.accuracy());
 
               // Classify the validation data.
-              var validated_CHOT = CHOT_validation.classify(CHOT_trained_classifier);
+              var validated = validation.classify(trained_classifier);
               
               // Get a confusion matrix representing expected accuracy.
-              var CHOT_testAccuracy = validated_CHOT.errorMatrix(label, 'classification');
-              print('CHOT Validation error matrix: ', CHOT_testAccuracy);
-              print('CHOT Validation overall accuracy: ', CHOT_testAccuracy.accuracy());
+              var testAccuracy = validated.errorMatrix(label, 'classification');
+              print(name + ' Validation error matrix: ', testAccuracy);
+              print(name + ' Validation overall accuracy: ', testAccuracy.accuracy());
   });
+}
 
-  return classified_CHOT;
-};
-
-// Contemporary Low-tide Classification
-exports.ClotClassify = function(Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
-
-  // Overlay the points on the imagery to get training for LOT
-  var sample_CLOT = Clot.select(bands).sampleRegions({
-              collection: t_poly,
-              properties: [label],
-              scale: 30, 
-              tileScale: 16
-            });
-
-  sample_CLOT = sample_CLOT.randomColumn({ seed: 1 });
-  var CLOT_training = sample_CLOT.filter(ee.Filter.lt('random', 0.7));
-  var CLOT_validation = sample_CLOT.filter(ee.Filter.gte('random', 0.7));
-          
-  // Train a RF classifier for the LOT image
-  var CLOT_trained_classifier = ee.Classifier.smileRandomForest(
-                                    {numberOfTrees: trees,
-                                    variablesPerSplit: splits,
-                                    minLeafPopulation: leafpop,
-                                    bagFraction: bag,
-                                    maxNodes: nodes,
-                                    seed: seeds
-                                    })
-                              .train({
-                                  features: CLOT_training,
-                                  classProperty: label,
-                                  inputProperties: bands
-                                  });
-
-  // Classify the LOT image.
-  var classified_CLOT = Clot.classify(CLOT_trained_classifier);
+function historicalOptions(class_ref_type, use_cont_spec, cont_img, hist_img, t_poly_h, t_poly_c) {
+  // CRA Type?
+  var t_poly = null;
+  if(class_ref_type === true){
+    t_poly = t_poly_c;
+  } else {
+    t_poly = t_poly_h;
+  }
   
-  Export.image.toAsset({
-              image: classified_CLOT.clip(ROI),
-              description: 'LOT_Classification_contemporary',
-              assetId: 'LOT_Classification_contemporary',
-              region: ROI,
-              scale: 30,
-              maxPixels:1e13
-              });
-              
-  classified_CLOT.evaluate(function(){
-    
-              var min_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min');
-              var max_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max');
-              
-              
-              Map.addLayer(classified_CLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: colors.getInfo()}, 'LOT_Classification_contemporary');
-              
-              // Get a confusion matrix resubstitution accuracy.
-              var CLOT_trainAccuracy = CLOT_trained_classifier.confusionMatrix();
-              print('LOT Cont. resubstitution error matrix: ', CLOT_trainAccuracy);
-              print('LOT Cont. Training overall accuracy: ', CLOT_trainAccuracy.accuracy());
-              
-              // Classify the validation data.
-              var validated_CLOT = CLOT_validation.classify(CLOT_trained_classifier);
-              
-              // Get a confusion matrix representing expected accuracy.
-              var CLOT_testAccuracy = validated_CLOT.errorMatrix(label, 'classification');
-              print('LOT Cont. Validation error matrix: ', CLOT_testAccuracy);
-              print('LOT Cont. Validation overall accuracy: ', CLOT_testAccuracy.accuracy());
-  });
-  
-  return classified_CLOT;
-};
+  if (use_cont_spec === true) {
+    return [t_poly, cont_img];
+  } else {
+    return [t_poly, hist_img];
+  }
+}
 
-
-// Contemporary Combine Classification
-exports.CcomClassify = function(Chot, Clot, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
-
-  Chot = Chot.select(bands);
-  Clot = Clot.select(bands);
-  var Ccom = Chot.addBands(Clot);
-  bands = Ccom.bandNames();
-  // Overlay the points on the imagery to get training for LOT
-  var sample_Ccom = Ccom.select(bands).sampleRegions({
-              collection: t_poly,
-              properties: [label],
-              scale: 30, 
-              tileScale: 16
-            });
-
-  sample_Ccom = sample_Ccom.randomColumn({ seed: 1 });
-  var CCOM_training = sample_Ccom.filter(ee.Filter.lt('random', 0.7));
-  var CCOM_validation = sample_Ccom.filter(ee.Filter.gte('random', 0.7));
-          
-  // Train a RF classifier for the LOT image
-  var CCOM_trained_classifier = ee.Classifier.smileRandomForest(
-                                    {numberOfTrees: trees,
-                                    variablesPerSplit: splits,
-                                    minLeafPopulation: leafpop,
-                                    bagFraction: bag,
-                                    maxNodes: nodes,
-                                    seed: seeds
-                                    })
-                              .train({
-                                  features: CCOM_training,
-                                  classProperty: label,
-                                  inputProperties: bands
-                                  });
-
-  // Classify the LOT image.
-  var classified_CCOM = Ccom.classify(CCOM_trained_classifier);
-  var exportFunc = function() {
-    Export.image.toAsset({
-            image: classified_CCOM.clip(ROI),
-            description: 'Combine_Classification_contemporary',
-            assetId: 'Combine_Classification_contemporary',
-            region: ROI,
-            scale: 30,
-            maxPixels:1e13
-    });
-  };
-  exportFunc();
-              
-  classified_CCOM.evaluate(function(){
-              
-              var min_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min');
-              var max_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max');
-              
-              Map.addLayer(classified_CCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: colors.getInfo()}, 'Combine_Classification_contemporary');
-    
-              // Get a confusion matrix resubstitution accuracy.
-              var CCOM_trainAccuracy = CCOM_trained_classifier.confusionMatrix();
-              print('Combine Cont. resubstitution error matrix: ', CCOM_trainAccuracy);
-              print('Combine Cont. Training overall accuracy: ', CCOM_trainAccuracy.accuracy());
-              
-              // Classify the validation data.
-              var validated_CCOM = CCOM_validation.classify(CCOM_trained_classifier);
-              
-              // Get a confusion matrix representing expected accuracy.
-              var CCOM_testAccuracy = validated_CCOM.errorMatrix(label, 'classification');
-              print('Combine Cont. Validation error matrix: ', CCOM_testAccuracy);
-              print('Combine Cont. Validation overall accuracy: ', CCOM_testAccuracy.accuracy());
-              var button = ui.Button({
-                label: 'Export Contemporary Classified Imagery',
-                onClick: exportFunc,
-              });
-              print(button);
-  });  
-            
-  return classified_CCOM;
-  
-};
+function historicalClassify(name, class_ref_type, use_cont_spec, cont_img, hist_img, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors) {
+  var options = historicalOptions(class_ref_type, use_cont_spec, cont_img, hist_img, t_poly_h, t_poly_c);
+  var t_poly = options[0];
+  var img = options[1];
+  classify(name, img, t_poly, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
+}
 
 // Historic High-tide Classification 
-exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, 
-                                trees, splits, leafpop, bag, nodes, seeds, colors){
-
-  // CRA Type?
-  if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
-  
-  
-  // Training functions
-  
-  var cont_spec = function(){
-    // Overlay the points on the imagery to get training for HOT
-    var sample_HHOT = Chot.select(bands).sampleRegions({
-                collection: t_poly,
-                properties: [label],
-                scale: 30, 
-                tileScale: 16
-              });
-    return sample_HHOT;
-    }; 
-
-  var hist_spec = function(){    
-    // Overlay the points on the imagery to get training for HOT
-    var sample_HHOT = Hhot.select(bands).sampleRegions({
-                collection: t_poly,
-                properties: [label],
-                scale: 30, 
-                tileScale: 16
-              });
-    return sample_HHOT;
-    }; 
-
-  // If there is no historic data?
-  if(use_cont_spec === true){ var sample_HHOT = cont_spec();}else{var sample_HHOT = hist_spec();}
-  
-  //add random column to training data
-  sample_HHOT = sample_HHOT.randomColumn({ seed: 1 });
-  // select 70% to train
-  var HHOT_training = sample_HHOT.filter(ee.Filter.lt('random', 0.7));
-  // reserve 30% to validate
-  var HHOT_validation = sample_HHOT.filter(ee.Filter.gte('random', 0.7));
-
-  // Train a RF classifier for the HOT image
-  var HHOT_trained_classifier = ee.Classifier.smileRandomForest(
-                                    {numberOfTrees: trees,
-                                    variablesPerSplit: splits,
-                                    minLeafPopulation: leafpop,
-                                    bagFraction: bag,
-                                    maxNodes: nodes,
-                                    seed: seeds
-                                    })
-                              .train({
-                                  features: HHOT_training,
-                                  classProperty: label,
-                                  inputProperties: bands
-                                  });
-  
-
-  // Classify the HOT image.
-  var classified_HHOT = Hhot.classify(HHOT_trained_classifier);
-
-  Export.image.toAsset({
-              image: classified_HHOT.clip(ROI),
-              description: 'HOT_Classification_historic',
-              assetId: 'HOT_Classification_historic',
-              region: ROI,
-              scale: 30,
-              maxPixels:1e13
-              });  
-                
-  classified_HHOT.evaluate(function(){
-    
-              var min_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min');
-              var max_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max');
-              
-              Map.addLayer(classified_HHOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: colors.getInfo()}, 'HOT_Classification_Historic');
-    
-              // Get a confusion matrix resubstitution accuracy.
-              var HHOT_trainAccuracy = HHOT_trained_classifier.confusionMatrix();
-              print('HOT Hist. resubstitution error matrix: ', HHOT_trainAccuracy);
-              print('HOT Hist.Training overall accuracy: ', HHOT_trainAccuracy.accuracy());
-              
-              // Classify the validation data.
-              var validated_HHOT = HHOT_validation.classify(HHOT_trained_classifier);
-              
-              // Get a confusion matrix representing expected accuracy.
-              var HHOT_testAccuracy = validated_HHOT.errorMatrix(label, 'classification');
-              print('HOT Hist. Validation error matrix: ', HHOT_testAccuracy);
-              print('HOT Hist. Validation overall accuracy: ', HHOT_testAccuracy.accuracy());
-  });
-  
-  
-  return classified_HHOT;
-
+exports.HhotClassify = function(Hhot, class_ref_type, use_cont_spec, Chot, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors) {
+  historicalClassify('HOT_Classification_Historic', class_ref_type, use_cont_spec, Chot, Hhot, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
 };
 
 // Historic Low-tide Classification
-exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, 
-                                trees, splits, leafpop, bag, nodes, seeds, colors){
-
-  // CRA Type?
-  if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
-
-  
-  var cont_spec = function(){
-    // Overlay the points on the imagery to get training for HOT
-    var sample_HLOT = Clot.select(bands).sampleRegions({
-                collection: t_poly,
-                properties: [label],
-                scale: 30, 
-                tileScale: 16
-              });
-    return sample_HLOT;
-    }; 
-
-  var hist_spec = function(){    
-    // Overlay the points on the imagery to get training for HOT
-    var sample_HLOT = Hlot.select(bands).sampleRegions({
-                collection: t_poly,
-                properties: [label],
-                scale: 30, 
-                tileScale: 16
-              });
-    return sample_HLOT;
-    }; 
-    
-  // If there is no historic data?
-  if(use_cont_spec === true){ var sample_HLOT = cont_spec();}else{var sample_HLOT = hist_spec();}
-  
-  //add random column to training data
-  sample_HLOT = sample_HLOT.randomColumn({ seed: 1 });
-  // select 70% to train
-  var HLOT_training = sample_HLOT.filter(ee.Filter.lt('random', 0.7));
-  // reserve 30% to validate
-  var HLOT_validation = sample_HLOT.filter(ee.Filter.gte('random', 0.7));
-
-  // Train a RF classifier for the HOT image
-  var HLOT_trained_classifier = ee.Classifier.smileRandomForest(
-                                    {numberOfTrees: trees,
-                                    variablesPerSplit: splits,
-                                    minLeafPopulation: leafpop,
-                                    bagFraction: bag,
-                                    maxNodes: nodes,
-                                    seed: seeds
-                                    })
-                              .train({
-                                  features: HLOT_training,
-                                  classProperty: label,
-                                  inputProperties: bands
-                                  });
-  
-
-  // Classify the HOT image.
-  var classified_HLOT = Hlot.classify(HLOT_trained_classifier);
-            
-  Export.image.toAsset({
-              image: classified_HLOT.clip(ROI),
-              description: 'LOT_Classification_Historic',
-              assetId: 'LOT_Classification_Historic',
-              region: ROI,
-              scale: 30,
-              maxPixels:1e13
-              });  
-              
-  classified_HLOT.evaluate(function(){
-              
-              var min_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min');
-              var max_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max');
-              
-              Map.addLayer(classified_HLOT.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: colors.getInfo()}, 'LOT_Classification_Historic');
-    
-              // Get a confusion matrix resubstitution accuracy.
-              var HLOT_trainAccuracy = HLOT_trained_classifier.confusionMatrix();
-              print('LOT Hist. resubstitution error matrix: ', HLOT_trainAccuracy);
-              print('LOT Hist. Training overall accuracy: ', HLOT_trainAccuracy.accuracy());
-              
-              // Classify the validation data.
-              var validated_HLOT = HLOT_validation.classify(HLOT_trained_classifier);
-              
-              // Get a confusion matrix representing expected accuracy.
-              var HLOT_testAccuracy = validated_HLOT.errorMatrix(label, 'classification');
-              print('LOT Hist. Validation error matrix: ', HLOT_testAccuracy);
-              print('LOT Hist. Validation overall accuracy: ', HLOT_testAccuracy.accuracy());
-  });
-  
-  
-  return classified_HLOT;
- 
+exports.HlotClassify = function(Hlot, class_ref_type, use_cont_spec, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors) {
+  historicalClassify('LOT_Classification_Historic', class_ref_type, use_cont_spec, Clot, Hlot, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
 };
 
 // Historic Combined Classification
-exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, 
-                                label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors){
-
-  // CRA Type?
-  if(class_ref_type === true){ var t_poly = t_poly_c;}else{var t_poly = t_poly_h;}
-
-  //Organize imagery
+exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot, Clot, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors) {
   Hhot = Hhot.select(bands);
   Hlot = Hlot.select(bands);  
   Chot = Chot.select(bands);
   Clot = Clot.select(bands); 
-   
   var Hcom = Hhot.addBands(Hlot);
   var Ccom = Chot.addBands(Clot);
   bands = Ccom.bandNames();
+  historicalClassify('Combined_Classification_Historic', class_ref_type, use_cont_spec, Ccom, Hcom, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
+};
+
+function sample_regions(img, collection, props, scale, tileScale) {
+  return img.sampleRegions({
+    collection: collection,
+    properties: props,
+    scale: scale, 
+    tileScale: tileScale
+  });
+}
   
-  var cont_spec = function(){
-  // Overlay the points on the imagery to get training for HOT
-  var sample_HCOM = Ccom.select(bands).sampleRegions({
-                collection: t_poly,
-                properties: [label],
-                scale: 30, 
-                tileScale: 16
-              });
-    return sample_HCOM;
-    }; 
-
-  var hist_spec = function(){
-    // Overlay the points on the imagery to get training for HOT
-    var sample_HCOM = Hcom.select(bands).sampleRegions({
-                collection: t_poly,
-                properties: [label],
-                scale: 30, 
-                tileScale: 16
-              });
-    return sample_HCOM;
-    }; 
-
-  // If there is no historic data?
-  if(use_cont_spec === true){ var sample_HCOM = cont_spec();}else{var sample_HCOM = hist_spec();}
-  
-  // Add random column to training data
-  sample_HCOM = sample_HCOM.randomColumn({ seed: 1 });
-  // Select 70% to train
-  var HCOM_training = sample_HCOM.filter(ee.Filter.lt('random', 0.7));
-  // Reserve 30% to validate
-  var HCOM_validation = sample_HCOM.filter(ee.Filter.gte('random', 0.7));
-
-  // Train a RF classifier for the HOT image
-  var HCOM_trained_classifier = ee.Classifier.smileRandomForest(
-                                    {numberOfTrees: trees,
-                                    variablesPerSplit: splits,
-                                    minLeafPopulation: leafpop,
-                                    bagFraction: bag,
-                                    maxNodes: nodes,
-                                    seed: seeds
-                                    })
-                              .train({
-                                  features: HCOM_training,
-                                  classProperty: label,
-                                  inputProperties: bands
-                                  });
-
-  // Classify the HOT image.
-  var classified_HCOM = Hcom.classify(HCOM_trained_classifier);
-  
-  var exportFunc = function() {
-    Export.image.toAsset({
-            image: classified_HCOM.clip(ROI),
-            description: 'Combine_Classification_historic',
-            assetId: 'Combine_Classification_historic',
-            region: ROI,
-            scale: 30,
-            maxPixels:1e13
-    });
-  };
-  exportFunc();
-              
-  classified_HCOM.evaluate(function(){
+exports.sample_image = function(img, tpoly, props, scale) {
+  var sample = null;
+  if (scale < 20) {
+    var ts = 1;
     
-              var min_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min');
-              var max_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max');
-              
-             Map.addLayer(classified_HCOM.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: colors.getInfo()}, 'Combine_Classification_Historic');
-            
-              // Get a confusion matrix resubstitution accuracy.
-              var HCOM_trainAccuracy = HCOM_trained_classifier.confusionMatrix();
-              print('Combine Hist. resubstitution error matrix: ', HCOM_trainAccuracy);
-              print('Combine Hist. Training overall accuracy: ', HCOM_trainAccuracy.accuracy());
-              
-              // Classify the validation data.
-              var validated_HCOM = HCOM_validation.classify(HCOM_trained_classifier);
-              
-              // Get a confusion matrix representing expected accuracy.
-              var HCOM_testAccuracy = validated_HCOM.errorMatrix(label, 'classification');
-              print('Combine Hist. Validation error matrix: ', HCOM_testAccuracy);
-              print('Combine Hist. Validation overall accuracy: ', HCOM_testAccuracy.accuracy());
-              
-              var button = ui.Button({
-                label: 'Export Historical Classified Imagery',
-                onClick: exportFunc,
-              });
-              print(button);
-  });  
-  return classified_HCOM;
- 
+    var fifth = tpoly.size().divide(5).int().add(1);
+    
+    s1 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth)), props, scale, ts);
+    s2 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth)), props, scale, ts);
+    s3 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(2))), props, scale, ts);
+    s4 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(3))), props, scale, ts);
+    s5 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(4))), props, scale, ts);
+    
+    // this seems to work for splitting the work up to avoid too many concurrent aggregations
+    // while also not requiring us to pull down the full FeatureCollection locally
+    sample = ee.FeatureCollection([s1, s2, s3, s4, s5]).flatten();
+  }  else {
+    sample = sample_regions(img, tpoly, props, scale, 16);
+  }
+  
+  return sample;
 };
