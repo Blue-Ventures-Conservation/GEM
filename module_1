@@ -311,11 +311,11 @@ var historic_end_year = 2020;
           var historic_month_end = 12; **To select the whole year set to 12**
 */
 
-var contemporary_month_start = 6;
-var contemporary_month_end = 8;
+var contemporary_month_start = 5;
+var contemporary_month_end = 9;
 
-var historic_month_start = 6;
-var historic_month_end = 8;
+var historic_month_start = 5;
+var historic_month_end = 9;
 
 /*
 2.D) Cloud Cover limit  
@@ -333,7 +333,7 @@ var historic_month_end = 8;
 var cloud_cover = 15;
 
 /*
-2.E) Cloud Mask
+2.E) Cloud Mask - Landsat Only
      There are two options available to mask out clouds for Landsat. There is a mild cloud
      masking option where the clouds are removed using the USGS/NASA bit (Landsat)
      classification quality band and a mild spectral erosion to remove cloud artefacts.
@@ -342,7 +342,7 @@ var cloud_cover = 15;
      also plays a role in removing residual clouds. These identified clouds are also
      spectrally eroded.
      
-     For Sentinel-2, aggressive cloud masking always CloudScore+, regardless of the value set here.
+     For Sentinel-2, cloud masking is always CloudScore+ (cs_pdf >= 0.85), regardless of the value set here.
      
      Enter Below:
         var cloud_mask = 'mild';        (To apply a mild cloud mask)
@@ -374,7 +374,7 @@ var cloud_mask = 'mild';
 var tidal_zone = 1000;
 
 /*
-2.G) MNDWI Minimum Average
+2.G) MNDWI Minimum Average - Landsat Only
     When calculating the MNDWI that determines the high and low tide imagery,
     the GEM allows users to specify a minimum average value for the MNDWI
     required for an image to be used when determining the water mask.
@@ -941,6 +941,9 @@ step_1_button.onClick(function(){
                                     mang_topo, elevation, slope);
           
           // Use low tide images to create water mask
+          if (imagery_scale < 30) {
+            min_avg = 0.75;
+          }
           var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
           print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
           clot_water = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
