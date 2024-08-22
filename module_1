@@ -589,7 +589,7 @@ var topography =  require('users/yanchojo/GEM_LS9_colors/:modules/topography');
 var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
 var water = require('users/yanchojo/GEM_LS9_colors/:modules/water_mask');
 var fringe = require('users/yanchojo/GEM_LS9_colors/:modules/fringe_mang');
-var imagery = require('users/courtlandfowler/gemv2:imagery_v2');
+var imagery = require('users/courtlandfowler/gemv2:imagery');
 var indx_mod = require('users/courtlandfowler/gemv2:indices');
 
 
