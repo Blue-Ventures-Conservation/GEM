@@ -602,7 +602,6 @@ var indx_mod = require('users/courtlandfowler/gemv2:indices');
 
 var step_1_button = ui.Button('Begin Workflow');
 step_1_button.onClick(function(){
-  
   // Print step label
   print(ui.Label({value:'Module 1: Setion 1, Step 2.J',
                   style:{fontWeight: 'bold',
@@ -622,6 +621,16 @@ step_1_button.onClick(function(){
   // Create the coastline from the coarse ROI
   var coast = coastline.coast_In(cst, cst_path, coarse_roi);
   Map.centerObject(coarse_roi);
+  
+  var use_s2 = !force_landsat && imagery.should_use_s2(historic_start_year, historic_month_start);
+  var starts = "after";
+  var imagery_name = "Landsat";
+  if (use_s2) {
+    starts = "before or during";
+    imagery_name = "Sentinel-2";
+  }
+  
+  alert("Your date range starts " + starts + " 12/2018, so the GEM will use " + imagery_name + " imagery.");
   
   // Create the tidal area buffer
   var tidalArea = coast.simplify(500).buffer(tidal_zone).simplify(500);
