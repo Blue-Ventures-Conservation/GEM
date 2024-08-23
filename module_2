@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 21 August 2024
+Last updated: 22 August 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -458,7 +458,7 @@ step_1_button.onClick(function(){
     prop_labels = prop_labels.concat([label3]);
   }
   
-  var imagery_scale = Chot.projection().nominalScale();
+  var imagery_scale = Chot.projection().nominalScale().getInfo();
 
   // Overlay the points on the imagery to get training for HOT
   var sample_CHOT = RFclass.sample_image(Chot.select(bands), t_poly_c, prop_labels, imagery_scale);
@@ -626,9 +626,13 @@ step_1_button.onClick(function(){
   var scat_button = ui.Button('View Scatter Plot');
   scat_button.onClick(function(){
     var data = ee.FeatureCollection(ee.List(scat_samp).get(1)).filter(ee.Filter.inList(label2, clz));
+    data = ee.Algorithms.If(data.size().gte(5000), ee.FeatureCollection(data.map(function(elem) {
+        var feat = ee.Feature(elem);
+        return feat.set(bandX, ee.Number(feat.get(bandX)).multiply(100).round().divide(100), bandY, ee.Number(feat.get(bandY)).multiply(100).round().divide(100));
+    })).distinct(ee.List(prop_labels).add(bandX).add(bandY)), data);
+    
     var samp_title = ee.List(scat_samp).get(0).getInfo();
-
-    var Sc_chart =  ui.Chart.feature.groups(data, bandX, bandY, label2)
+    var Sc_chart =  ui.Chart.feature.groups(ee.FeatureCollection(data), bandX, bandY, label2)
                     .setChartType('ScatterChart')
                     .setOptions({title: 'Spectral Area of ' + samp_title});
     print(Sc_chart);
