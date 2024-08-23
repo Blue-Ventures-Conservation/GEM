@@ -1,11 +1,11 @@
+/*
 
-s is the Random Forest image classification module, which is part 
+This is the Random Forest image classification module, which is part 
 of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: 21 August 2024
+Last update: 22 August 2024
 
-TODO: export buttons
 */
 
 
@@ -134,15 +134,18 @@ function classify(name, img, t_poly, label, bands, ROI, trees, splits, leafpop, 
 
   // Classify the image.
   var classified = img.classify(trained_classifier);
-            
-  Export.image.toAsset({
+  var exportFunc = function() {
+      Export.image.toAsset({
               image: classified.clip(ROI),
               description: name,
               assetId: name,
               region: ROI,
               scale: scale,
               maxPixels:1e13
-              });
+      });
+  };
+  exportFunc();
+
               
   classified.evaluate(function() {
               
@@ -170,6 +173,11 @@ function classify(name, img, t_poly, label, bands, ROI, trees, splits, leafpop, 
               var testAccuracy = validated.errorMatrix(label, 'classification');
               print(name + ' Validation error matrix: ', testAccuracy);
               print(name + ' Validation overall accuracy: ', testAccuracy.accuracy());
+              var button = ui.Button({
+                label: 'Export ' + name,
+                onClick: exportFunc,
+              });
+              print(button);
   });
 }
 
@@ -229,7 +237,7 @@ function sample_regions(img, collection, props, scale, tileScale) {
   
 exports.sample_image = function(img, tpoly, props, scale) {
   var sample = null;
-  if (scale < 20) {
+  if (scale < 30) {
     var ts = 1;
     
     var fifth = tpoly.size().divide(5).int().add(1);
