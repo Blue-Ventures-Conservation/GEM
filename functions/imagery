@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 22 August 2024
+Last update: 23 August 2024
 
 */
 
@@ -34,7 +34,7 @@ exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, 
     };
   }
   
-  if (!force_ls && exports.should_use_s2(start_year, start_month)) {
+  if (!force_ls && fits_s2_range(start_year, start_month)) {
     var s2_images = collect_sentinel2(cloud_mask, bnames, roi, tidal_area, filter_func(s2_cloud_property));
     return [s2_images, s2_scale];
   } else {
@@ -43,9 +43,13 @@ exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, 
   }
 };
 
-exports.should_use_s2 = function(start_year, start_month) {
-  return (start_year > s2_start_year) || (start_year == s2_start_year  && start_month >= s2_start_month);
+exports.should_use_s2 = function(cont_start_year, cont_start_month, hist_start_year, hist_start_month) {
+  return fits_s2_range(cont_start_year, cont_start_month) && fits_s2_range(hist_start_year, hist_start_month);
 };
+
+function fits_s2_range(year, month) {
+  return (year > s2_start_year) || (year == s2_start_year  && month >= s2_start_month);
+}
 
 exports.water_index = 'NDWI';
 exports.inverse_water_index = 'inv_NDWI';
@@ -251,6 +255,7 @@ function aggro_landsat_cloud_mask(optical_bands, images) {
     return image.updateMask(weight_mask);
   });
 }
+
 
 // unused, kept for posterity
 function mild_s2_cloud_mask(images) {
