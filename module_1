@@ -622,7 +622,7 @@ step_1_button.onClick(function(){
   var coast = coastline.coast_In(cst, cst_path, coarse_roi);
   Map.centerObject(coarse_roi);
   
-  var use_s2 = !force_landsat && imagery.should_use_s2(historic_start_year, historic_month_start);
+  var use_s2 = !force_landsat && imagery.should_use_s2(contemporary_start_year, contemporary_month_start, historic_start_year, historic_month_start);
   var starts = "after";
   var imagery_name = "Landsat";
   if (use_s2) {
@@ -768,7 +768,7 @@ step_1_button.onClick(function(){
       var false_colour_bands = ['B4','B5','B3'];
       
       // Create hist./cont. image collections
-      var force_ls = force_landsat || !imagery.should_use_s2(historic_start_year, historic_month_start);
+      var force_ls = force_landsat || !imagery.should_use_s2(contemporary_start_year, contemporary_month_start, historic_start_year, historic_month_start);
       var cont_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, contemporary_start_year, contemporary_end_year, contemporary_month_start, contemporary_month_end, cloud_mask, tidalArea);
       var hist_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, historic_start_year, historic_end_year, historic_month_start, historic_month_end, cloud_mask, tidalArea);
       
