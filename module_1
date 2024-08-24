@@ -626,16 +626,18 @@ step_1_button.onClick(function(){
   var starts = "after";
   var but = "";
   var imagery_name = "Landsat";
+  var warning = "";
   if (use_s2) {
     starts = "before or during";
     if (force_landsat) {
       but = "but you have chosen to force the use of Landsat, ";
     } else {
       imagery_name = "Sentinel-2";
+      warning = "\n\nSentinel-2 imagery is much larger than Landsat. If this imagery is too large, you can use the 'force_landsat' parameter to switch to Landsat imagery instead.";
     }
   }
   
-  alert("Your date range starts " + starts + " 12/2018, " + but + "so the GEM will use " + imagery_name + " imagery.");
+  alert("Your date range starts " + starts + " 12/2018, " + but + "so the GEM will use " + imagery_name + " imagery." + warning);
   
   // Create the tidal area buffer
   var tidalArea = coast.simplify(500).buffer(tidal_zone).simplify(500);
