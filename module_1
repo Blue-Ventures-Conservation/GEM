@@ -622,15 +622,20 @@ step_1_button.onClick(function(){
   var coast = coastline.coast_In(cst, cst_path, coarse_roi);
   Map.centerObject(coarse_roi);
   
-  var use_s2 = !force_landsat && imagery.should_use_s2(contemporary_start_year, contemporary_month_start, historic_start_year, historic_month_start);
+  var use_s2 = imagery.should_use_s2(contemporary_start_year, contemporary_month_start, historic_start_year, historic_month_start);
   var starts = "after";
+  var but = "";
   var imagery_name = "Landsat";
   if (use_s2) {
     starts = "before or during";
-    imagery_name = "Sentinel-2";
+    if (force_landsat) {
+      but = "but you have chosen to force the use of Landsat, ";
+    } else {
+      imagery_name = "Sentinel-2";
+    }
   }
   
-  alert("Your date range starts " + starts + " 12/2018, so the GEM will use " + imagery_name + " imagery.");
+  alert("Your date range starts " + starts + " 12/2018, " + but + "so the GEM will use " + imagery_name + " imagery.");
   
   // Create the tidal area buffer
   var tidalArea = coast.simplify(500).buffer(tidal_zone).simplify(500);
