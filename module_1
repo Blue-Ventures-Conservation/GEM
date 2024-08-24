@@ -623,12 +623,12 @@ step_1_button.onClick(function(){
   Map.centerObject(coarse_roi);
   
   var use_s2 = imagery.should_use_s2(contemporary_start_year, contemporary_month_start, historic_start_year, historic_month_start);
-  var starts = "after";
+  var starts = "before";
   var but = "";
   var imagery_name = "Landsat";
   var warning = "";
   if (use_s2) {
-    starts = "before or during";
+    starts = "after or during";
     if (force_landsat) {
       but = "but you have chosen to force the use of Landsat, ";
     } else {
