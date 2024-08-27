@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 17 July 2024
+Last updated: 26 August 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -668,7 +668,7 @@ for (var key in region_geometries) {
     print("Percent change in area of " + lab, "from historical to contemporary:", percentChange(data.Historical, data.Contemporary));
     print("Area (ha) of " + lab + " loss: ", data.Loss + " [" + percent(data.Loss, data.Historical) + "]");
     print("Area (ha) of " + lab + " persistence: ", data.Persistence + " [" + percent(data.Persistence, data.Historical) + "]");
-    print("Area (ha) of " + lab + " gain: ", data.Gain + " [" + percent(data.Gain, data.Histoircal) + "]");
+    print("Area (ha) of " + lab + " gain: ", data.Gain + " [" + percent(data.Gain, data.Historical) + "]");
     
     var chartColors = classColors.splice(pos, 1);
     var convs = data.conv;
