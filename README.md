@@ -142,11 +142,11 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 1: Defining the Region of Interest (ROI) and Compositing Imagery
 
->https://code.earthengine.google.com/a0c3a155aa26cb87195cdf0f11e7b11c?noload=true
+>https://code.earthengine.google.com/fb63fcf6f242081e71685b036631ff34?noload=true
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
->https://code.earthengine.google.com/a21074e92988d89d3db22f7e5b67ed0a?noload=true
+>https://code.earthengine.google.com/6353bbb9e04a9e6bc1adc1f9a4e233bd?noload=true
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
