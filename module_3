@@ -560,7 +560,7 @@ function percentChange(hist, cont) {
 }
 
 function percent(num, denom) {
-  return ee.String(num.divide(denom).multiply(1e4).divide(1e2).round()).cat("%");
+  return ee.String(num.divide(denom).multiply(1e4).round().divide(1e2)).cat("%");
 }
 
 for (var key in region_geometries) {
