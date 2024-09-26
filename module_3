@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 26 August 2024
+Last updated: 25 September 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -511,14 +511,6 @@ function conversionChart(label, areas, colors) {
     }));
 }
 
-function percentChange(hist, cont) {
-  return percent((cont - hist), hist);
-}
-
-function percent(num, denom) {
-  return Math.round(((num/denom) * 1e4))/1e2 + "%";
-}
-
 var conversionSelectors = [];
 
 function conversionData(conv, sortedNames) {
@@ -562,6 +554,14 @@ function conversionData(conv, sortedNames) {
 }
 
 var dynamicsData = [];
+
+function percentChange(hist, cont) {
+  return percent(cont.subtract(hist), hist);
+}
+
+function percent(num, denom) {
+  return ee.String(num.divide(denom).multiply(1e4).divide(1e2).round()).cat("%");
+}
 
 for (var key in region_geometries) {
   var geo = region_geometries[key];
@@ -632,14 +632,21 @@ for (var key in region_geometries) {
       exportDynamics(key, lab, geo, lossMask, perMask, gainMask);
     }
     
+    var historicalArea = perArea.add(lossArea);
+    var contemporaryArea = perArea.add(gainArea);
+
     var data = ee.Dictionary({
       Region: key,
       Class: lab,
-      Historical: perArea.add(lossArea),
-      Contemporary: perArea.add(gainArea),
+      Historical: historicalArea,
+      Contemporary: contemporaryArea,
+      PercentChange: percentChange(historicalArea, contemporaryArea),
       Loss: lossArea,
+      PercentLoss: percent(lossArea, historicalArea),
       Persistence: perArea,
+      PercentPersistence: percent(perArea, historicalArea),
       Gain: gainArea,
+      PercentGain: percent(gainArea, historicalArea),
       conv: {
         to: to,
         from: from,
@@ -665,10 +672,10 @@ for (var key in region_geometries) {
     );
     print("Historical area (ha) of " + lab + ":", data.Historical);
     print("Contemporary area (ha) of " + lab + ":", data.Contemporary);
-    print("Percent change in area of " + lab, "from historical to contemporary:", percentChange(data.Historical, data.Contemporary));
-    print("Area (ha) of " + lab + " loss: ", data.Loss + " [" + percent(data.Loss, data.Historical) + "]");
-    print("Area (ha) of " + lab + " persistence: ", data.Persistence + " [" + percent(data.Persistence, data.Historical) + "]");
-    print("Area (ha) of " + lab + " gain: ", data.Gain + " [" + percent(data.Gain, data.Historical) + "]");
+    print("Percent change in area of " + lab, "from historical to contemporary:", data.PercentChange);
+    print("Area (ha) of " + lab + " loss: ", data.Loss + " [" + data.PercentLoss + "]");
+    print("Area (ha) of " + lab + " persistence: ", data.Persistence + " [" + data.PercentPersistence + "]");
+    print("Area (ha) of " + lab + " gain: ", data.Gain + " [" + data.PercentGain + "]");
     
     var chartColors = classColors.splice(pos, 1);
     var convs = data.conv;
@@ -681,7 +688,7 @@ for (var key in region_geometries) {
 Export.table.toDrive({
   description: 'Dynamics_Table',
   collection: ee.FeatureCollection(dynamicsData),
-  selectors: ['Region', 'Class', 'Historical', 'Contemporary', 'Loss', 'Persistence', 'Gain'].concat(conversionSelectors)
+  selectors: ['Region', 'Class', 'Historical', 'Contemporary', 'PercentChange', 'Loss', 'PercentLoss', 'Persistence', 'PercentPersistence', 'Gain', 'PercentGain'].concat(conversionSelectors)
 });
 
 //////////////////////////////////////////////////////
