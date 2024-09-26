@@ -150,7 +150,7 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
->https://code.earthengine.google.com/e7091faa7bf6cc193e61bbc18f58d4d3?noload=true
+>https://code.earthengine.google.com/b5ca2a7a97e6110cddff108892d4793d?noload=true
 
 The second option for using the GEM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
