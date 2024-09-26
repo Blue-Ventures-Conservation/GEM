@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 24 June 2024
+Last updated: 25 September 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -952,6 +952,13 @@ step_1_button.onClick(function(){
           var hlot_water = hist_imagery.filter(ee.Filter.gte('MNDWI', min_avg));
           print('No. Historic Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
           hlot_water = hlot_water.qualityMosaic('inv_MNDWI').clip(ROI);
+          
+          print("If your water mask and final mask are incomplete,\n"+
+            "review above the number of contemporary and historical\n"+
+            "low-tide images available for the water mask.\n\n"+
+            "There must be enough images to cover your entire ROI -\n"+
+            "if not enough, widen the months and/or years windows\n"+
+            "to filter in more imagery.");
           
           if(remove_water === true){
               var waterMask = water.water_mask(hlot_water, clot_water, combo_water_mask);
