@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 25 September 2024
+Last updated: 10 October 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -33,7 +33,7 @@ image composites, 3.) calculate desired spectral indices for the generated
 composites and 4.) create a unified mask to remove water pixels or pixels 
 associated with extreme topography from classification. This module outputs up to
 four image composites (depending on user preference: high- and  low-tide for 
-both a historic and contemporary temporal window), a final mask, representing 
+both a historical and contemporary temporal window), a final mask, representing 
 unified water, slope, and elevation, and a vector  polygon encompassing the region 
 of interest (ROI) to use throughout the GEM workflow. 
 
@@ -48,7 +48,7 @@ GEM Module 1 is broken down into 5 Sections:
     Section 2: Lets the user interactively explore how large of an region of interest 
                they would like to use by examining known mangrove extent data. 
 
-    Section 3: Generates the selected historic and contemporary Landsat composites 
+    Section 3: Generates the selected historical and contemporary Landsat composites 
                and allows the user to review them in the map viewer. 
 
     Section 4: Uses the Landsat composites and the index list from Section 1, Step 2
@@ -79,8 +79,8 @@ and set them according to the local situation and project goals/objectives.
 At the end of the workflow, the user should have started exporting:
       1) HOT contemporary composite (HOT_Img_contemporary)
       2) LOT contemporary composite (LOT_Img_contemporary)
-      3) HOT historic composite (HOT_Img_historic)
-      4) LOT historic composite (LOT_Img_historic)
+      3) HOT historical composite (HOT_Img_historic)
+      4) LOT historical composite (LOT_Img_historic)
       5) Finalized ROI (ROI) 
       6) Finalized mask (final_mask)
 
@@ -227,7 +227,7 @@ var ls_7_in = false;
 /*
 2) USER DEFINED VARIABLES
     In this sub-section, the user will have to define some variables about how 
-    the GEM will run. These variables include the historic and contemporary year
+    the GEM will run. These variables include the historical and contemporary year
     windows, topographic thresholds, cloud cover limits, etc. Each variable will
     be described thoroughly, and helpful resources provided for further insight.
 
@@ -248,15 +248,15 @@ var contemporary_start_year = 2022;
 var contemporary_end_year = 2024;
 
 /*
-2.B) Historic Years
-     Define the historic year window. These years will bookend the data 
+2.B) Historical Years
+     Define the historical year window. These years will bookend the data 
      selected. The years selected are completely up to the user's discretion. Be 
      sure that the two dates are entered in the correct order. See example below.
      Note: If a single year is desired, put the same year for both variables.
   
      Enter:
-          var historic_start_year = 2012; (Older Historic year)
-          var historic_end_year = 2014; (More recent Historic year)
+          var historic_start_year = 2012; (Older Historical year)
+          var historic_end_year = 2014; (More recent Historical year)
 
 */
 
@@ -283,7 +283,7 @@ var historic_end_year = 2014;
      RiceAtlas database as one source of seasonality info (Laborte et al, 2017). 
      (https://www.nature.com/articles/sdata201774).
      
-     A month range for contemporary years and another for historic years can be
+     A month range for contemporary years and another for historical years can be
      provided, as seasons may shift over the course of decades.
      
      Note: If a single month is desired, put the same month for both variables.
@@ -344,7 +344,7 @@ var cloud_mask = 'mild';
 /*
 2.F) Tidal Zone  
      The tidal zone is a user-defined parameter that is used to help the GEM 
-     determine the tidal condition for each image, in both the historic and the
+     determine the tidal condition for each image, in both the historical and the
      contemporary image sets. The tidal zone is functionally a shoreline buffer
      which extends seawards from the shore. This distance should be the tidally 
      'active' zone, which will contain the majority of the tidal flats and tidal
@@ -408,16 +408,16 @@ var min_avg = 0.5;
           var remove_water = false; (water pixels will NOT be masked)
     
     If the water pixels are to be masked, the user has the option to either mask
-    pixels which are water in both the historic and contemporary imagery, or to
-    just mask pixels that were identified as water in the historic imagery. If 
+    pixels which are water in both the historical and contemporary imagery, or to
+    just mask pixels that were identified as water in the historical imagery. If 
     the coastline has changed dramatically during the time period of interest, a
     combined mask will be best, to not erroneously mask non-water pixels. 
     
     Enter:
           var combo_water_mask = true; (mask only pixels identified as 
-                                        water in historic and contemporary data)
+                                        water in historical and contemporary data)
           var combo_water_mask = false;  (mask only pixels identified as 
-                                          water in historic data)
+                                          water in historical data)
 */
 
 var remove_water = true;
@@ -579,7 +579,6 @@ var coastline =  require('users/yanchojo/GEM_LS9_colors/:modules/coastline');
 var topography =  require('users/yanchojo/GEM_LS9_colors/:modules/topography');
 var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
 var ls_imagery = require('users/yanchojo/GEM_LS9_colors/:modules/landsat_imagery');
-var shoreRefl = require('users/yanchojo/GEM_LS9_colors/:modules/MNDWI_tidal_function');
 var indx_mod = require('users/yanchojo/GEM_LS9_colors/:modules/indices');
 var water = require('users/yanchojo/GEM_LS9_colors/:modules/water_mask');
 var fringe = require('users/yanchojo/GEM_LS9_colors/:modules/fringe_mang');
@@ -737,7 +736,7 @@ step_1_button.onClick(function(){
       print('When the imagery has been prepared, '+
             '\nbuttons will appear to display the imagery;'+
             '\nindicating to add either the contemporary'+
-            '\nand/or historic imagery to the map.'+
+            '\nand/or historical imagery to the map.'+
             '\nDo not proceed before these buttons populate'+
             '\nthe console. Click the buttons to view the '+
             '\nimagery.');
@@ -752,29 +751,12 @@ step_1_button.onClick(function(){
       
       // Create hist./cont. image collections
       var cont_imagery = ls_imagery.LSimagery_smart_ls7(ls_7_in, ROI, contemporary_start_year, contemporary_end_year,
-                                              cloud_cover, contemporary_month_start, contemporary_month_end, cloud_mask);
+                                              cloud_cover, contemporary_month_start, contemporary_month_end, cloud_mask, tidalArea);
       var hist_imagery = ls_imagery.LSimagery_smart_ls7(ls_7_in, ROI, historic_start_year, historic_end_year,
-                                              cloud_cover, historic_month_start, historic_month_end, cloud_mask);
+                                              cloud_cover, historic_month_start, historic_month_end, cloud_mask, tidalArea);
       
-      // function for adding bands inspectable bands for the date of each pixel
-      function datePixels(img) {
-          var segs = ee.List(ee.String(img.get('system:index')).trim().split("_").iterate(function(item, prev) {
-            return ee.Algorithms.If(ee.String(item).length().gt(1), ee.List(prev).add(item), prev);
-          }, ee.List([])));
-          // true when Landsat, false implies Sentinel-2
-          var str = ee.String(ee.Algorithms.If(ee.String(segs.get(0)).length().eq(4), segs.get(2), ee.String(segs.get(0)).split('T').get(0)));
-          var year = ee.Number.parse(str.slice(0, 4));
-          var month = ee.Number.parse(str.slice(4, 6));
-          var day = ee.Number.parse(str.slice(6, 8));
-          var date = ee.Date.fromYMD(year, month, day);
-          return img.addBands(ee.Image([date.get('day'), date.get('month'), date.get('year')]).rename(['day', 'month', 'year']).cast({'day':'byte', 'month':'byte', 'year':'short'}));
-      }
-      
-      // Calculate tidal conditions
-      cont_imagery = shoreRefl.shoreRefl(cont_imagery, tidalArea, ROI, null);
       print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
-      cont_imagery = shoreRefl.tide_bands(cont_imagery);
-      cont_imagery = cont_imagery.map(datePixels);
+      print('No. Historical Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
       
       // Build the contemporary BAP composites
       var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
@@ -794,26 +776,20 @@ step_1_button.onClick(function(){
         print(add_c_imagery);
       });
       
-      // Determing tidal conditions
-      hist_imagery = shoreRefl.shoreRefl(hist_imagery, tidalArea, ROI, null);
-      print('No. Historic Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
-      hist_imagery = shoreRefl.tide_bands(hist_imagery);
-      hist_imagery = hist_imagery.map(datePixels);
-      
-      // Build the historic BAP composites
+      // Build the historical BAP composites
       var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic('MNDWI').clip(ROI);
       var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
       var hhot_vis = Hhot;
       var hlot_vis = Hlot;
 
-      // Add the historic imagery once it has finished processing
+      // Add the historical imagery once it has finished processing
       hlot_vis.evaluate(function(result){
-        var add_h_imagery = ui.Button('Add Historic Imagery');
+        var add_h_imagery = ui.Button('Add Historical Imagery');
         add_h_imagery.onClick(function(){
           // Add to Map
           var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
-          Map.addLayer(hhot_vis, vis, 'Historic High Tide');
-          Map.addLayer(hlot_vis, vis, 'Historic Low Tide');
+          Map.addLayer(hhot_vis, vis, 'Historical High Tide');
+          Map.addLayer(hlot_vis, vis, 'Historical Low Tide');
         });
         print(add_h_imagery);
       });
@@ -822,7 +798,6 @@ step_1_button.onClick(function(){
       Clot = Clot.select('B1','B2','B3','B4','B5','B6','B7');
       Hhot = Hhot.select('B1','B2','B3','B4','B5','B6','B7');
       Hlot = Hlot.select('B1','B2','B3','B4','B5','B6','B7');
-      
       
       ///////////////
       // Section 4 //
@@ -950,7 +925,7 @@ step_1_button.onClick(function(){
           print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
           clot_water = clot_water.qualityMosaic('inv_MNDWI').clip(ROI);
           var hlot_water = hist_imagery.filter(ee.Filter.gte('MNDWI', min_avg));
-          print('No. Historic Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
+          print('No. Historical Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
           hlot_water = hlot_water.qualityMosaic('inv_MNDWI').clip(ROI);
           
           print("If your water mask and final mask are incomplete,\n"+
@@ -1051,8 +1026,8 @@ print(step_1_button);
 At the end of the workflow, the user should have started exporting:
       1) HOT contemporary composite (HOT_Img_contemporary)
       2) LOT contemporary composite (LOT_Img_contemporary)
-      3) HOT historic composite (HOT_Img_historic)
-      4) LOT historic composite (LOT_Img_historic)
+      3) HOT historical composite (HOT_Img_historic)
+      4) LOT historical composite (LOT_Img_historic)
       5) Finalized ROI (ROI) 
       6) Finalized mask (final_mask)
 */
