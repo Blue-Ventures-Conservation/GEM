@@ -3,10 +3,11 @@
 This is the contemporary imagery module, which is part of the BVC GEM v1.2+ library.
 It is used to collect recent Landsat 8 imagery for the area of interest.
 
-Last update: 29 May 2024
+Last update: 10 October 2024
 
 */
 
+var shoreRefl = require('users/yanchojo/GEM_LS9_colors/:modules/MNDWI_tidal_function');
 
 exports.doc = 'The imagery module is used to collect images for the ROI.' +
     '\n The output is an image collection ready to be sorted into high and low tide groups. ' +
@@ -23,16 +24,16 @@ exports.doc = 'The imagery module is used to collect images for the ROI.' +
     '\n   @param {character} cloud_mask: how clouds are removed. Valid inputs are none, mild, and aggressive' +
     '\n   @return {ee.Image} An image collection with clouds removed.';
 
-exports.LSimagery = function(roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask){
-  return get_imagery(false, true, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask);
+exports.LSimagery = function(roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask, tidalArea){
+  return get_imagery(false, true, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask, tidalArea);
 };
 
-exports.LSimagery_sans7 = function(roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask){
-  return get_imagery(true, false, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask);
+exports.LSimagery_sans7 = function(roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask, tidalArea){
+  return get_imagery(true, false, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask, tidalArea);
 };
 
-exports.LSimagery_smart_ls7 = function(force_ls7, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask){
-  return get_imagery(false, force_ls7, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask);
+exports.LSimagery_smart_ls7 = function(force_ls7, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask, tidalArea){
+  return get_imagery(false, force_ls7, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask, tidalArea);
 };
 
 function filter_ls7(force, roi, cloud_limit, year1, year2, month1, month2) {
@@ -72,7 +73,7 @@ function filter_ls7(force, roi, cloud_limit, year1, year2, month1, month2) {
 }
 
 // ignore takes precendence over force here
-function get_imagery(ignore_ls7, force_ls7, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask) {
+function get_imagery(ignore_ls7, force_ls7, roi, year1, year2, cloudCoverLimit, month_1, month_2, cloud_mask, tidalArea) {
   // collect the LS4 imagery
   var col4 =  ee.ImageCollection("LANDSAT/LT04/C02/T1_L2")
     // filter to the path/row
@@ -194,6 +195,24 @@ function get_imagery(ignore_ls7, force_ls7, roi, year1, year2, cloudCoverLimit, 
     } 
     
     images = images.map(fixFloat).map(doubleOO);
+    images = shoreRefl.shoreRefl(images, tidalArea, roi, null);
+    images = shoreRefl.tide_bands(images);
+    
+    // function for adding bands inspectable bands for the date of each pixel
+    function datePixels(img) {
+      var segs = ee.List(ee.String(img.get('system:index')).trim().split("_").iterate(function(item, prev) {
+        return ee.Algorithms.If(ee.String(item).length().gt(1), ee.List(prev).add(item), prev);
+      }, ee.List([])));
+      // true when Landsat, false implies Sentinel-2
+      var str = ee.String(ee.Algorithms.If(ee.String(segs.get(0)).length().eq(4), segs.get(2), ee.String(segs.get(0)).split('T').get(0)));
+      var year = ee.Number.parse(str.slice(0, 4));
+      var month = ee.Number.parse(str.slice(4, 6));
+      var day = ee.Number.parse(str.slice(6, 8));
+      var date = ee.Date.fromYMD(year, month, day);
+      return img.addBands(ee.Image([date.get('day'), date.get('month'), date.get('year')]).rename(['day', 'month', 'year']).cast({'day':'byte', 'month':'byte', 'year':'short'}));
+    }
+    
+    images = images.map(datePixels);
 
     if(cloud_mask === "none"){ images = images;}else{
       if(cloud_mask === "mild"){ images = images.map(function(img){
