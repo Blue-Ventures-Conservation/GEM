@@ -40,7 +40,7 @@ GEM Module 3 is broken down into 3 sections.
                analysis. The class is selected prior to the script being run.
 
     Section 2: The land cover class dynamics calculated include the area of loss, persistence,
-               and gain, align with the historic and contemporary land cover class areas: all
+               and gain, align with the historical and contemporary land cover class areas: all
                of which are populated in the ‘Console’ The loss, persistence, and gain will 
                also be added as image layers to the map viewer and export tasks begun for each 
                dynamics' image layer. 
@@ -107,8 +107,8 @@ as follows:
   Chot_image = HOT contemporary composite (HOT_Img_contemporary); highest observed tide
   Clot_image = LOT contemporary composite (LOT_Img_contemporary); lowest observed tide
 
-  Hhot_image = HOT historic composite (HOT_Img_historic); highest observed tide
-  Hlot_image = LOT historic composite (LOT_Img_historic); lowest observed tide
+  Hhot_image = HOT historical composite (HOT_Img_historical); highest observed tide
+  Hlot_image = LOT historical composite (LOT_Img_historical); lowest observed tide
 
   final_mask = Finalized mask (final_mask)
   
@@ -120,7 +120,7 @@ by clicking the default name, e.g. ‘image’ (see top of the script), and rena
 
 The next step is for the user to bring in the classification results and 
 determine which data they would like to view in the QAA process. By switching the
-boolean 'cont_view' and 'hist_view' on and off ('true' and 'false'), the historic or 
+boolean 'cont_view' and 'hist_view' on and off ('true' and 'false'), the historical or 
 contemporary results are displayed. Please note that only one or the other should
 be 'true'/'false' at any given time. 
 */
@@ -129,12 +129,12 @@ var cont_view = true;
 var hist_view = false;
 
 /*
-Additionally, the user must define the historic and contemporary classification
+Additionally, the user must define the historical and contemporary classification
 inputs as below:
 
 
   cont_class = **The contemporary classification**, exported in Module 2
-  hist_class = **The historic classification**, exported in Module 2 
+  hist_class = **The historical classification**, exported in Module 2 
 
 
 As with the imagery, this can be done by selecting the assets from the 'Asset' 
@@ -253,7 +253,7 @@ var nested_grid_scale = 3000;
 //////////////   Section 2: Dynamics    //////////////
 //////////////////////////////////////////////////////
 // In this section dynamics for the land cover class selected in Section 1 will 
-// be generated. Area for loss, persistence, and gain (LPG), as well as the historic
+// be generated. Area for loss, persistence, and gain (LPG), as well as the historical
 // and contemporary land cover area will be printed to the console. The LPG will be 
 // added directly to the map viewer and LPG images will begin to export in the tasks
 // tab.
