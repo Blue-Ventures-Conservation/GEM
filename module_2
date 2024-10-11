@@ -81,9 +81,9 @@ At the end of the workflow, the user should have started exporting:
         a.) High tide comtemporary land cover map
         b.) Low tide comtemporary land cover map
         c.) Combination comtemporary land cover map
-        d.) High tide historic land cover map
-        e.) Low tide historic land cover map
-        f.) Combination historic land cover map
+        d.) High tide historical land cover map
+        e.) Low tide historical land cover map
+        f.) Combination historical land cover map
     * - Additionally, they may have saved the output classification
         accuracy metrics or any of the graphs/tables from Section 2
 
@@ -108,8 +108,8 @@ Bring in Imagery and Masks exported from Module 1. Name as follows:
   Chot = HOT contemporary composite (HOT_Img_contemporary); highest observed tide
   Clot = LOT contemporary composite (LOT_Img_contemporary); lowest observed tide
 
-  Hhot = HOT historic composite (HOT_Img_historic); highest observed tide
-  Hlot = LOT historic composite (LOT_Img_historic); lowest observed tide
+  Hhot = HOT historical composite (HOT_Img_historic); highest observed tide
+  Hlot = LOT historical composite (LOT_Img_historic); lowest observed tide
 
   final_mask = Finalized mask (final_mask)
   
@@ -158,22 +158,22 @@ var plot_id_label = "";
 /*
 1.B) Classification Reference Area (CRA) Type
      Record type of CRA. It is important for the GEM that the user distinguishes 
-     their CRAs as either spatio-temporally invariant across the time-period (historic
+     their CRAs as either spatio-temporally invariant across the time-period (historical
      and contemporary imagery) or derived from just contemporary sources. 
      
-     1.) Spatio-temporally invariant: The CRAs have not changed between the historic
+     1.) Spatio-temporally invariant: The CRAs have not changed between the historical
                                       years of interest and the contemporary years of 
                                       interest. - a single set of CRAs is used for both
                                       classifications.
-     2.) Not spatio-temporally invariant: The CRAs have changed between the historic years 
+     2.) Not spatio-temporally invariant: The CRAs have changed between the historical years 
                                           of interest and the contemporary years of interest 
                                           - a separate set of CRAs is used for each 
-                                          classification (i.e., historic and contemporary). 
+                                          classification (i.e., historical and contemporary). 
                             
      These are important distinctions to make. If the CRAs are not spatio-temporally 
-     invariant, the classifier will be retrained for both the historic and contemporary 
+     invariant, the classifier will be retrained for both the historical and contemporary 
      image sets.  If the CRAs are spatio-temporally invariant, the same set will be used 
-     for historic and contemporary classifications.  
+     for historical and contemporary classifications.  
      
      Enter:
           var class_ref_type = true; (the CRAs are spatio-temporally invariant)
@@ -183,22 +183,22 @@ var plot_id_label = "";
 var class_ref_type = false;
 
 /*
-1.B.i) Classification Reference Area (CRA) Type: Missing Historic CRA
-  If the data is not spatio-temporally invariant, but historic CRAs are not available, the
+1.B.i) Classification Reference Area (CRA) Type: Missing Historical CRA
+  If the data is not spatio-temporally invariant, but historical CRAs are not available, the
   user has the option to use contemporary landsat spectral values for trained contemporary
-  CRAs subset to classify the historic data. For this feature to work 'class_ref_type' needs 
-  to be set to 'true' to ensure that the historic classifications are using the contemporary 
+  CRAs subset to classify the historical data. For this feature to work 'class_ref_type' needs 
+  to be set to 'true' to ensure that the historical classifications are using the contemporary 
   CRAs data and the 'use_cont_spec' (below) must be set to 'true'. 
   
-  Alternatively, historic outputs do not need be generated in Module 2. Simply make all of the
-  historic classification outputs in 1.D to 'false'. However, if this is the case the dynamics
+  Alternatively, historical outputs do not need be generated in Module 2. Simply make all of the
+  historical classification outputs in 1.D to 'false'. However, if this is the case the dynamics
   analysis in Module 3 will not work properly (since there will only be one land cover map).
   
           **NOTE: Default is 'false'. Do not switch to 'true' unless certain.**
   
        Enter:
           var use_cont_spec = true; (uses the contemporary trained classifier to 
-                                      classify the historic imagery)
+                                      classify the historical imagery)
           var use_cont_spec = false; (uses the CRAs data as designated in 1.A)
 
 */
@@ -228,7 +228,7 @@ var trees = 200;
      (where the high- and low-tide data are combined into a single collection) 
      or separate (individual high- and low-tide) classifications. Outputs below can 
      be turned on and off by adding a 'true'/'false' to the corresponding 
-     variable input. The historic and contemporary data is separable into LOT
+     variable input. The historical and contemporary data is separable into LOT
      and HOT components. (HOT: Highest Observable Tide; LOT: Lowest Observable
      Tide.)
      
@@ -239,9 +239,9 @@ var trees = 200;
 var HOT_cont_out = false;        // High tide comtemporary Imagery
 var LOT_cont_out = false;        // Low tide comtemporary Imagery
 var combo_cont_out = true;     // Combination comtemporary Imagery
-var HOT_hist_out = false;        // High tide historic Imagery
-var LOT_hist_out = false;        // Low tide historic Imagery
-var combo_hist_out = true;     // Combination historic Imagery
+var HOT_hist_out = false;        // High tide historical Imagery
+var LOT_hist_out = false;        // Low tide historical Imagery
+var combo_hist_out = true;     // Combination historical Imagery
 
 
 /*    
@@ -821,7 +821,7 @@ step_2_button.onClick(function(){
                                     Clot, t_poly_c, label, bands, ROI, trees, 
                                     splits, leafpop, bag, nodes, seeds, expanded_colors);}
                                  
-    // Historic
+    // Historical
     if( HOT_hist_out === true){ var Hhot_class = RFclass.HhotClassify(Hhot, 
                                   class_ref_type, use_cont_spec, Chot, t_poly_h, 
                                   t_poly_c, label, bands, ROI, trees, 
@@ -846,9 +846,9 @@ At the end of the workflow, the user should have started exporting:
         a.) High tide comtemporary land cover map
         b.) Low tide comtemporary land cover map
         c.) Combination comtemporary land cover map
-        d.) High tide historic land cover map
-        e.) Low tide historic land cover map
-        f.) Combination historic land cover map
+        d.) High tide historical land cover map
+        e.) Low tide historical land cover map
+        f.) Combination historical land cover map
     * - Additionally, they may have saved the output classification
         accuracy metrics or any of the graphs/tables from Section 2
 */
