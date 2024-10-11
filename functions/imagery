@@ -1,9 +1,9 @@
 /*
 
 This is the imagery module, which is part of the GEM v2 library.
-It is used to collect Landsat 4, 5, 8, 9 and Sentinel 2 imagery for a region of interest.
+It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 23 August 2024
+Last update: 11 October 2024
 
 */
 
@@ -166,7 +166,7 @@ function collect_landsat(cloud_mask, band_names, roi, tidal_area, filter) {
     images = mild_landsat_cloud_mask(images);
   }
   
-  return images.select(names);
+  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index]));
 }
 
 var etm_coeffs = {
@@ -199,7 +199,7 @@ function collect_sentinel2(cloud_mask, band_names, roi, tidal_area, filter) {
   var names = ee.List(band_names);
   var renames = names.add(s2_qa_pixel);
 
-  var images = ee.ImageCollection(filter(s2)).select(s2_bands.add(s2_qa_pixel), names.add(s2_qa_pixel))
+  var images = ee.ImageCollection(filter(s2)).select(s2_bands.add(s2_qa_pixel), renames)
   .map(function(image) {
     var optical = image.select(names).divide(10000);
     return image.addBands(optical, null, true);
@@ -211,7 +211,7 @@ function collect_sentinel2(cloud_mask, band_names, roi, tidal_area, filter) {
   // Sentinel-2 just uses CloudScore+ for both mild/aggressive
   images = s2_cloud_mask(images);
   
-  return images.select(names);
+  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index]));
 }
 
 // cloud masking
@@ -314,8 +314,6 @@ function shore_reflectance(roi, images, tidal_area, band_names, scale) {
 function tide_bands(images) {
   var mndwi = exports.mod_water_index;
   var imndwi = exports.inverse_mod_water_index;
-  var ndwi = exports.water_index;
-  var indwi = exports.inverse_water_index;
   return ee.ImageCollection(images)
   // add a band to each image called MNDWI (created from the shoreRefl function)
   .map(function(img) {
