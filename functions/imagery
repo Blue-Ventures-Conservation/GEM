@@ -83,13 +83,12 @@ var s2_cloud_property = 'CLOUDY_PIXEL_PERCENTAGE';
 function filter_collection(force_ls7, collection_name, roi, cloud_property, cloud_limit, year1, year2, months) {
   var images = ee.ImageCollection([]);
   if (collection_name == ls7) {
-    images = filter_ls7(force_ls7, roi, cloud_property, cloud_limit, year1, year2, months);
+    images = filter_ls7(force_ls7, year1, year2, months);
   } else {
     var y2 = year2 + 1;
     images = ee.ImageCollection(collection_name)
       .filterDate(year1 + '-01-01', y2 + '-01-01');
   }
-  
   images = images.filterBounds(roi)
     .filterMetadata(cloud_property, 'not_greater_than', cloud_limit);
   
@@ -97,13 +96,12 @@ function filter_collection(force_ls7, collection_name, roi, cloud_property, clou
 }
 
 function filterMonths(images, months) {
-  var filtered = ee.ImageCollection([]);
+  var filters = [];
   for (var i = 0; i < months.length; i++) {
     var month = months[i];
-    var thisMonth = images.filter(ee.Filter.calendarRange(month, month, 'month'));
-    filtered = filtered.merge(thisMonth);
+    filters.push(ee.Filter.calendarRange(month, month, 'month'));
   }
-  return filtered;
+  return images.filter(ee.Filter.or.apply(this, filters));
 }
 
 function filter_ls7(force, year1, year2, months) {
@@ -176,7 +174,7 @@ function collect_landsat(cloud_mask, band_names, roi, tidal_area, filter) {
     images = mild_landsat_cloud_mask(images);
   }
   
-  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index]));
+  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'day', 'month', 'year']));
 }
 
 var etm_coeffs = {
@@ -214,14 +212,13 @@ function collect_sentinel2(cloud_mask, band_names, roi, tidal_area, filter) {
     var optical = image.select(names).divide(10000);
     return image.addBands(optical, null, true);
   });
-
   images = shore_reflectance(roi, images, tidal_area, band_names, s2_scale);
   images = images.map(datePixels);
-  
+
   // Sentinel-2 just uses CloudScore+ for both mild/aggressive
   images = s2_cloud_mask(images);
-  
-  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index]));
+
+  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'day', 'month', 'year']));
 }
 
 // cloud masking
@@ -265,7 +262,6 @@ function aggro_landsat_cloud_mask(optical_bands, images) {
     return image.updateMask(weight_mask);
   });
 }
-
 
 // unused, kept for posterity
 function mild_s2_cloud_mask(images) {
