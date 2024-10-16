@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 11 October 2024
+Last update: 15 October 2024
 
 */
 
@@ -19,22 +19,21 @@ exports.doc = 'The imagery module is used to collect images for the ROI.' +
     '\n   @param {numeric} cloudCoverLimit: percentage of allowable cloud cover' +
     '\n   @param {numeric} year1: oldest year of interest' +
     '\n   @param {numeric} year2: most recent year of interest' +
-    '\n   @param {numeric} month_1: oldest month of interest (1:12)' +
-    '\n   @param {numeric} month_2: most recent month of interest (1:12)' +
+    '\n   @param {array of numerics} months: an array of individual months of interest' +
     '\n   @param {character} cloud_mask: how clouds are removed. Valid inputs are none, mild, and aggressive' +
     '\n   @param {ee.Geometry} the buffered coastline containing the tidally active zone' +
     '\n   @return {array} An image collection with clouds removed at index 0 and the native scale of the imagery at index 1';
 
-exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, end_year, start_month, end_month, cloud_mask, tidal_area) {
+exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, end_year, months, cloud_mask, tidal_area) {
   // bnames: six names for [Blue, Green, Red, NIR, SWIR1, SWIR2]
   var bnames = ['B1','B2','B3','B4','B5','B7'];
   function filter_func(cloud_prop) {
     return function(name) {
-      return filter_collection(ls_7_in, name, roi, cloud_prop, cloud_limit, start_year, end_year, start_month, end_month);
+      return filter_collection(ls_7_in, name, roi, cloud_prop, cloud_limit, start_year, end_year, months);
     };
   }
   
-  if (!force_ls && fits_s2_range(start_year, start_month)) {
+  if (!force_ls && fits_s2_range(start_year, months)) {
     var s2_images = collect_sentinel2(cloud_mask, bnames, roi, tidal_area, filter_func(s2_cloud_property));
     return [s2_images, s2_scale];
   } else {
@@ -43,12 +42,13 @@ exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, 
   }
 };
 
-exports.should_use_s2 = function(cont_start_year, cont_start_month, hist_start_year, hist_start_month) {
-  return fits_s2_range(cont_start_year, cont_start_month) && fits_s2_range(hist_start_year, hist_start_month);
+exports.should_use_s2 = function(cont_start_year, cont_months, hist_start_year, hist_months) {
+  return fits_s2_range(cont_start_year, cont_months) && fits_s2_range(hist_start_year, hist_months);
 };
 
-function fits_s2_range(year, month) {
-  return (year > s2_start_year) || (year == s2_start_year  && month >= s2_start_month);
+function fits_s2_range(year, months) {
+  var finalYearMaxLen = 13 - s2_start_month;
+  return (year > s2_start_year) || (year == s2_start_year  && (months.length <= finalYearMaxLen && months[0] >= s2_start_month));
 }
 
 exports.water_index = 'NDWI';
@@ -80,26 +80,40 @@ var s2 = "COPERNICUS/S2_SR_HARMONIZED";
 var s2_bands = ee.List(['B2','B3','B4','B8','B11','B12']);
 var s2_cloud_property = 'CLOUDY_PIXEL_PERCENTAGE';
 
-function filter_collection(force_ls7, collection_name, roi, cloud_property, cloud_limit, year1, year2, month1, month2) {
+function filter_collection(force_ls7, collection_name, roi, cloud_property, cloud_limit, year1, year2, months) {
+  var images = ee.ImageCollection([]);
   if (collection_name == ls7) {
-    return filter_ls7(force_ls7, roi, cloud_property, cloud_limit, year1, year2, month1, month2);
+    images = filter_ls7(force_ls7, roi, cloud_property, cloud_limit, year1, year2, months);
+  } else {
+    var y2 = year2 + 1;
+    images = ee.ImageCollection(collection_name)
+      .filterDate(year1 + '-01-01', y2 + '-01-01');
   }
   
-  var y2 = year2 + 1;
-  return ee.ImageCollection(collection_name)
-    .filterBounds(roi)
-    .filterMetadata(cloud_property, 'not_greater_than', cloud_limit)
-    .filterDate(year1 + '-01-01', y2 + '-01-01')
-    .filter(ee.Filter.calendarRange(month1, month2, 'month')); // handles wrapping if month1 > month2
+  images = images.filterBounds(roi)
+    .filterMetadata(cloud_property, 'not_greater_than', cloud_limit);
+  
+  return filterMonths(images, months);
 }
 
-function filter_ls7(force, roi, cloud_property, cloud_limit, year1, year2, month1, month2) {
-  var justMay = month1 == 5 && month2 == 5;
-  var normal = month1 < month2;
-  var wrapping = month1 > month2;
-  var monthRangeOverlaps = (wrapping && month1 <= 5) || (wrapping && month2 >= 5) || (normal && month1 <= 5);
-  var monthsOverlap = justMay || monthRangeOverlaps;
+function filterMonths(images, months) {
+  var filtered = ee.ImageCollection([]);
+  for (var i = 0; i < months.length; i++) {
+    var month = months[i];
+    var thisMonth = images.filter(ee.Filter.calendarRange(month, month, 'month'));
+    filtered = filtered.merge(thisMonth);
+  }
+  return filtered;
+}
+
+function filter_ls7(force, year1, year2, months) {
+  if (months.length === 0) {
+    return ee.ImageCollection([]);
+  }
+  
+  var monthsOverlap = months[0] <= 5;
   var overlaps = year1 < 2003 || (year1 == 2003 && monthsOverlap);
+  
   if (!force && !overlaps) {
     return ee.ImageCollection([]);
   }
@@ -111,22 +125,18 @@ function filter_ls7(force, roi, cloud_property, cloud_limit, year1, year2, month
   if (truncate) {
     var fullYears = ee.ImageCollection([]);
     if (year1 < 2003) {
-      fullYears = ls7col.filterDate(year1 +'-01-01', '2003-01-01')
-        .filter(ee.Filter.calendarRange(month1, month2, 'month'));
+      fullYears = ls7col.filterDate(year1 +'-01-01', '2003-01-01');
     }
     
-    var truncated = ls7col.filterDate('2003-01-01', '2003-05-30')
-      .filter(ee.Filter.calendarRange(month1, 5, 'month'));
+    var truncated = ls7col.filterDate('2003-01-01', '2003-05-30');
     
     dateFiltered = truncated.merge(fullYears);
   } else {
     var y2 = year2 + 1;
-    dateFiltered = ls7col.filterDate(year1 + '-01-01', y2 + '-01-01')
-      .filter(ee.Filter.calendarRange(month1, month1, 'month'));
+    dateFiltered = ls7col.filterDate(year1 + '-01-01', y2 + '-01-01');
   }
   
-  return dateFiltered.filterBounds(roi)
-    .filterMetadata(cloud_property, 'not_greater_than', cloud_limit);
+  return dateFiltered;
 }
 
 function collect_landsat(cloud_mask, band_names, roi, tidal_area, filter) {
