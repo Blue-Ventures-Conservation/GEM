@@ -3,7 +3,7 @@
 //////////                     (GEM) Module  1                    ///////////
 ////////////////////////////////////////////////////////////////////////////////
 
-/* 
+/*
 
 This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
@@ -79,10 +79,10 @@ and set them according to the local situation and project goals/objectives.
 At the end of the workflow, the user should have started exporting:
       1) HOT contemporary composite (HOT_Img_contemporary)
       2) LOT contemporary composite (LOT_Img_contemporary)
-      3) HOT historical composite (HOT_Img_historic)
-      4) LOT historical composite (LOT_Img_historic)
-      5) Finalised ROI (ROI) 
-      6) Finalised mask (final_mask)
+      3) HOT historical composite (HOT_Img_historical)
+      4) LOT historical composite (LOT_Img_historical)
+      5) Finalized ROI (ROI) 
+      6) Finalized mask (final_mask)
 
 Before running Module 1, please read through the comments below to determine 
 important user inputs and parameters that will be used in this workflow. Continue until 
@@ -249,12 +249,19 @@ var ls_7_in = false;
      below. Note: If a single year is desired, put the same year for both 
      variables.
      
+     If the start year is 2019 or later for both contemporary and historical years,
+     GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.t.
+     
+     When using Sentinel-2 imagery, you may prefer to set the start and end
+     years to be the same to reduce the number of imagery. This may help
+     if you are seeing Too May Concurrent Agreggations errors.
+     
      Enter:
           var contemporary_start_year = 2014; (Older Contemporary year)
           var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2022;
+var contemporary_start_year = 2024;
 var contemporary_end_year = 2024;
 
 /*
@@ -263,62 +270,24 @@ var contemporary_end_year = 2024;
      selected. The years selected are completely up to the user's discretion. Be 
      sure that the two dates are entered in the correct order. See example below.
      Note: If a single year is desired, put the same year for both variables.
-
-     If the historical year start is 2019 or later, the GEM defaults to producing
-     Sentinel-2 composites. Otherwise Landsat is the default.
+    
+     If the start year is 2019 or later for both contemporary and historical years,
+     GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.
+     
+     When using Sentinel-2 imagery, you may prefer to set the start and end
+     years to be the same to reduce the number of imagery. This may help
+     if you are seeing Too May Concurrent Agreggations errors.
   
      Enter:
-          var historic_start_year = 2012; (Older Historical year)
-          var historic_end_year = 2014; (More recent Historical year)
+          var historical_start_year = 2012; (Older Historical year)
+          var historical_end_year = 2014; (More recent Historical year)
 */
 
-var historic_start_year = 2019;
-var historic_end_year = 2020;
+var historical_start_year = 2020;
+var historical_end_year = 2020;
 
 /*
-2.C) Months of Interest 
-     Define the months of interest. Like the year windows of interest, the 
-     months of interest entered by the user will be used to filter both of the
-     imagery sets (contemporary and historical). Two months are required to be 
-     input by the user. If they wish to cover the entire year, ‘1’ and ‘12’ 
-     should be selected (for January and December). Importantly, the months may
-     overlap the new year; e.g.  “11” (Nov.) to “2” (Feb.).
-     
-     The time of year selected should focus on a few key environmental variables
-     that will impact the imagery. These include:
-      1.) The contrast of mangrove vegetation from surrounding land cover.
-      2.) The persistence of clouds in the region (e.g. dry or wet seasons).
-     
-     Region-specific knowledge of the study area should be used to support the 
-     decision around the selection of seasonal month range. If the user needs to
-     learn more about the seasonality of the study area they may refer to the
-     RiceAtlas database as one source of seasonality info (Laborte et al, 2017). 
-     (https://www.nature.com/articles/sdata201774).
-     
-     A month range for contemporary years and another for historical years can be
-     provided, as seasons may shift over the course of decades.
-     
-     Note: If a single month is desired, put the same month for both variables.
-     
-     Enter:
-          (Jan = 1, Feb = 2, Mar = 3, Apr = 4, May = 5, Jun = 6, Jul = 7, Aug = 8,
-          Sep = 9, Oct = 10, Nov = 11, Dec = 12)
-          
-          var contemporary_month_start = 1; **To select the whole year set to 1**
-          var contemporary_month_end = 12; **To select the whole year set to 12**
-          
-          var historic_month_start = 1; **To select the whole year set to 1**
-          var historic_month_end = 12; **To select the whole year set to 12**
-*/
-
-var contemporary_month_start = 5;
-var contemporary_month_end = 9;
-
-var historic_month_start = 5;
-var historic_month_end = 9;
-
-/*
-2.D) Cloud Cover limit  
+2.C) Cloud Cover limit  
      The cloud cover limit is a whole number percentage that will be used to 
      filter the Landsat image collection. The cloud cover limit will filter the
      metadata of each image, using the USGS calculated  cloud cover in the Tier
@@ -333,7 +302,7 @@ var historic_month_end = 9;
 var cloud_cover = 15;
 
 /*
-2.E) Cloud Mask - Landsat Only
+2.D) Cloud Mask - Landsat Only
      There are two options available to mask out clouds for Landsat. There is a mild cloud
      masking option where the clouds are removed using the USGS/NASA bit (Landsat)
      classification quality band and a mild spectral erosion to remove cloud artefacts.
@@ -353,7 +322,7 @@ var cloud_cover = 15;
 var cloud_mask = 'mild';
 
 /*
-2.F) Tidal Zone  
+2.E) Tidal Zone  
      The tidal zone is a user-defined parameter that is used to help the GEM 
      determine the tidal condition for each image, in both the historical and the
      contemporary image sets. The tidal zone is functionally a shoreline buffer
@@ -374,7 +343,7 @@ var cloud_mask = 'mild';
 var tidal_zone = 1000;
 
 /*
-2.G) MNDWI Minimum Average - Landsat Only
+2.F) MNDWI Minimum Average - Landsat Only
     When calculating the MNDWI that determines the high and low tide imagery,
     the GEM allows users to specify a minimum average value for the MNDWI
     required for an image to be used when determining the water mask.
@@ -404,9 +373,8 @@ var tidal_zone = 1000;
 
 var min_avg = 0.5;
 
-
 /*
-2.H) Water Mask
+2.G) Water Mask
      The GEM offers the option to mask out water pixels using the modified 
      normalized difference water index (MNDWI). The MNDWI is calculated for the 
      entire ROI and water pixels are removed based on a threshold established 
@@ -436,7 +404,7 @@ var combo_water_mask = true;
 
 /*
 
-2.I) Topographic Thresholds
+2.H) Topographic Thresholds
      To threshold the data, the user has several options: 1.) The known mangrove
      extent can be used to extract the 99th percentile for slope and elevation,
      this is then used to generate a topographic mask for the input data. OR 2.) 
@@ -465,7 +433,7 @@ var elevation = 39;
 var slope = 16;
 
 /*
-2.J) Inland Fringing Mangroves
+2.I) Inland Fringing Mangroves
      Studies have shown that inland stands of mangroves may be found at low-lying
      elevations which are far from the coastline. For a comprehensive investigation,
      these exclaves must attempt to be captured. To do so, the ROI can be expanded 
@@ -484,7 +452,7 @@ var slope = 16;
 var inland_mang = false;
 
 /*
-2.K) Spectral Indices
+2.J) Spectral Indices
      There are numerous mangrove-specific, vegetation-specific, and 
      environmental indices which can be used to aid the classification. Below is
      the included list of indices which the user may select from. The user will 
@@ -600,15 +568,64 @@ var indx_mod = require('users/courtlandfowler/gemv2:indices');
 // All of the selection is done in the console through a series of checkboxes
 // which add/remove each index.
 
+var allMonths = ui.data.ActiveList(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']);
+
+function selectMonths(timeframeStr, twelveZeros) {
+  print('\nSelect the ' + timeframeStr + ' months of interest:');
+  allMonths.forEach(function(month) {
+    var box = ui.Checkbox(month, false);
+    box.onChange(function(checked) {
+      var i = allMonths.getJsArray().indexOf(month);
+      if (checked === true) {
+        twelveZeros[i] = i + 1;
+      } else {
+        twelveZeros[i] = 0;
+      }
+    }); 
+    print(box);
+  });
+}
+
+function filterMonths(months) {
+  var filtered = [];
+  for (var i = 0; i < months.length; i++) {
+    var month = months[i];
+    if (month > 0) {
+      filtered.push(month);
+    }
+  }
+  return filtered;
+}
+
+var cmonths = [0,0,0,0,0,0,0,0,0,0,0,0];
+var hmonths = [0,0,0,0,0,0,0,0,0,0,0,0];
+
+var months_step_button = ui.Button('Select Months');
+months_step_button.onClick(function() {
+  print('The time of year selected should focus on a few key\n' +
+  'environmental variables that will impact the imagery.\n\n' +
+  'These include:\n' +
+      '1.) The contrast of mangrove vegetation from\n  surrounding land cover.\n' +
+      '2.) The persistence of clouds in the region\n  (e.g. dry or wet seasons).\n\n' +
+     'Region-specific knowledge of the study area should\n' +
+     'be used to support the decision around the selection\n  ' +
+     'of seasonal month range.\n\n' + 
+     'If the user needs to learn more about the seasonality\n' + 
+     'of the study area they may refer to the RiceAtlas\n' +
+     'database as one source of seasonality info\n' +
+     '(Laborte et al, 2017).\n' +
+     '(https://www.nature.com/articles/sdata201774).\n');
+  selectMonths("Contemporary", cmonths);
+  selectMonths("Historical", hmonths);
+
 var step_1_button = ui.Button('Begin Workflow');
-step_1_button.onClick(function(){
+step_1_button.onClick(function() {
   // Print step label
-  print(ui.Label({value:'Module 1: Setion 1, Step 2.J',
+  print(ui.Label({value:'Module 1: Setion 1, Step 1',
                   style:{fontWeight: 'bold',
                          fontSize: '18px',
                          textAlign: 'center'}
                 }));
-  
   // Ingest the known mangrove extent
   var mang_img = known_ext.known_mang(kmx);
   
@@ -622,7 +639,11 @@ step_1_button.onClick(function(){
   var coast = coastline.coast_In(cst, cst_path, coarse_roi);
   Map.centerObject(coarse_roi);
   
-  var use_s2 = imagery.should_use_s2(contemporary_start_year, contemporary_month_start, historic_start_year, historic_month_start);
+  // Filter month lists to remove empty values
+  var contemporary_months = filterMonths(cmonths);
+  var historical_months = filterMonths(hmonths);
+  
+  var use_s2 = imagery.should_use_s2(contemporary_start_year, contemporary_months, historical_start_year, historical_months);
   var starts = "before";
   var but = "";
   var imagery_name = "Landsat";
@@ -775,10 +796,9 @@ step_1_button.onClick(function(){
       var false_colour_bands = ['B4','B5','B3'];
       
       // Create hist./cont. image collections
-      var force_ls = force_landsat || !imagery.should_use_s2(contemporary_start_year, contemporary_month_start, historic_start_year, historic_month_start);
-      var cont_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, contemporary_start_year, contemporary_end_year, contemporary_month_start, contemporary_month_end, cloud_mask, tidalArea);
-      var hist_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, historic_start_year, historic_end_year, historic_month_start, historic_month_end, cloud_mask, tidalArea);
-      
+      var force_ls = force_landsat || !imagery.should_use_s2(contemporary_start_year, contemporary_months, historical_start_year, historical_months);
+      var cont_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, contemporary_start_year, contemporary_end_year, contemporary_months, cloud_mask, tidalArea);
+      var hist_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, historical_start_year, historical_end_year, historical_months, cloud_mask, tidalArea);
       var cont_imagery = cont_result[0];
       var hist_imagery = hist_result[0];
       var imagery_scale = cont_result[1];
@@ -911,7 +931,7 @@ step_1_button.onClick(function(){
 
         Export.image.toAsset({
             image: ee.Image(Hhot3),
-            description: 'HOT_Img_historic',
+            description: 'HOT_Img_historical',
             region: ROI,
             scale: imagery_scale,
             maxPixels: export_max_pixels
@@ -919,7 +939,7 @@ step_1_button.onClick(function(){
 
         Export.image.toAsset({
             image: ee.Image(Hlot3),
-            description: 'LOT_Img_historic',
+            description: 'LOT_Img_historical',
             region: ROI,
             scale: imagery_scale,
             maxPixels: export_max_pixels
@@ -1060,14 +1080,18 @@ step_1_button.onClick(function(){
   print(step_2_button);
 });
 print(step_1_button);
+});
+alert('First we will select the months of interest\n(for Contemporary & Historical year ranges)');
+print(months_step_button);
+
 
 /*
 At the end of the workflow, the user should have started exporting:
       1) HOT contemporary composite (HOT_Img_contemporary)
       2) LOT contemporary composite (LOT_Img_contemporary)
-      3) HOT historical composite (HOT_Img_historic)
-      4) LOT historical composite (LOT_Img_historic)
-      5) Finalised ROI (ROI) 
-      6) Finalised mask (final_mask)
+      3) HOT historical composite (HOT_Img_historical)
+      4) LOT historical composite (LOT_Img_historical)
+      5) Finalized ROI (ROI) 
+      6) Finalized mask (final_mask)
 */
 ////////////////////////////////////////////////////////////////////////////////  
