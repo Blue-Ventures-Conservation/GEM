@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 15 October 2024
+Last update: 16 October 2024
 
 */
 
@@ -280,8 +280,8 @@ function mild_s2_cloud_mask(images) {
 }
 
 function s2_cloud_mask(images) {
-  return images.linkCollection(ee.ImageCollection('GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED'), ['cs_cdf']).map(function(img) {
-    return img.updateMask(img.select('cs_cdf').gte(0.85));
+  return images.linkCollection(ee.ImageCollection('GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED'), ['cs_cdf', 'cs']).map(function(img) {
+    return img.updateMask(img.select('cs_cdf').gte(0.70).and(img.select('cs').gte(0.70)));
   });
 }
 
