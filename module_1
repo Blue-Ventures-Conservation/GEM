@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 December 2024
+Last updated: 16 October 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -250,7 +250,7 @@ var ls_7_in = false;
      variables.
      
      If the start year is 2019 or later for both contemporary and historical years,
-     GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.t.
+     GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.
      
      When using Sentinel-2 imagery, you may prefer to set the start and end
      years to be the same to reduce the number of imagery. This may help
@@ -977,9 +977,6 @@ step_1_button.onClick(function() {
                                     mang_topo, elevation, slope);
           
           // Use low tide images to create water mask
-          if (imagery_scale < 30) {
-            min_avg = 0.75;
-          }
           var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
           print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
           clot_water = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
