@@ -3,7 +3,7 @@
 This is the coastline generation module, which is part of the BVC GEM v1.2 library.
 Either creates or ingests the vector based coastline used withing the GEM tool.
 
-Last update: July 15 2024
+Last update: December 4, 2024
 
 */
 
@@ -17,9 +17,11 @@ exports.coast_In = function(cst, cst_path, roi){
     var area = mainlands.merge(big_islands).merge(small_islands).filterBounds(roi);
     
     // dissolve and then convert the geometries to a coordinate list
-    var area_coords = ee.Geometry.MultiPolygon(area.geometry().geometries()).dissolve().coordinates().flatten();
+    var area_coords = area.geometry().geometries().map(function(geo) {
+      return ee.Geometry(geo).coordinates();
+    }).flatten();
     // use the coordinates to create a geometry
-    var area_point = ee.Geometry.MultiPoint(area_coords);  
+    var area_point = ee.Geometry.MultiPoint(area_coords);
 
     // select points in roi and convert to coordinate list
     var coast = area_point.intersection(roi, ee.ErrorMargin(1));
