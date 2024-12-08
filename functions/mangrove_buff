@@ -4,7 +4,7 @@ This is the mangrove buffer module, which is part of the BVC GEM v1.2 library.
 It is used to support decsions made around how to automatically select a shoreline
 buffer. 
 
-Last update: February 3, 2024
+Last update: December 7, 2024
 
 */
 
@@ -23,32 +23,43 @@ exports.doc = 'The mangrove_buff module is a function to buffer the mangrove ras
     '\n   a graph of the various membership for each of the buffered distances.';
 
 
-exports.mang_buff = function(geom, mang, coarse_roi, excludes){
+exports.mang_buff = function(coast, mang, coarse_roi, excludes){
   var clipGeom = function(cst, buf) {
     var buffed = cst.buffer(buf);
     for (var i = 0; i < excludes.length; i++) {
       buffed = buffed.difference(excludes[i]);
     }
+    
     return buffed.intersection(coarse_roi);
   };
+  
+  var one = clipGeom(coast, 1000);
+  var two = clipGeom(coast, 2500);
+  var five = clipGeom(coast, 5000);
+  var seven = clipGeom(coast, 7500);
+  var ten = clipGeom(coast, 10000);
+  var twelve = clipGeom(coast, 12500);
+  var fifteen = clipGeom(coast, 15000);
+  var twenty = clipGeom(coast, 20000);
+  var twentyfive = clipGeom(coast, 25000);
+  var thirty = clipGeom(coast, 30000);
+  var thirtyfive = clipGeom(coast, 35000);
  
-  // simplify the coastline geometry
-  var coast = geom.simplify(1000);
   // create an image collection of various buffered mangroves, using the distance list
   var mangrove_buff = ee.Image(mang)
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 1000))).rename(['01']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 2500))).rename(['02']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 5000))).rename(['05']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 7500))).rename(['07']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 10000))).rename(['10']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 12500))).rename(['12']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 15000))).rename(['15']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 20000))).rename(['20']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 25000))).rename(['25']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 30000))).rename(['30']))
-                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(clipGeom(coast, 35000))).rename(['35']));
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(one)).rename(['01']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(two)).rename(['02']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(five)).rename(['05']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(seven)).rename(['07']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(ten)).rename(['10']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(twelve)).rename(['12']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(fifteen)).rename(['15']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(twenty)).rename(['20']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(twentyfive)).rename(['25']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(thirty)).rename(['30']))
+                      .addBands(ee.Image.pixelArea().updateMask(mang.clip(thirtyfive)).rename(['35']));
 
-  var bands = mangrove_buff.bandNames().slice(1,12);
+  var bands = mangrove_buff.bandNames().slice(1, 12);
   mangrove_buff = mangrove_buff.select(bands);
 
   return mangrove_buff;
@@ -62,29 +73,27 @@ exports.areaTable = function(img, geom, excludes){
   var dict_sum = img.reduceRegion({
     reducer: ee.Reducer.sum(),
     geometry: geom, 
-    scale: 30,
+    scale: 150,
     maxPixels: 1e13,
     bestEffort: true
-    });  
+    });
     
-
   return dict_sum;
+  
+  // this code kept in case we want to experiment with only reducing over disjoint regions again
+  // return ee.Dictionary.fromLists(dict_sum.keys(), ee.Dictionary(dict_sum.values().iterate(function(next, acc) {
+  //   var dacc = ee.Dictionary(acc);
+  //   var list = ee.List(dacc.get("list", ee.List([])));
+  //   var sum = ee.Number(dacc.get("acc", 0)).add(ee.Number(next));
+  //   dacc = dacc.set("acc", sum);
+  //   dacc = dacc.set("list", list.add(sum));
+  //   return dacc;
+  // }, ee.Dictionary({}))).get("list"));
 
 };
 
-exports.areaChart = function(img, geom, excludes){
-  geom = ee.FeatureCollection(geom).geometry();
-  for (var i = 0; i < excludes.length; i++) {
-    geom = geom.difference(excludes[i]);
-  }
-  var dict_sum = img.reduceRegion({
-    reducer: ee.Reducer.sum(),
-    geometry: geom, 
-    scale: 30,
-    maxPixels: 1e13,
-    bestEffort: true
-    });  
-    
+exports.areaChart = function(dict){
+  var dict_sum = ee.Dictionary(dict);
   var chart = ui.Chart.array.values({
       array: dict_sum.values().map(function(meters) {
         return ee.Number(meters).divide(1e4);
