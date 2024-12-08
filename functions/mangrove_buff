@@ -73,7 +73,7 @@ exports.areaTable = function(img, geom, excludes){
   var dict_sum = img.reduceRegion({
     reducer: ee.Reducer.sum(),
     geometry: geom, 
-    scale: 150,
+    scale: 30,
     maxPixels: 1e13,
     bestEffort: true
     });
