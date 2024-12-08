@@ -3,7 +3,7 @@
 This is the coastline generation module, which is part of the BVC GEM v1.2 library.
 Either creates or ingests the vector based coastline used withing the GEM tool.
 
-Last update: December 4, 2024
+Last update: December 7, 2024
 
 */
 
@@ -17,17 +17,51 @@ exports.coast_In = function(cst, cst_path, roi){
     var area = mainlands.merge(big_islands).merge(small_islands).filterBounds(roi);
     
     // dissolve and then convert the geometries to a coordinate list
-    var area_coords = area.geometry().geometries().map(function(geo) {
+    var area_coords = ee.Geometry.MultiPoint(area.geometry().geometries().map(function(geo) {
       return ee.Geometry(geo).coordinates();
-    }).flatten();
+    }).flatten()).coordinates();
+    
+    // max edges for simplify is 2,000,000
+    // we divide by twenty, because to split the coordinates up
+    // we will have to create variables and call ee.List.slice()
+    // which requires knowing the indices for the sublists
+    // we could divide by 2,000,000, but we wouldn't know how many
+    // variables to use, and I can't think of a way to push the slicing
+    // logic onto the backend, so we'd have to ask for the number to be
+    // sent to the frontend and do a loop, and that size() call is slow
+    // so twenty is chosen which should be enough hopefully to divide
+    // the data up below that number of edges for any one simplify call
+    var twentieth = area_coords.size().divide(20).int().add(1);
+    
+    var simp = 200;
+    var s1 = ee.Geometry.LineString(area_coords.slice(0, twentieth)).simplify(simp).coordinates();
+    var s2 = ee.Geometry.LineString(area_coords.slice(twentieth, twentieth.multiply(2))).simplify(simp).coordinates();
+    var s3 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(2), twentieth.multiply(3))).simplify(simp).coordinates();
+    var s4 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(3), twentieth.multiply(4))).simplify(simp).coordinates();
+    var s5 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(4), twentieth.multiply(5))).simplify(simp).coordinates();
+    var s6 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(5), twentieth.multiply(6))).simplify(simp).coordinates();
+    var s7 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(6), twentieth.multiply(7))).simplify(simp).coordinates();
+    var s8 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(7), twentieth.multiply(8))).simplify(simp).coordinates();
+    var s9 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(8), twentieth.multiply(9))).simplify(simp).coordinates();
+    var s10 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(9), twentieth.multiply(10))).simplify(simp).coordinates();
+    var s11 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(10), twentieth.multiply(11))).simplify(simp).coordinates();
+    var s12 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(11), twentieth.multiply(12))).simplify(simp).coordinates();
+    var s13 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(12), twentieth.multiply(13))).simplify(simp).coordinates();
+    var s14 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(13), twentieth.multiply(14))).simplify(simp).coordinates();
+    var s15 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(14), twentieth.multiply(15))).simplify(simp).coordinates();
+    var s16 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(15), twentieth.multiply(16))).simplify(simp).coordinates();
+    var s17 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(16), twentieth.multiply(17))).simplify(simp).coordinates();
+    var s18 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(17), twentieth.multiply(18))).simplify(simp).coordinates();
+    var s19 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(18), twentieth.multiply(19))).simplify(simp).coordinates();
+    var s20 = ee.Geometry.LineString(area_coords.slice(twentieth.multiply(19), twentieth.multiply(20))).simplify(simp).coordinates();
+    
     // use the coordinates to create a geometry
-    var area_point = ee.Geometry.MultiPoint(area_coords);
+    var area_point = ee.Geometry.MultiPoint(ee.List([s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20]).flatten());
 
     // select points in roi and convert to coordinate list
     var coast = area_point.intersection(roi, ee.ErrorMargin(1));
     Map.addLayer(coast, {color: '000000'}, "Coastline");
     return coast;
-
   };
 
   var cst_f = function(cst_path){
