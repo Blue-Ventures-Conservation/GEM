@@ -12,7 +12,7 @@ directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 10 October 2024
+Last updated: 7 December 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -267,7 +267,7 @@ var historic_end_year = 2014;
 2.C) Months of Interest 
      Define the months of interest. Like the year windows of interest, the 
      months of interest entered by the user will be used to filter both of the
-     imagery sets (contemporary and historical). Two months are required to be 
+     imagery sets (contemporary and historic). Two months are required to be 
      input by the user. If they wish to cover the entire year, ‘1’ and ‘12’ 
      should be selected (for January and December). Importantly, the months may
      overlap the new year; e.g.  “11” (Nov.) to “2” (Feb.).
@@ -680,7 +680,7 @@ step_1_button.onClick(function(){
     var buffer_table = mangrove_buff.areaTable(mang_buff_img, coarse_roi, exclusion_geometries);
 
     // Graphically display mangrove area table
-    var buffer_chart = mangrove_buff.areaChart(mang_buff_img, coarse_roi, exclusion_geometries); 
+    var buffer_chart = mangrove_buff.areaChart(buffer_table); 
     
     // Add the mangrove buffer layers to the map
     Map.addLayer(mang_buff_img.select('35'), {palette: ['CC0000']}, '35km buffer');
