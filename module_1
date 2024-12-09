@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 October 2024
+Last updated: 9 December 2024
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -343,7 +343,7 @@ var cloud_mask = 'mild';
 var tidal_zone = 1000;
 
 /*
-2.F) MNDWI Minimum Average - Landsat Only
+2.F) MNDWI Minimum Average
     When calculating the MNDWI that determines the high and low tide imagery,
     the GEM allows users to specify a minimum average value for the MNDWI
     required for an image to be used when determining the water mask.
