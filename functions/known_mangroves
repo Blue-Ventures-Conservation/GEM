@@ -4,51 +4,19 @@ This is the known mangrove dataset module, which is part of the BVC GEM v1.2 lib
 It either calls from GEE or ingests the raster-based known mangrove extent
 data used withing the GEM tool.
 
-Last update: 25 September 2024
+Last update: 16 December 2024
 
 */
 
 exports.known_mang = function(kmx){
-  
-  var kmx_t = function(){
-      
-        // when 'TRUE' the mangrove data from GEE will be ingested
-        var giri = ee.ImageCollection('LANDSAT/MANGROVE_FORESTS').mean();
-        var gmw2020 = ee.ImageCollection("projects/sat-io/open-datasets/GMW/annual-extent/GMW_MNG_2020").mean();
-        var gmw = ee.Image("projects/earthengine-legacy/assets/projects/sat-io/open-datasets/GMW/union/gmw_v3_mng_union");
-        var all = giri.blend(gmw).blend(gmw2020);
+  if (kmx === null || kmx === "") {
+    var giri = ee.ImageCollection('LANDSAT/MANGROVE_FORESTS').mean();
+    var gmw2020 = ee.ImageCollection("projects/sat-io/open-datasets/GMW/annual-extent/GMW_MNG_2020").mean();
+    var gmw = ee.Image("projects/earthengine-legacy/assets/projects/sat-io/open-datasets/GMW/union/gmw_v3_mng_union");
+    var all = giri.blend(gmw).blend(gmw2020);
 
-        return all;
-  
-  };
-
-  var kmx_f = function(){
-      
-        // the user has chosen to upload thier own mangrove extent raster
-        var mangrove_textbox = ui.Textbox({
-        placeholder: 'Enter asset path here...',
-        onChange: function(mang_path) {
-          print('This is the entered mangrove extent path: ' +
-                '\n' + mang_path);
-          var mang_img = ee.Image(mang_path).reduce(ee.Reducer.mean());
-          
-          var mang_loader = ui.Panel([ui.Label('Click to Confirm')]);
-
-          return mang_img;
-            
-          }
-        });
-        print('Enter the path to the Known Mangrove Extent');
-        print(mangrove_textbox);
-      
-  };
-
-
-  if(kmx === true){
-    var mang_img = kmx_t();
-    return mang_img;
+    return all;
   } else {
-    var mang_img = kmx_f();
-    return mang_img;
+    return ee.Image(kmx).reduce(ee.Reducer.mean());
   }
 };
