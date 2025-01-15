@@ -7,8 +7,8 @@
 
 This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
-directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser 
-(trevor@blueventures.org). Questions about the code can be directed to 
+directed to the GEM Team (gem@blueventures.org).
+Questions about the code can be directed to 
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
@@ -81,8 +81,8 @@ At the end of the workflow, the user should have started exporting:
       2) LOT contemporary composite (LOT_Img_contemporary)
       3) HOT historical composite (HOT_Img_historic)
       4) LOT historical composite (LOT_Img_historic)
-      5) Finalized ROI (ROI) 
-      6) Finalized mask (final_mask)
+      5) Finalised ROI (ROI) 
+      6) Finalised mask (final_mask)
 
 Before running Module 1, please read through the comments below to determine 
 important user inputs and parameters that will be used in this workflow. Continue until 
@@ -164,7 +164,7 @@ var kmx = null;
 
 1.D) Coastline Data
      The coastline is a very important data set for this workflow. It will be 
-     used to define the finalized ROI, as well as to aid in the determination of the
+     used to define the finalised ROI, as well as to aid in the determination of the
      tidal conditions for each of the landsat images which are to be processed. 
      The coastline layer available in GEE is the Large Scale International 
      Boundary Polygons. Alternatively, as per the known mangrove extent, the user 
@@ -267,7 +267,7 @@ var historic_end_year = 2014;
 2.C) Months of Interest 
      Define the months of interest. Like the year windows of interest, the 
      months of interest entered by the user will be used to filter both of the
-     imagery sets (contemporary and historic). Two months are required to be 
+     imagery sets (contemporary and historical). Two months are required to be 
      input by the user. If they wish to cover the entire year, ‘1’ and ‘12’ 
      should be selected (for January and December). Importantly, the months may
      overlap the new year; e.g.  “11” (Nov.) to “2” (Feb.).
@@ -352,7 +352,7 @@ var cloud_mask = 'mild';
      
      The default number is 1000 m (1 km). This number can be tailored for the
      specific region of interest. **NOTE: The tidal zone is NOT the ROI. The
-     tidal zone is strickly a seaward buffer and produces no meaningful 
+     tidal zone is strictly a seaward buffer and produces no meaningful 
      intermediary data products.**
     
      Enter:
@@ -1028,7 +1028,7 @@ At the end of the workflow, the user should have started exporting:
       2) LOT contemporary composite (LOT_Img_contemporary)
       3) HOT historical composite (HOT_Img_historic)
       4) LOT historical composite (LOT_Img_historic)
-      5) Finalized ROI (ROI) 
-      6) Finalized mask (final_mask)
+      5) Finalised ROI (ROI) 
+      6) Finalised mask (final_mask)
 */
 ////////////////////////////////////////////////////////////////////////////////  
