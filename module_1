@@ -7,8 +7,8 @@
 
 This code was developed for Blue Ventures Conservation, by Max Yancho.
 Questions about the project and the application of the script(s) should be 
-directed to Dr. Trevor Gareth Jones, Geospatial & Blue Forests Science Adviser 
-(trevor@blueventures.org). Questions about the code can be directed to 
+directed to the GEM Team (gem@blueventures.org). 
+Questions about the code can be directed to 
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
@@ -332,7 +332,7 @@ var cloud_mask = 'mild';
      
      The default number is 1000 m (1 km). This number can be tailored for the
      specific region of interest. **NOTE: The tidal zone is NOT the ROI. The
-     tidal zone is strickly a seaward buffer and produces no meaningful 
+     tidal zone is strictly a seaward buffer and produces no meaningful 
      intermediary data products.**
     
      Enter:
