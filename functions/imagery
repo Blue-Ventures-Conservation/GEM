@@ -350,7 +350,7 @@ function get_sar_water_mask(roi, start_year, end_year, months) {
     .map(function(image) {
       var vv = image.select('VV');
       var posEdge = vv.gte(1.0);
-      var negEdge = vv.lte(-25.0);
+      var negEdge = vv.lte(-30.0);
       var maskedImage = image.mask().and(negEdge.not()).and(posEdge.not());
       return image.updateMask(maskedImage);
   });
