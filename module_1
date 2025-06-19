@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 December 2024
+Last updated: 18 June 2025
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -803,10 +803,24 @@ step_1_button.onClick(function() {
       var hist_imagery = hist_result[0];
       var imagery_scale = cont_result[1];
       
+      var sar_water_mask = null;
+      var sar_cont_images = null;
+      var sar_hist_images = null;
       if (force_ls) {
         print("Using Landsat at " + imagery_scale + "m scale");
       } else {
         print("Using Sentinel-2 at " + imagery_scale + "m scale");
+        var sar_cont_water = cont_result[2];
+        sar_cont_images = cont_result[3];
+        
+        var sar_hist_water = hist_result[2];
+        sar_hist_images = hist_result[3];
+        
+        if (combo_water_mask) {
+          sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
+        } else {
+          sar_water_mask = sar_hist_water;
+        }
       }
 
       print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
@@ -973,16 +987,25 @@ step_1_button.onClick(function() {
         
           // Bring in topo data and create the mask
           var dsm = topography.dsm_id(topo, topo_path);
-          var topo_mask = topography.topo_mask_func(dsm, kn_mang_ext, 
-                                    mang_topo, elevation, slope);
+          var topo_mask = topography.topo_mask_func(dsm, kn_mang_ext, mang_topo, elevation, slope);
           
-          // Use low tide images to create water mask
-          var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-          print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
-          clot_water = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-          var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-          print('No. Historical Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
-          hlot_water = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+          var waterMask = ee.Image(1);
+          if (remove_water === true) {
+            if (force_ls || sar_water_mask === null) {
+              // Use low tide images to create water mask
+              var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
+              print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
+              clot_water = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+              var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
+              print('No. Historical Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
+              hlot_water = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+              waterMask = water.water_mask(hlot_water, clot_water, combo_water_mask);
+            } else {
+              print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_cont_images.size()).getInfo());
+              print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_hist_images.size()).getInfo());
+              waterMask = sar_water_mask;
+            }
+          }
           
           print("If your water mask and final mask are incomplete,\n"+
             "review above the number of contemporary and historical\n"+
@@ -991,11 +1014,6 @@ step_1_button.onClick(function() {
             "if not enough, widen the months and/or years windows\n"+
             "to filter in more imagery.");
           
-          if(remove_water === true){
-              var waterMask = water.water_mask(hlot_water, clot_water, combo_water_mask);
-            }else{
-              var waterMask = ee.Image(1);
-            }
           // Combine the topo and water masks
           var combo_masked = waterMask.multiply(topo_mask).eq(1);
           
@@ -1008,7 +1026,7 @@ step_1_button.onClick(function() {
                 Map.addLayer(ee.Image(topo_mask.clip(ROI)), {}, 'Topographic Mask');});
           var water_mask_butt = ui.Button('View water Mask?');
               water_mask_butt.onClick(function(){
-                Map.addLayer(ee.Image(waterMask), {}, 'Water Mask');});
+                Map.addLayer(ee.Image(waterMask.clip(ROI)), {}, 'Water Mask');});
           var combo_mask_butt = ui.Button('View combo Mask?');
               combo_mask_butt.onClick(function(){
                 Map.addLayer(ee.Image(combo_masked), {}, 'Combine Mask');});
