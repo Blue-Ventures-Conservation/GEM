@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 16 October 2024
+Last update: 18 June 2025
 
 */
 
@@ -35,7 +35,8 @@ exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, 
   
   if (!force_ls && fits_s2_range(start_year, months)) {
     var s2_images = collect_sentinel2(cloud_mask, bnames, roi, tidal_area, filter_func(s2_cloud_property));
-    return [s2_images, s2_scale];
+    var sar_water_mask = get_sar_water_mask(roi, start_year, end_year, months);
+    return [s2_images, s2_scale, sar_water_mask];
   } else {
     var ls_images = collect_landsat(cloud_mask, bnames, roi, tidal_area, filter_func(ls_cloud_property));
     return [ls_images, ls_scale];
@@ -95,12 +96,14 @@ function filter_collection(force_ls7, collection_name, roi, cloud_property, clou
   return filterMonths(images, months);
 }
 
+// also called by get_sar_water_mask
 function filterMonths(images, months) {
   var filters = [];
   for (var i = 0; i < months.length; i++) {
     var month = months[i];
     filters.push(ee.Filter.calendarRange(month, month, 'month'));
   }
+  // 'apply' here converts our filters array into VarArgs for the call to 'or'
   return images.filter(ee.Filter.or.apply(this, filters));
 }
 
@@ -334,6 +337,83 @@ function tide_bands(images) {
     return img.addBands(img.metadata(imndwi));
   });
 }
+
+// Sentinel-1 SAR water mask
+
+function get_sar_water_mask(roi, start_year, end_year, months) {
+  var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
+    .filterBounds(roi)
+    .filterDate(start_year + '-01-01', (end_year + 1) + '-01-01')
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+    .filter(ee.Filter.eq('instrumentMode', 'IW'))
+    .filter(ee.Filter.eq('resolution_meters', 10))
+    .map(function(image) {
+      var vv = image.select('VV');
+      var posEdge = vv.gte(1.0);
+      var negEdge = vv.lte(-25.0);
+      var maskedImage = image.mask().and(negEdge.not()).and(posEdge.not());
+      return image.updateMask(maskedImage);
+  });
+  s1 = filterMonths(s1, months);
+  s1 = s1.map(maskAngLT452).map(maskAngGT30).select('VV');
+  return s1.map(leeFilter).map(classifyWater);
+}
+
+// lee speckle filter implementation borrowed from:
+// https://github.com/zibnix/gee_s1_ard/blob/main/javascript/speckle_filter.js#L28
+
+function leeFilter(image) {
+  var bandNames = image.bandNames().remove('angle');
+  //S1-GRD images are multilooked 5 times in range
+  var enl = 5;
+  // Compute the speckle standard deviation
+  var eta = 1.0/Math.sqrt(enl); 
+  eta = ee.Image.constant(eta);
+
+  // MMSE estimator
+  // Neighbourhood mean and variance
+  var oneImg = ee.Image.constant(1);
+
+  var reducers = ee.Reducer.mean().combine({
+    reducer2: ee.Reducer.variance(),
+    sharedInputs: true
+  });
+  var stats = image.select(bandNames).reduceNeighborhood({reducer: reducers,kernel: ee.Kernel.square(7/2,'pixels'), optimization: 'window'});
+  var meanBand = bandNames.map(function(bandName){return ee.String(bandName).cat('_mean')});
+  var varBand = bandNames.map(function(bandName){return ee.String(bandName).cat('_variance')});
+  
+  var z_bar = stats.select(meanBand);
+  var varz = stats.select(varBand);
+
+  // Estimate weight 
+  var varx = (varz.subtract(z_bar.pow(2).multiply(eta.pow(2)))).divide(oneImg.add(eta.pow(2)));
+  var b = varx.divide(varz);
+
+  //if b is negative set it to zero
+  var new_b = b.where(b.lt(0), 0);
+  var output = oneImg.subtract(new_b).multiply(z_bar.abs()).add(new_b.multiply(image.select(bandNames)));
+  output = output.rename(bandNames).multiply(-1);
+  return image.addBands(output, null, true);
+}
+
+function classifyWater(img) {
+  var vv = img.select('VV');
+  var water = vv.gte(-20).rename('SAR_Land');
+  return water.updateMask(water); // remove all pixels equal to 0
+}
+
+/** (mask out angles >= 45.23993) */
+var maskAngLT452 = function(image) {
+ var ang = image.select(['angle']);
+ return image.updateMask(ang.lt(45.23993)).set('system:time_start', image.get('system:time_start'));
+};
+
+/** Function to mask out edges of images using angle.
+ * (mask out angles <= 30.63993) */
+var maskAngGT30 = function(image) {
+ var ang = image.select(['angle']);
+ return image.updateMask(ang.gt(30.63993)).set('system:time_start', image.get('system:time_start'));
+};
 
 function datePixels(img) {
 	var segs = ee.List(ee.String(img.get('system:index')).trim().split("_").iterate(function(item, prev) {
