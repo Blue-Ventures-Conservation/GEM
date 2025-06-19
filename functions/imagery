@@ -356,7 +356,9 @@ function get_sar_water_mask(roi, start_year, end_year, months) {
   });
   s1 = filterMonths(s1, months);
   s1 = s1.map(maskAngLT452).map(maskAngGT30).select('VV');
-  return s1.map(leeFilter).map(classifyWater);
+  s1 = s1.map(leeFilter).map(classifyWater);
+  s1 = s1.reduce(ee.Reducer.sum()).gt(1);
+  return s1.updateMask(s1);
 }
 
 // lee speckle filter implementation borrowed from:
