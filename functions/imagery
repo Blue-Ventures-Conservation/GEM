@@ -399,7 +399,7 @@ function leeFilter(image) {
 
 function classifyWater(img) {
   var vv = img.select('VV');
-  return vv.lt(-20).rename('Water');
+  return vv.lt(-17).rename('Water');
 }
 
 /** (mask out angles >= 45.23993) */
