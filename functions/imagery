@@ -35,8 +35,8 @@ exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, 
   
   if (!force_ls && fits_s2_range(start_year, months)) {
     var s2_images = collect_sentinel2(cloud_mask, bnames, roi, tidal_area, filter_func(s2_cloud_property));
-    var sar_water_mask = get_sar_water_mask(roi, start_year, end_year, months);
-    return [s2_images, s2_scale, sar_water_mask];
+    var sar_result = get_sar_water_mask(roi, start_year, end_year, months);
+    return [s2_images, s2_scale, sar_result[0], sar_result[1]];
   } else {
     var ls_images = collect_landsat(cloud_mask, bnames, roi, tidal_area, filter_func(ls_cloud_property));
     return [ls_images, ls_scale];
@@ -357,8 +357,7 @@ function get_sar_water_mask(roi, start_year, end_year, months) {
   s1 = filterMonths(s1, months);
   s1 = s1.map(maskAngLT452).map(maskAngGT30).select('VV');
   s1 = s1.map(leeFilter).map(classifyWater);
-  s1 = s1.reduce(ee.Reducer.sum()).gt(1);
-  return s1.updateMask(s1);
+  return [s1.reduce(ee.Reducer.sum()).gt(1).add(1).eq(1), s1];
 }
 
 // lee speckle filter implementation borrowed from:
@@ -400,8 +399,7 @@ function leeFilter(image) {
 
 function classifyWater(img) {
   var vv = img.select('VV');
-  var water = vv.gte(-20).rename('SAR_Land');
-  return water.updateMask(water); // remove all pixels equal to 0
+  return vv.lt(-20).rename('Water');
 }
 
 /** (mask out angles >= 45.23993) */
