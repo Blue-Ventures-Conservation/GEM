@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 20 June 2025
+Last updated: 21 June 2025
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -440,12 +440,12 @@ var slope = 16;
      to 2x to account for low-lying elevations beyond the initial determination.
      
      Example: If the ROI is determined to be a 25 km buffer of the coastline (in
-              Section 2), if 'var inland_mang = true', the final ROI will be expanded 
-              to include all pixels between 25 and 50 km which also fall at or 
-              below 5 m a.s.l.
+              Section 2), if 'var inland_mang = true', the final mask will be expanded 
+              to include all pixels between 25 and 50 km which also fall within the
+              topographic thresholds set with the 2.H parameters above.
 
      Enter:
-          var inland_mang = true; (true, double the ROI for pixels <= 5 m a.s.l)
+          var inland_mang = true; (true, double the ROI)
           var inland_mang = false; (false, retain original ROI)
 */
 
