@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 18 June 2025
+Last updated: 20 June 2025
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -556,7 +556,6 @@ var coastline =  require('users/yanchojo/GEM_LS9_colors/:modules/coastline');
 var topography =  require('users/yanchojo/GEM_LS9_colors/:modules/topography');
 var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
 var water = require('users/yanchojo/GEM_LS9_colors/:modules/water_mask');
-var fringe = require('users/yanchojo/GEM_LS9_colors/:modules/fringe_mang');
 var imagery = require('users/courtlandfowler/gemv2:imagery');
 var indx_mod = require('users/courtlandfowler/gemv2:indices');
 
@@ -786,6 +785,9 @@ step_1_button.onClick(function() {
             '\nthe console. Click the buttons to view the '+
             '\nimagery.');
       Map.clear(); // Reset the map
+      if (inland_mang === true) {
+        ROI = ROI.buffer(buff_dist);
+      }
       for (var i = 0; i < exclusion_geometries.length; i++) {
         ROI = ROI.difference(exclusion_geometries[i]);
       }
@@ -1015,10 +1017,7 @@ step_1_button.onClick(function() {
             "to filter in more imagery.");
           
           // Combine the topo and water masks
-          var combo_masked = waterMask.multiply(topo_mask).eq(1);
-          
-          // Create the fringe mangrove mask
-          var fringe_mask = fringe.fringMangrove(dsm, buff_dist, ROI);
+          var final_mask = waterMask.multiply(topo_mask).eq(1);
           
           // Add buttons to view the mask outputs
           var topo_mask_butt = ui.Button('View Topo Mask?');
@@ -1027,25 +1026,10 @@ step_1_button.onClick(function() {
           var water_mask_butt = ui.Button('View water Mask?');
               water_mask_butt.onClick(function(){
                 Map.addLayer(ee.Image(waterMask.clip(ROI)), {}, 'Water Mask');});
-          var combo_mask_butt = ui.Button('View combo Mask?');
-              combo_mask_butt.onClick(function(){
-                Map.addLayer(ee.Image(combo_masked), {}, 'Combine Mask');});
+          var final_mask_butt = ui.Button('View Final Mask?');
+              final_mask_butt.onClick(function(){
+                Map.addLayer(ee.Image(final_mask.clip(ROI)), {}, 'Final Mask');});
           
-          // Fringe mangrove addition to mask or not
-          var in_t = function(combo_masked, fringe_mask){
-            var final_mask = ee.Image(combo_masked).add(fringe_mask);
-            return final_mask;
-          };
-          var in_f = function(combo_masked){
-            var final_mask = combo_masked;
-            return final_mask;
-          };          
-          
-          // Final Mask creation
-          if(inland_mang === true){var final_mask =  in_t(combo_masked, fringe_mask);
-                                       ROI = ROI.buffer(buff_dist);}
-                              else {var final_mask =  in_f(combo_masked);}
-
           // Export final mask
           Export.image.toAsset({
               image: final_mask,
@@ -1063,10 +1047,6 @@ step_1_button.onClick(function() {
             description: "ROI",
             assetId: 'ROI'
             });
-          
-          // Create Final Mask Button
-          var final_mask_butt = ui.Button('View final Mask?');
-              final_mask_butt.onClick(function(){Map.addLayer(ee.Image(final_mask).clip(ROI), {}, 'Final Mask');});
               
           // Create Panel
           var mask_panel = ui.Panel({
@@ -1077,7 +1057,6 @@ step_1_button.onClick(function() {
           // Add buttons to the panel
           mask_panel.add(topo_mask_butt);
           mask_panel.add(water_mask_butt);
-          mask_panel.add(combo_mask_butt);
           mask_panel.add(final_mask_butt);
           
           // Add the panel to the map
