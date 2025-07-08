@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 25 September 2024
+Last updated: 8 July 2025
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -448,8 +448,8 @@ var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
 
 Map.addLayer(chot_masked, vis, 'Contemporary High Tide');
 Map.addLayer(clot_masked, vis, 'Contemporary Low Tide', false);
-Map.addLayer(hhot_masked, vis, 'Historic High Tide', false);
-Map.addLayer(hlot_masked, vis, 'Historic Low Tide', false);
+Map.addLayer(hhot_masked, vis, 'Historical High Tide', false);
+Map.addLayer(hlot_masked, vis, 'Historical Low Tide', false);
 Map.centerObject(Chot_image);
 
 function maskArea(mask, geo) {
@@ -474,15 +474,15 @@ function exportDyn(img, descrip, geo) {
 }
 
 function exportDynamics(key, label, geo, loss, pers, gain) {
-  exportDyn(loss, (label + " loss in " + key).split(' ').join('_'), geo);
-  exportDyn(pers, (label + " persistence in " + key).split(' ').join('_'), geo);
-  exportDyn(gain, (label + " gain in " + key).split(' ').join('_'), geo);
+  exportDyn(loss.visualize({palette: ["#DD4425"]}), (label + " loss in " + key).split(' ').join('_'), geo);
+  exportDyn(pers.visualize({palette: ["#008F00"]}), (label + " persistence in " + key).split(' ').join('_'), geo);
+  exportDyn(gain.visualize({palette: ["#0000DB"]}), (label + " gain in " + key).split(' ').join('_'), geo);
 }
 
 function mapDynamics(key, label, loss, pers, gain) {
-  Map.addLayer(loss, {palette: 'red'}, label + ' loss in ' + key);
-  Map.addLayer(pers, {palette: 'blue'}, label + ' persistence in ' + key);
-  Map.addLayer(gain, {palette: 'green'}, label +' gain in ' + key);
+  Map.addLayer(loss, {palette: ["#DD4425"]}, label + ' loss in ' + key);
+  Map.addLayer(pers, {palette: ["#008F00"]}, label + ' persistence in ' + key);
+  Map.addLayer(gain, {palette: ["#0000DB"]}, label +' gain in ' + key);
 }
 
 function conversionChart(label, areas, colors) {
@@ -744,8 +744,8 @@ left.setOptions("SATELLITE");
 // Add the Landsat imagery to the map
 right.addLayer(chot_masked, vis, 'Contemporary High Tide');
 right.addLayer(clot_masked, vis, 'Contemporary Low Tide', false);
-right.addLayer(hhot_masked, vis, 'Historic High Tide', false);
-right.addLayer(hlot_masked, vis, 'Historic Low Tide', false);
+right.addLayer(hhot_masked, vis, 'Historical High Tide', false);
+right.addLayer(hlot_masked, vis, 'Historical Low Tide', false);
 
 // ADD ROI
 // Add the ROI to the all maps, in red outline with no fill
