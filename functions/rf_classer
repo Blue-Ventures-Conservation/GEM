@@ -4,7 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: 22 August 2024
+Last update: 10 July 2025
 
 */
 
@@ -110,7 +110,7 @@ function classify(name, img, t_poly, label, bands, ROI, trees, splits, leafpop, 
   var sample = exports.sample_image(img.select(bands), t_poly, props, scale);
 
   //add random column to training data
-  sample = sample.randomColumn({ seed: 1 });
+  sample = sample.randomColumn({ seed: Date.now() });
   // select 70% to train
   var training = sample.filter(ee.Filter.lt('random', 0.7));
   // reserve 30% to validate
@@ -242,14 +242,13 @@ exports.sample_image = function(img, tpoly, props, scale) {
     
     var fifth = tpoly.size().divide(5).int().add(1);
     
-    s1 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth)), props, scale, ts);
-    s2 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth)), props, scale, ts);
-    s3 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(2))), props, scale, ts);
-    s4 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(3))), props, scale, ts);
-    s5 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(4))), props, scale, ts);
+    var s1 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth)), props, scale, ts);
+    var s2 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth)), props, scale, ts);
+    var s3 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(2))), props, scale, ts);
+    var s4 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(3))), props, scale, ts);
+    var s5 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(4))), props, scale, ts);
     
     // this seems to work for splitting the work up to avoid too many concurrent aggregations
-    // while also not requiring us to pull down the full FeatureCollection locally
     sample = ee.FeatureCollection([s1, s2, s3, s4, s5]).flatten();
   }  else {
     sample = sample_regions(img, tpoly, props, scale, 16);
