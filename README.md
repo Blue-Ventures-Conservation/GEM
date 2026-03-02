@@ -124,8 +124,6 @@ days. Once your Google account has been granted access to GEE, you can use the G
 
 GEE is free to use for academic and not for profit enterprises. For commercial 
 applications, GEE offers paid commercial licenses: details [here](https://earthengine.google.com/faq/).
-At this time, the GEM is not available for commercial use - interested parties 
-should contact the authors to confirm this status. 
 
 There are two methods to run the GEM:
 1) Click on the links below and run the scripts. Clear instructions are
