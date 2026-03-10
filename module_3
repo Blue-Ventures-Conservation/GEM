@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 8 July 2025
+Last updated: 9 March 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -348,6 +348,8 @@ dyn_setup_button.onClick(function(){
 var cont_res = cont_class;
 var hist_res = hist_class;
 
+var imagery_scale = Chot_image.projection().nominalScale().getInfo();
+
 var chot_masked = Chot_image.updateMask(final_mask);
 var clot_masked = Clot_image.updateMask(final_mask);
 var hhot_masked = Hhot_image.updateMask(final_mask);
@@ -452,12 +454,13 @@ Map.addLayer(hhot_masked, vis, 'Historical High Tide', false);
 Map.addLayer(hlot_masked, vis, 'Historical Low Tide', false);
 Map.centerObject(Chot_image);
 
-function maskArea(mask, geo) {
+function maskArea(mask, geo, scale) {
   var area = ee.Image.pixelArea().updateMask(ee.Image(mask));
   return ee.Number(area.reduceRegion({
     reducer: ee.Reducer.sum(),
     geometry: geo,
-    scale: 30,
+    scale: scale,
+    tileScale: 0.1,
     maxPixels: 1e13,
     bestEffort: true
   }).get('area')).divide(10).round().divide(1e3);
@@ -612,20 +615,20 @@ for (var key in region_geometries) {
       
       to = to.add(ee.Dictionary({
         name: nm,
-        area: maskArea(contClass.and(hc).selfMask(), geo),
+        area: maskArea(contClass.and(hc).selfMask(), geo, imagery_scale),
       }));
       from = from.add(ee.Dictionary({
         name: nm,
-        area: maskArea(histClass.and(cc).selfMask(), geo),
+        area: maskArea(histClass.and(cc).selfMask(), geo, imagery_scale),
       }));
     }
     
     var lossMask = histClass.subtract(contClass).eq(1).selfMask();
-    var lossArea = ee.Number(maskArea(lossMask, geo));
+    var lossArea = ee.Number(maskArea(lossMask, geo, imagery_scale));
     var perMask = histClass.and(contClass).selfMask();
-    var perArea = ee.Number(maskArea(perMask, geo));
+    var perArea = ee.Number(maskArea(perMask, geo, imagery_scale));
     var gainMask = contClass.subtract(histClass).eq(1).selfMask();
-    var gainArea = ee.Number(maskArea(gainMask, geo));
+    var gainArea = ee.Number(maskArea(gainMask, geo, imagery_scale));
     
     if (class_num == num) {
       mapDynamics(key, lab, lossMask.clip(geo), perMask.clip(geo), gainMask.clip(geo));
