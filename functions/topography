@@ -60,9 +60,10 @@ exports.topo_mask_func = function(dsm, mangroves, mang_topo, elevation, slope){
                     bestEffort: true
                     });
                     
-  
-  var el_val = ee.Image.constant(mang_elv.get('elev'));
-  var slp_val = ee.Image.constant(mang_slope.get('slope'));
+  var el_val = mang_elv.get('elev');
+  var slp_val = mang_slope.get('slope');
+  var el_img = ee.Image.constant(mang_elv.get('elev'));
+  var slp_img = ee.Image.constant(mang_slope.get('slope'));
   
   var fetchedVals = ee.List([el_val, slp_val]).getInfo();
   
@@ -70,8 +71,8 @@ exports.topo_mask_func = function(dsm, mangroves, mang_topo, elevation, slope){
   print("99th percentile known mangrove slope: " + fetchedVals[1]);
   
   if (mang_topo === true){
-    var topo_mask = dsm.select('elev').lte(el_val)
-                        .and(dsm.select('slope').lte(slp_val)).double();
+    var topo_mask = dsm.select('elev').lte(el_img)
+                        .and(dsm.select('slope').lte(slp_img)).double();
     return topo_mask; 
   } else {
     var topo_mask = dsm.select('elev').lte(elevation)
