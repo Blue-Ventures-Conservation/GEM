@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 21 June 2025
+Last updated: 7 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -322,28 +322,7 @@ var cloud_cover = 15;
 var cloud_mask = 'mild';
 
 /*
-2.E) Tidal Zone  
-     The tidal zone is a user-defined parameter that is used to help the GEM 
-     determine the tidal condition for each image, in both the historical and the
-     contemporary image sets. The tidal zone is functionally a shoreline buffer
-     which extends seawards from the shore. This distance should be the tidally 
-     'active' zone, which will contain the majority of the tidal flats and tidal
-     islands which would be exposed and then resubmerged given the tidal state.
-     
-     The default number is 1000 m (1 km). This number can be tailored for the
-     specific region of interest. **NOTE: The tidal zone is NOT the ROI. The
-     tidal zone is strictly a seaward buffer and produces no meaningful 
-     intermediary data products.**
-    
-     Enter:
-          var tidal_zone = 1000; (meters, Integer)
-
-*/
-
-var tidal_zone = 1000;
-
-/*
-2.F) MNDWI Minimum Average
+2.E) MNDWI Minimum Average
     When calculating the MNDWI that determines the high and low tide imagery,
     the GEM allows users to specify a minimum average value for the MNDWI
     required for an image to be used when determining the water mask.
@@ -374,7 +353,7 @@ var tidal_zone = 1000;
 var min_avg = 0.5;
 
 /*
-2.G) Water Mask
+2.F) Water Mask
      The GEM offers the option to mask out water pixels using the modified 
      normalized difference water index (MNDWI). The MNDWI is calculated for the 
      entire ROI and water pixels are removed based on a threshold established 
@@ -404,7 +383,7 @@ var combo_water_mask = true;
 
 /*
 
-2.H) Topographic Thresholds
+2.G) Topographic Thresholds
      To threshold the data, the user has several options: 1.) The known mangrove
      extent can be used to extract the 99th percentile for slope and elevation,
      this is then used to generate a topographic mask for the input data. OR 2.) 
@@ -433,7 +412,7 @@ var elevation = 39;
 var slope = 16;
 
 /*
-2.I) Inland Fringing Mangroves
+2.H) Inland Fringing Mangroves
      Studies have shown that inland stands of mangroves may be found at low-lying
      elevations which are far from the coastline. For a comprehensive investigation,
      these exclaves must attempt to be captured. To do so, the ROI can be expanded 
@@ -452,7 +431,7 @@ var slope = 16;
 var inland_mang = false;
 
 /*
-2.J) Spectral Indices
+2.I) Spectral Indices
      There are numerous mangrove-specific, vegetation-specific, and 
      environmental indices which can be used to aid the classification. Below is
      the included list of indices which the user may select from. The user will 
@@ -659,8 +638,18 @@ step_1_button.onClick(function() {
   
   alert("Your date range starts " + starts + " 12/2018, " + but + "so the GEM will use " + imagery_name + " imagery." + warning);
   
-  // Create the tidal area buffer
-  var tidalArea = coast.simplify(500).buffer(tidal_zone).simplify(500);
+  // Create the tidal area geometry
+  var murray = ee.ImageCollection('UQ/murray/Intertidal/v1_1/global_intertidal').mosaic();
+  murray = murray.focal_min(1, 'circle').focal_max(1, 'circle');
+  var tidalArea = murray.reduceToVectors({
+    geometry: coarse_roi,
+    scale: 30,
+    crs: murray.projection(),
+    geometryType: 'polygon',
+    eightConnected: false,
+    bestEffort: true,
+    maxPixels: 1e13,
+  }).filter(ee.Filter.gt('count', 10)).geometry().simplify(75);
   
   // Generate the empty index list
   var indx = ee.List([]);
