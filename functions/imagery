@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 18 June 2025
+Last update: 9 April 2026
 
 */
 
@@ -313,7 +313,7 @@ function shore_reflectance(roi, images, tidal_area, band_names, scale) {
                     bestEffort: true,
                     tileScale: 16 
                     }).get(mndwi);
-      
+    num = ee.Algorithms.If(num, num, -1);
     return img.set(mndwi, ee.Number(num));
   });
   
