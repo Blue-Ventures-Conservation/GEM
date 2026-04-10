@@ -4,7 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: 26 March 2026
+Last update: 9 April 2026
 
 */
 
@@ -251,27 +251,32 @@ exports.HcomClassify = function(Hhot, Hlot, class_ref_type, use_cont_spec, Chot,
   historicalClassify('Combined_Classification_Historic', class_ref_type, use_cont_spec, Ccom, Hcom, t_poly_h, t_poly_c, label, bands, ROI, trees, splits, leafpop, bag, nodes, seeds, colors);
 };
 
-function sample_regions(img, collection, props, scale, tileScale) {
+function sample_regions(img, collection, props, scale, tileScale, geometries) {
   return img.sampleRegions({
     collection: collection,
     properties: props,
     scale: scale, 
-    tileScale: tileScale
+    tileScale: tileScale,
+    geometries: geometries,
   });
 }
   
 exports.sample_image = function(img, tpoly, props, scale) {
+  return exports.sample_geometries(img, tpoly, props, scale, false);
+};
+
+exports.sample_geometries = function(img, tpoly, props, scale, geometries) {
   var sample = null;
   if (scale < 30) {
     var ts = 1;
     
     var fifth = tpoly.size().divide(5).int().add(1);
     
-    var s1 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth)), props, scale, ts);
-    var s2 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth)), props, scale, ts);
-    var s3 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(2))), props, scale, ts);
-    var s4 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(3))), props, scale, ts);
-    var s5 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(4))), props, scale, ts);
+    var s1 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth)), props, scale, ts, geometries);
+    var s2 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth)), props, scale, ts, geometries);
+    var s3 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(2))), props, scale, ts, geometries);
+    var s4 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(3))), props, scale, ts, geometries);
+    var s5 = sample_regions(img, ee.FeatureCollection(tpoly.toList(fifth, fifth.multiply(4))), props, scale, ts, geometries);
     
     // this seems to work for splitting the work up to avoid too many concurrent aggregations
     sample = ee.FeatureCollection([s1, s2, s3, s4, s5]).flatten();
