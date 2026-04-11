@@ -793,7 +793,6 @@ step_1_button.onClick(function() {
       var cont_imagery = cont_result[0];
       var hist_imagery = hist_result[0];
       var imagery_scale = cont_result[1];
-      var proj = cont_imagery.first().select('B4').projection();
       
       var sar_water_mask = null;
       var sar_cont_images = null;
@@ -821,8 +820,8 @@ step_1_button.onClick(function() {
       var export_max_pixels = 1e13;
       
       // Build the contemporary BAP composites
-      var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI).reproject(proj);
-      var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI).reproject(proj);
+      var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI).reproject('EPSG:4326', null, imagery_scale);
+      var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI).reproject('EPSG:4326', null, imagery_scale);
       var chot_vis = Chot;
       var clot_vis = Clot;
       
@@ -839,8 +838,8 @@ step_1_button.onClick(function() {
       });
       
       // Build the historical BAP composites
-      var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.mod_water_index).clip(ROI).reproject(proj);
-      var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.inverse_mod_water_index).clip(ROI).reproject(proj);
+      var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.mod_water_index).clip(ROI).reproject('EPSG:4326', null, imagery_scale);
+      var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.inverse_mod_water_index).clip(ROI).reproject('EPSG:4326', null, imagery_scale);
       var hhot_vis = Hhot;
       var hlot_vis = Hlot;
 
