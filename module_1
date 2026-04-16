@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 11 April 2026
+Last updated: 16 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -784,7 +784,7 @@ step_1_button.onClick(function() {
       
       // Clip the known mangrove extent
       var kn_mang_ext = mang_img.clip(ROI);
-      var false_colour_bands = ['B4','B5','B3'];
+      var false_colour_bands = ['NIR','SWIR1','Red'];
       
       // Create hist./cont. image collections
       var force_ls = force_landsat || !imagery.should_use_s2(contemporary_start_year, contemporary_months, historical_start_year, historical_months);
@@ -855,10 +855,13 @@ step_1_button.onClick(function() {
         print(add_h_imagery);
       });
       
-      Chot = Chot.select('B1','B2','B3','B4','B5','B7');
-      Clot = Clot.select('B1','B2','B3','B4','B5','B7');
-      Hhot = Hhot.select('B1','B2','B3','B4','B5','B7');
-      Hlot = Hlot.select('B1','B2','B3','B4','B5','B7');
+      // chop off mndwi, inv_mndwi, day, month and year bands
+      var bnames = Chot.bandNames().slice(0, -5);
+      
+      Chot = Chot.select(bnames);
+      Clot = Clot.select(bnames);
+      Hhot = Hhot.select(bnames);
+      Hlot = Hlot.select(bnames);
       
       ///////////////
       // Section 4 //
