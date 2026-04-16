@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 22 August 2024
+Last updated: 16 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -377,7 +377,7 @@ step_1_button.onClick(function(){
                 }));
   print('Select the bands to be used for Pearson correlation:');
   // Quickly re-select the indices from Module 1
-  var blist = Chot.bandNames().remove('B6').getInfo();
+  var blist = Chot.bandNames().getInfo();
 
   // Generate the empty index list
   var indx = ee.List.repeat("", blist.length);
@@ -599,8 +599,8 @@ step_1_button.onClick(function(){
                   "Hist. HOT": ["Hist. HOT", sample_HHOT],
                   "Hist. LOT": ["Hist. LOT", sample_HLOT]
                   };
-  var bandX = 'B3';
-  var bandY = 'B4';
+  var bandX = 'Red';
+  var bandY = 'NIR';
   var scat_samp = ["Cont. HOT", sample_CHOT];
   // Create drop-down menu to select X Band
   var bandX_drop = ui.Select({
@@ -729,7 +729,7 @@ step_2_button.onClick(function(){
   var indx = ee.List([]);
   
   // List of reference indices
-  var OG_band_list = ui.data.ActiveList(Chot.bandNames().remove('B6').getInfo());
+  var OG_band_list = ui.data.ActiveList(Chot.bandNames().getInfo());
 
   // Create checkboxes 
   OG_band_list.forEach(function(x){
