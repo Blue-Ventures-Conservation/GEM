@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 9 March 2026
+Last updated: 16 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -446,7 +446,7 @@ var ROI_dis = ROI;
     var class_res = hist_res;
     }
     
-var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
+var vis = {bands: ['NIR', 'SWIR1', 'Red'], min: 0, max: 0.27};
 
 Map.addLayer(chot_masked, vis, 'Contemporary High Tide');
 Map.addLayer(clot_masked, vis, 'Contemporary Low Tide', false);
@@ -728,7 +728,7 @@ alert('GEE QAA INTERFACE'+
 '\nExport Dictionary button to initiate this task.');
 
 
-var vis = {bands: ['B4', 'B5', 'B3'], min: 0, max: 0.27};
+var vis = {bands: ['NIR', 'SWIR1', 'Red'], min: 0, max: 0.27};
 
 // Add three maps to the screen.
 var left = ui.Map();
@@ -843,7 +843,7 @@ var showMosaic = function(range) {
   });
   // Asynchronously compute the name of the composite.  Display it.
   range.start().get('year').evaluate(function(name) {
-    var visParams = {bands: ['B4', 'B3', 'B2'], max: 100};
+    var visParams = {bands: ['NIR', 'Red', 'Green'], max: 100};
     var layer = ui.Map.Layer(mosaic, visParams, name + ' composite');
     left.layers().set(0, layer);
   });
