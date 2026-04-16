@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 9 April 2026
+Last update: 16 April 2026
 
 */
 
@@ -12,7 +12,7 @@ exports.doc = 'The imagery module is used to collect images for the ROI.' +
     '\n If the start year & month is after 4/2017, you weill get 10m Sentinel-2 imagery, otherwise 30m Landsat.' +
     '\n It includes:' +
     '\n' +
-    '\n get_imagery(roi, cloudCoverLimit, year1, year2, month_1, month_2, cloud_mask, band_names):' +
+    '\n get_imagery(roi, cloudCoverLimit, year1, year2, months, cloud_mask, tidal_area):' +
     '\n   @param {boolean} force_ls: whether to force the use of landsat even when the date indicates S2' +
     '\n   @param {boolean} ls_7_in: whether to include Landsat 7 imagery beyond the scan line error date' +
     '\n   @param {ee.Geometry} roi: the region of interest, produced by GEM' +
@@ -23,34 +23,6 @@ exports.doc = 'The imagery module is used to collect images for the ROI.' +
     '\n   @param {character} cloud_mask: how clouds are removed. Valid inputs are none, mild, and aggressive' +
     '\n   @param {ee.Geometry} the buffered coastline containing the tidally active zone' +
     '\n   @return {array} An image collection with clouds removed at index 0 and the native scale of the imagery at index 1';
-
-exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, end_year, months, cloud_mask, tidal_area) {
-  // bnames: six names for [Blue, Green, Red, NIR, SWIR1, SWIR2]
-  var bnames = ['B1','B2','B3','B4','B5','B7'];
-  function filter_func(cloud_prop) {
-    return function(name) {
-      return filter_collection(ls_7_in, name, roi, cloud_prop, cloud_limit, start_year, end_year, months);
-    };
-  }
-  
-  if (!force_ls && fits_s2_range(start_year, months)) {
-    var s2_images = collect_sentinel2(cloud_mask, bnames, roi, tidal_area, filter_func(s2_cloud_property));
-    var sar_result = get_sar_water_mask(roi, start_year, end_year, months);
-    return [s2_images, s2_scale, sar_result[0], sar_result[1]];
-  } else {
-    var ls_images = collect_landsat(cloud_mask, bnames, roi, tidal_area, filter_func(ls_cloud_property));
-    return [ls_images, ls_scale];
-  }
-};
-
-exports.should_use_s2 = function(cont_start_year, cont_months, hist_start_year, hist_months) {
-  return fits_s2_range(cont_start_year, cont_months) && fits_s2_range(hist_start_year, hist_months);
-};
-
-function fits_s2_range(year, months) {
-  var finalYearMaxLen = 13 - s2_start_month;
-  return (year > s2_start_year) || (year == s2_start_year  && (months.length <= finalYearMaxLen && months[0] >= s2_start_month));
-}
 
 exports.water_index = 'NDWI';
 exports.inverse_water_index = 'inv_NDWI';
@@ -76,10 +48,43 @@ var ls_cloud_property = 'CLOUD_COVER';
 var oli_bands = ee.List(['SR_B2','SR_B3','SR_B4','SR_B5','SR_B6','SR_B7','ST_B10']);
 var etm_bands = ee.List(['SR_B1','SR_B2','SR_B3','SR_B4','SR_B5','SR_B7','ST_B6']);
 var ls_tir_rename = 'Heat';
+// ls_human_bands is six names for [Blue, Green, Red, NIR, SWIR1, SWIR2]
+// We used to call these: ['B1','B2','B3','B4','B5','B7'];
+var bgr = ['Blue', 'Green', 'Red'];
+var nir = ['NIR'];
+var swirs = ['SWIR1', 'SWIR2'];
+var ls_human_bands = bgr.concat(nir).concat(swirs);
 
 var s2 = "COPERNICUS/S2_SR_HARMONIZED";
-var s2_bands = ee.List(['B2','B3','B4','B8','B11','B12']);
+var s2_bands = ee.List(['B2','B3','B4','B5','B6','B7','B8','B8A','B11','B12']);
+var s2_human_bands = bgr.concat(['RE1', 'RE2', 'RE3']).concat(nir).concat(['RE4']).concat(swirs);
 var s2_cloud_property = 'CLOUDY_PIXEL_PERCENTAGE';
+
+exports.get_imagery = function(force_ls, ls_7_in, roi, cloud_limit, start_year, end_year, months, cloud_mask, tidal_area) {
+  function filter_func(cloud_prop) {
+    return function(name) {
+      return filter_collection(ls_7_in, name, roi, cloud_prop, cloud_limit, start_year, end_year, months);
+    };
+  }
+  
+  if (!force_ls && fits_s2_range(start_year, months)) {
+    var s2_images = collect_sentinel2(cloud_mask, roi, tidal_area, filter_func(s2_cloud_property));
+    var sar_result = get_sar_water_mask(roi, start_year, end_year, months);
+    return [s2_images, s2_scale, sar_result[0], sar_result[1]];
+  } else {
+    var ls_images = collect_landsat(cloud_mask, roi, tidal_area, filter_func(ls_cloud_property));
+    return [ls_images, ls_scale];
+  }
+};
+
+exports.should_use_s2 = function(cont_start_year, cont_months, hist_start_year, hist_months) {
+  return fits_s2_range(cont_start_year, cont_months) && fits_s2_range(hist_start_year, hist_months);
+};
+
+function fits_s2_range(year, months) {
+  var finalYearMaxLen = 13 - s2_start_month;
+  return (year > s2_start_year) || (year == s2_start_year  && (months.length <= finalYearMaxLen && months[0] >= s2_start_month));
+}
 
 function filter_collection(force_ls7, collection_name, roi, cloud_property, cloud_limit, year1, year2, months) {
   var images = ee.ImageCollection([]);
@@ -140,7 +145,7 @@ function filter_ls7(force, year1, year2, months) {
   return dateFiltered;
 }
 
-function collect_landsat(cloud_mask, band_names, roi, tidal_area, filter) {
+function collect_landsat(cloud_mask, roi, tidal_area, filter) {
   var col4 = ee.ImageCollection(filter(ls4));
   var col5 = ee.ImageCollection(filter(ls5));
   var col7 = ee.ImageCollection(filter(ls7));
@@ -149,7 +154,7 @@ function collect_landsat(cloud_mask, band_names, roi, tidal_area, filter) {
   
   var etms = col7.merge(col5.merge(col4));
   
-  var names = ee.List(band_names);
+  var names = ee.List(ls_human_bands);
   var renames = names.cat([ls_tir_rename, ls_qa_pixel]);
   
   var images = col9.merge(col8).select(oli_bands.add(ls_qa_pixel), renames).merge(
@@ -162,17 +167,17 @@ function collect_landsat(cloud_mask, band_names, roi, tidal_area, filter) {
   
   // Fix float type error (is this still necessary?)
   function fixFloat(image){
-    var specCast = image.select(band_names).cast(ee.Dictionary.fromLists(names, ee.List.repeat('float', 6)));
+    var specCast = image.select(names).cast(ee.Dictionary.fromLists(names, ee.List.repeat('float', 6)));
     return image.addBands(specCast, null, true);
   }
   
-  // Clamp SWIR1 (this affects water masking psoitively)
+  // Clamp SWIR1 (this affects water masking positively)
   var swir1 = ee.String(names.get(4));
   images = clamp(images.map(fixFloat), swir1, renames);
-  images = shore_reflectance(roi, images, tidal_area, band_names, ls_scale);
+  images = shore_reflectance(roi, images, tidal_area, ls_scale);
   images = images.map(datePixels);
   if (cloud_mask == 'aggressive') {
-    images = aggro_landsat_cloud_mask(band_names, mild_landsat_cloud_mask(images));
+    images = aggro_landsat_cloud_mask(mild_landsat_cloud_mask(images));
   } else {
     images = mild_landsat_cloud_mask(images);
   }
@@ -206,8 +211,8 @@ function clamp(images, clamp_band, bands) {
   });
 }
 
-function collect_sentinel2(cloud_mask, band_names, roi, tidal_area, filter) {
-  var names = ee.List(band_names);
+function collect_sentinel2(cloud_mask, roi, tidal_area, filter) {
+  var names = ee.List(s2_human_bands);
   var renames = names.add(s2_qa_pixel);
 
   var images = ee.ImageCollection(filter(s2)).select(s2_bands.add(s2_qa_pixel), renames)
@@ -215,7 +220,7 @@ function collect_sentinel2(cloud_mask, band_names, roi, tidal_area, filter) {
     var optical = image.select(names).divide(10000);
     return image.addBands(optical, null, true);
   });
-  images = shore_reflectance(roi, images, tidal_area, band_names, s2_scale);
+  images = shore_reflectance(roi, images, tidal_area, s2_scale);
   images = images.map(datePixels);
 
   // Sentinel-2 just uses CloudScore+ for both mild/aggressive
@@ -247,11 +252,11 @@ function mild_landsat_cloud_mask(images) {
   });
 }
 
-function aggro_landsat_cloud_mask(optical_bands, images) {
+function aggro_landsat_cloud_mask(images) {
   return images.map(function(image) {
-    var blue_wt = image.select(optical_bands[0]).gte(0.0284615);
-    var green_wt = image.select(optical_bands[1]).gte(0.0284615);
-    var red_wt = image.select(optical_bands[2]).gte(0.0284615);
+    var blue_wt = image.select(ls_human_bands[0]).gte(0.0284615);
+    var green_wt = image.select(ls_human_bands[1]).gte(0.0284615);
+    var red_wt = image.select(ls_human_bands[2]).gte(0.0284615);
     var heat_wt = image.select(ls_tir_rename).lte(0.0450904);
     var weight_mask = blue_wt.add(green_wt).add(red_wt).add(heat_wt).gte(4).eq(0);
     
@@ -290,7 +295,7 @@ function s2_cloud_mask(images) {
 
 // Tidal functions
 
-function shore_reflectance(roi, images, tidal_area, band_names, scale) {
+function shore_reflectance(roi, images, tidal_area, scale) {
   // import the PLASAT dataset and create an land mask
   var land_mask = ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR')
     .filter(ee.Filter.date('2018-01-01', '2019-01-01'))
@@ -303,8 +308,8 @@ function shore_reflectance(roi, images, tidal_area, band_names, scale) {
   var img_p1 = ee.ImageCollection(images).map(function(img){
     // create MNDWI Image
     var num = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
-      'B2': img.select(band_names[1]),
-      'B5': img.select(band_names[4])
+      'B2': img.select(ls_human_bands[1]),
+      'B5': img.select(ls_human_bands[4])
       }).rename([mndwi]).updateMask(land_mask).reduceRegion({ 
                     reducer: ee.Reducer.mean(),
                     geometry: tidal_area,
