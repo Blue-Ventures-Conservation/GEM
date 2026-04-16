@@ -4,7 +4,7 @@ This is the indices module, which is part of the BVC GEM v1.2  library.
 It is used to support the generation of spectral indices for the selected 
 image data seers
 
-Last update: 21 August 2024
+Last update: 16 April 2026
 
 */
 
@@ -126,31 +126,31 @@ exports.addIndex_simple = function(indx_list, image){
   image = ee.Image(image);
   
   var SR_func = function(img){
-                        var SR = ee.Image(img).select('B4').divide(ee.Image(img).select('B3'))
+                        var SR = ee.Image(img).select('NIR').divide(ee.Image(img).select('Red'))
                         .rename(['SR']);
                         return SR;
                         };
   
   var NDVI_func = function(img){
                         var NDVI = ee.Image(img).expression('(B4 - B3)/(B4 + B3)', {
-                             'B4': img.select('B4'),
-                             'B3': img.select('B3')
+                             'B4': img.select('NIR'),
+                             'B3': img.select('Red')
                              }).rename(['NDVI']);
                         return NDVI;
                         };
                       
   var NDWI_func = function(img){
                         var NDWI = ee.Image(img).expression('(B2 - B4)/(B2 + B4)', {
-                             'B2': img.select('B2'),
-                             'B4': img.select('B4')
+                             'B2': img.select('Green'),
+                             'B4': img.select('NIR')
                              }).rename(['NDWI']);
                         return NDWI;
                         };
                       
   var MNDWI_func = function(img){
                        var MNDWI = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
-                             'B2': img.select('B2'),
-                             'B5': img.select('B5')
+                             'B2': img.select('Green'),
+                             'B5': img.select('SWIR1')
                              }).rename(['MNDWI']);
 
                         return MNDWI;
@@ -158,12 +158,12 @@ exports.addIndex_simple = function(indx_list, image){
 
   var CMRI_func = function(img){
                         var NDVI = ee.Image(img).expression('(B4 - B3)/(B4 + B3)', {
-                             'B4': img.select('B4'),
-                             'B3': img.select('B3')
+                             'B4': img.select('NIR'),
+                             'B3': img.select('Red')
                              }).rename(['NDVI']);
                         var NDFT = ee.Image(img).expression('(B4 - B2)/(B4 + B2)', {
-                             'B4': img.select('B4'),
-                             'B2': img.select('B2')
+                             'B4': img.select('NIR'),
+                             'B2': img.select('Green')
                              }).rename(['NDFT']);
                         var CMRI = NDVI.subtract(NDFT)
                                  .rename(['CMRI']);
@@ -172,13 +172,13 @@ exports.addIndex_simple = function(indx_list, image){
                         
   var MMRI_func = function(img){
                         var NDVI = ee.Image(img).expression('(B4 - B3)/(B4 + B3)', {
-                             'B4': img.select('B4'),
-                             'B3': img.select('B3')
+                             'B4': img.select('NIR'),
+                             'B3': img.select('Red')
                              }).rename(['NDVI']);
                         NDVI = NDVI.abs();
                         var MNDWI = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
-                             'B2': img.select('B2'),
-                             'B5': img.select('B5')
+                             'B2': img.select('Green'),
+                             'B5': img.select('SWIR1')
                              }).rename(['MNDWI']);
                         MNDWI = MNDWI.abs();
                         var MMRI = ee.Image(MNDWI.subtract(NDVI))
@@ -188,24 +188,24 @@ exports.addIndex_simple = function(indx_list, image){
                         };   
                         
   var SAVI_func = function(img){
-                        var SAVI = ee.Image(ee.Image(img).select('B4').subtract(ee.Image(img).select('B3'))
-                                   .divide(ee.Image(img).select('B4').add(ee.Image(img).select('B3')).add(0.5)))
+                        var SAVI = ee.Image(ee.Image(img).select('NIR').subtract(ee.Image(img).select('Red'))
+                                   .divide(ee.Image(img).select('NIR').add(ee.Image(img).select('Red')).add(0.5)))
                                    .multiply(1.5).rename(['SAVI']);
                         return SAVI;
                         };      
                         
   var OSAVI_func = function(img){
-                        var OSAVI = ee.Image(ee.Image(img).select('B4').subtract(ee.Image(img).select('B3'))
-                                   .divide(ee.Image(img).select('B4').add(ee.Image(img).select('B3')).add(0.16)))
+                        var OSAVI = ee.Image(ee.Image(img).select('NIR').subtract(ee.Image(img).select('Red'))
+                                   .divide(ee.Image(img).select('NIR').add(ee.Image(img).select('Red')).add(0.16)))
                                    .rename(['OSAVI']);
                         return OSAVI;
                         };  
                         
   var EVI_func = function(img){
                         //EVI = 2.5 * ((Band 4 – Band 3) / (Band 4 + 6 * Band 3 – 7.5 * Band 1 + 1)).
-                        var p1 = ee.Image(img).select('B4').add(ee.Image(img).select('B3').multiply(6))
-                                    .subtract(ee.Image(img).select('B1').multiply(7.5)).add(1);
-                        var p2 = ee.Image(ee.Image(img).select('B4').subtract(ee.Image(img).select('B3')))
+                        var p1 = ee.Image(img).select('NIR').add(ee.Image(img).select('Red').multiply(6))
+                                    .subtract(ee.Image(img).select('Blue').multiply(7.5)).add(1);
+                        var p2 = ee.Image(ee.Image(img).select('NIR').subtract(ee.Image(img).select('Red')))
                                   .divide(p1);
                         var EVI = p2.multiply(2.5)
                                   .rename(['EVI']);
@@ -214,16 +214,16 @@ exports.addIndex_simple = function(indx_list, image){
                         
   var LSWI_func = function(img){
                         var LSWI = ee.Image(img).expression('(B4 - B5)/(B4 + B5)', {
-                             'B4': img.select('B4'),
-                             'B5': img.select('B5')
+                             'B4': img.select('NIR'),
+                             'B5': img.select('SWIR1')
                              }).rename(['LSWI']);
                         return LSWI;
                         };
                         
   var NDTI_func = function(img){
                         var NDTI = ee.Image(img).expression('(B5 - B7)/(B5 + B7)', {
-                             'B5': img.select('B5'),
-                             'B7': img.select('B7')
+                             'B5': img.select('SWIR1'),
+                             'B7': img.select('SWIR2')
                              }).rename(['NDTI']);
                         return NDTI;
                         };   
@@ -273,16 +273,16 @@ exports.SMRI = function(hot, lot){
   hot = ee.Image(hot);
 
    var NDVIh = hot.expression('(B4 - B3)/(B4 + B3)', {
-                             'B4': hot.select('B4'),
-                             'B3': hot.select('B3')
+                             'B4': hot.select('NIR'),
+                             'B3': hot.select('Red')
                              }).rename(['NDVIh']);
    var NDVIl =  lot.expression('(B4 - B3)/(B4 + B3)', {
-                             'B4': lot.select('B4'),
-                             'B3': lot.select('B3')
+                             'B4': lot.select('NIR'),
+                             'B3': lot.select('Red')
                              }).rename(['NDVIl']);
    var SMRI = ee.Image(NDVIl.subtract(NDVIh))
-               .multiply(ee.Image(lot.select('B4').subtract(hot.select('B4'))
-               .divide(hot.select('B4')))).rename(['SMRI']);
+               .multiply(ee.Image(lot.select('NIR').subtract(hot.select('NIR'))
+               .divide(hot.select('NIR')))).rename(['SMRI']);
    
    return ee.Image(SMRI);
    
@@ -294,30 +294,30 @@ exports.MRI = function(hot, lot){
   lot = ee.Image(lot);
   hot = ee.Image(hot);
 
-  var GVIl = ee.Image(lot.select('B1').multiply(-0.1603).divide(10000))
-             .add(lot.select('B2').multiply(-0.2819).divide(10000))
-             .add(lot.select('B3').multiply(-0.4939).divide(10000))
-             .add(lot.select('B4').multiply(0.7940).divide(10000))
-             .add(lot.select('B5').multiply(-0.0002).divide(10000))
-             .add(lot.select('B7').multiply(-0.1446).divide(10000));
-  var GVIh = ee.Image(hot.select('B1').multiply(-0.1603).divide(10000))
-             .add(hot.select('B2').multiply(-0.2819).divide(10000))
-             .add(hot.select('B3').multiply(-0.4939).divide(10000))
-             .add(hot.select('B4').multiply(0.7940).divide(10000))
-             .add(hot.select('B5').multiply(-0.0002).divide(10000))
-             .add(hot.select('B7').multiply(-0.1446).divide(10000));
-  var WIl = ee.Image(lot.select('B1').multiply(0.0315).divide(10000))
-             .add(lot.select('B2').multiply(0.2021).divide(10000))
-             .add(lot.select('B3').multiply(0.3102).divide(10000))
-             .add(lot.select('B4').multiply(0.1594).divide(10000))
-             .add(lot.select('B5').multiply(-0.6806).divide(10000))
-             .add(lot.select('B7').multiply(-0.6109).divide(10000));
-  var WIh = ee.Image(hot.select('B1').multiply(0.0315).divide(10000))
-             .add(hot.select('B2').multiply(0.2021).divide(10000))
-             .add(hot.select('B3').multiply(0.3102).divide(10000))
-             .add(hot.select('B4').multiply(0.1594).divide(10000))
-             .add(hot.select('B5').multiply(-0.6806).divide(10000))
-             .add(hot.select('B7').multiply(-0.6109).divide(10000));
+  var GVIl = ee.Image(lot.select('Blue').multiply(-0.1603).divide(10000))
+             .add(lot.select('Green').multiply(-0.2819).divide(10000))
+             .add(lot.select('Red').multiply(-0.4939).divide(10000))
+             .add(lot.select('NIR').multiply(0.7940).divide(10000))
+             .add(lot.select('SWIR1').multiply(-0.0002).divide(10000))
+             .add(lot.select('SWIR2').multiply(-0.1446).divide(10000));
+  var GVIh = ee.Image(hot.select('Blue').multiply(-0.1603).divide(10000))
+             .add(hot.select('Green').multiply(-0.2819).divide(10000))
+             .add(hot.select('Red').multiply(-0.4939).divide(10000))
+             .add(hot.select('NIR').multiply(0.7940).divide(10000))
+             .add(hot.select('SWIR1').multiply(-0.0002).divide(10000))
+             .add(hot.select('SWIR2').multiply(-0.1446).divide(10000));
+  var WIl = ee.Image(lot.select('Blue').multiply(0.0315).divide(10000))
+             .add(lot.select('Green').multiply(0.2021).divide(10000))
+             .add(lot.select('Red').multiply(0.3102).divide(10000))
+             .add(lot.select('NIR').multiply(0.1594).divide(10000))
+             .add(lot.select('SWIR1').multiply(-0.6806).divide(10000))
+             .add(lot.select('SWIR2').multiply(-0.6109).divide(10000));
+  var WIh = ee.Image(hot.select('Blue').multiply(0.0315).divide(10000))
+             .add(hot.select('Green').multiply(0.2021).divide(10000))
+             .add(hot.select('Red').multiply(0.3102).divide(10000))
+             .add(hot.select('NIR').multiply(0.1594).divide(10000))
+             .add(hot.select('SWIR1').multiply(-0.6806).divide(10000))
+             .add(hot.select('SWIR2').multiply(-0.6109).divide(10000));
   var p1 = ee.Image(GVIl.subtract(GVIh)).abs();
   var MRI = p1.multiply(GVIl).multiply(WIl.add(WIh)).rename(['MRI']);
   
