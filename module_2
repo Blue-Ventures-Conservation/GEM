@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 April 2026
+Last updated: 18 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -379,15 +379,15 @@ step_1_button.onClick(function(){
   // Quickly re-select the indices from Module 1
   var blist = Chot.bandNames().getInfo();
 
-  // Generate the empty index list
-  var indx = ee.List.repeat("", blist.length);
+  // Generate the populated index list
+  var indx = ee.List(blist);
   
   // List of reference indices
   var OG_band_list = ui.data.ActiveList(blist);
 
   // Create checkboxes 
   OG_band_list.forEach(function(x){
-    var ind_box = ui.Checkbox(x, false);
+    var ind_box = ui.Checkbox(x, true);
     ind_box.onChange(function(checked) {
       // Add/remove the index to the list
       if (checked === true) {
