@@ -323,6 +323,13 @@ var cloud_mask = 'mild';
 
 /*
 2.E) MNDWI Minimum Average
+    This settings only applies to optical-based water masking, which occurs when
+    your imagery is selected from time periods before SAR-1 becomes available
+    in GEE: October, 2014.
+    
+    If your date ranges are after this date, you will always use SAR based
+    techniques, and this setting will not be relevant.
+    
     When calculating the MNDWI that determines the high and low tide imagery,
     the GEM allows users to specify a minimum average value for the MNDWI
     required for an image to be used when determining the water mask.
@@ -354,7 +361,10 @@ var min_avg = 0.5;
 
 /*
 2.F) Water Mask
-     The GEM offers the option to mask out water pixels using the modified 
+     The GEM offers the option to mask out water pixels using SAR based methods
+     for time ranges after October 2014.
+     
+     For time peirods earlier than that cutoff, GEM instead uses the modified 
      normalized difference water index (MNDWI). The MNDWI is calculated for the 
      entire ROI and water pixels are removed based on a threshold established 
      in the original paper by Dr. H. Xu (2006). If water pixels are not masked, 
