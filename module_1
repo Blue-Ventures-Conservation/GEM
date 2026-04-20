@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 April 2026
+Last updated: 20 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -531,7 +531,7 @@ var inland_mang = false;
 
 // This is where the required functions are called into the script
 var known_ext =  require('users/yanchojo/GEM_LS9_colors/:modules/known_mangroves');
-var coastline =  require('users/yanchojo/GEM_LS9_colors/:modules/coastline');
+var coastline =  require('users/courtlandfowler/gemv2:coastline');
 var topography =  require('users/yanchojo/GEM_LS9_colors/:modules/topography');
 var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
 var water = require('users/yanchojo/GEM_LS9_colors/:modules/water_mask');
