@@ -534,7 +534,6 @@ var known_ext =  require('users/yanchojo/GEM_LS9_colors/:modules/known_mangroves
 var coastline =  require('users/courtlandfowler/gemv2:coastline');
 var topography =  require('users/yanchojo/GEM_LS9_colors/:modules/topography');
 var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
-var water = require('users/yanchojo/GEM_LS9_colors/:modules/water_mask');
 var imagery = require('users/courtlandfowler/gemv2:imagery');
 var indx_mod = require('users/courtlandfowler/gemv2:indices');
 
@@ -794,24 +793,10 @@ step_1_button.onClick(function() {
       var hist_imagery = hist_result[0];
       var imagery_scale = cont_result[1];
       
-      var sar_water_mask = null;
-      var sar_cont_images = null;
-      var sar_hist_images = null;
       if (force_ls) {
         print("Using Landsat at " + imagery_scale + "m scale");
       } else {
         print("Using Sentinel-2 at " + imagery_scale + "m scale");
-        var sar_cont_water = cont_result[2];
-        sar_cont_images = cont_result[3];
-        
-        var sar_hist_water = hist_result[2];
-        sar_hist_images = hist_result[3];
-        
-        if (combo_water_mask) {
-          sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
-        } else {
-          sar_water_mask = sar_hist_water;
-        }
       }
 
       print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
@@ -985,7 +970,26 @@ step_1_button.onClick(function() {
           
           var waterMask = ee.Image(1);
           if (remove_water === true) {
-            if (force_ls || sar_water_mask === null) {
+            if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
+              var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months);
+              var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months);
+              
+              var sar_cont_water = sar_cont_result[0];
+              var sar_cont_images = sar_cont_result[1];
+              
+              var sar_hist_water = sar_hist_result[0];
+              var sar_hist_images = sar_hist_result[1];
+              
+              var sar_water_mask = null;
+              if (combo_water_mask) {
+                sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
+              } else {
+                sar_water_mask = sar_hist_water;
+              }
+              print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_cont_images.size()).getInfo());
+              print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_hist_images.size()).getInfo());
+              waterMask = sar_water_mask;
+            } else {
               // Use low tide images to create water mask
               var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
               print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
@@ -993,11 +997,7 @@ step_1_button.onClick(function() {
               var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
               print('No. Historical Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
               hlot_water = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-              waterMask = water.water_mask(hlot_water, clot_water, combo_water_mask);
-            } else {
-              print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_cont_images.size()).getInfo());
-              print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_hist_images.size()).getInfo());
-              waterMask = sar_water_mask;
+              waterMask = imagery.water_mask(hlot_water, clot_water, combo_water_mask);
             }
           }
           
