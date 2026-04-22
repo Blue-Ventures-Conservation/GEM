@@ -13,7 +13,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 April 2026
+Last updated: 22 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -319,7 +319,7 @@ var name_list = ee.List([]); //set up empty list
 
 // Create a list of the names
 for (var i = 1; i < 277; i++){
-  var country = dataset.filterMetadata('OBJECTID', 'equals', i).first();
+  var country = dataset.filter(ee.Filter.eq('OBJECTID', i)).first();
   var nm = country.get('COUNTRY_NA');
   name_list = name_list.add(nm);
 }
@@ -355,7 +355,7 @@ var clot_masked = Clot_image.updateMask(final_mask);
 var hhot_masked = Hhot_image.updateMask(final_mask);
 var hlot_masked = Hlot_image.updateMask(final_mask);
 if (countryName !== null) {
-  var c1 = ee.Feature(dataset2.filterMetadata('country_na', 'equals', countryName).first());
+  var c1 = ee.Feature(dataset2.filter(ee.Filter.eq('country_na', countryName)).first());
   cont_res = cont_res.clip(c1);
   hist_res = hist_res.clip(c1);
   chot_masked = chot_masked.clip(c1);
