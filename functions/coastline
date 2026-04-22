@@ -3,7 +3,7 @@
 This is the coastline generation module, which is part of the BVC GEM v1.2 library.
 Either creates or ingests the vector based coastline used withing the GEM tool.
 
-Last update: April 20, 2026
+Last update: April 21, 2026
 
 */
 
@@ -11,8 +11,9 @@ exports.coast_In = function(cst, cst_path, roi){
   
   var cst_t = function(){
     var s2Coast = ee.FeatureCollection("projects/sat-io/open-datasets/S2COAST-2023");
+    var narinda = ee.FeatureCollection("projects/gem-project-378721/assets/S2Coast_gapfill_Helodrano_Narinda");
     // use the roi to clip the world boundary polygons
-    var area = s2Coast.filterBounds(roi);
+    var area = s2Coast.merge(narinda).filterBounds(roi);
     
     // dissolve and then convert the geometries to a coordinate list
     var area_coords = ee.Geometry.MultiPoint(area.geometry().geometries().map(function(geo) {
