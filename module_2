@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 18 April 2026
+Last updated: 22 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -446,7 +446,6 @@ step_1_button.onClick(function(){
   step_1a_button.onClick(function(){
 
   var bands = Chot.bandNames();
-  var h_bands = Hhot.bandNames();
 
   // Training polygons
   var t_poly_c = ee.FeatureCollection(class_ref_cont).sort(label);
@@ -665,14 +664,14 @@ step_1_button.onClick(function(){
                               }
                   });
 
-  var chot_bands = ui.Button('View LS Bands');
-  chot_bands.onClick(function(){specSp.ls_candles(sample_CHOT, label, label2, "Cont. HOT", colors.getInfo())});
-  var clot_bands = ui.Button('View LS Bands');
-  clot_bands.onClick(function(){specSp.ls_candles(sample_CLOT, label, label2, "Cont. LOT", colors.getInfo())});
-  var hhot_bands = ui.Button('View LS Bands');
-  hhot_bands.onClick(function(){specSp.ls_candles(sample_HHOT, label, label2, "Hist. HOT", colors.getInfo())});
-  var hlot_bands = ui.Button('View LS Bands');
-  hlot_bands.onClick(function(){specSp.ls_candles(sample_HLOT, label, label2, "Hist. LOT", colors.getInfo())});
+  var chot_bands = ui.Button('View Bands');
+  chot_bands.onClick(function(){specSp.band_candles(bands, sample_CHOT, label, label2, "Cont. HOT", colors.getInfo())});
+  var clot_bands = ui.Button('View Bands');
+  clot_bands.onClick(function(){specSp.band_candles(bands, sample_CLOT, label, label2, "Cont. LOT", colors.getInfo())});
+  var hhot_bands = ui.Button('View Bands');
+  hhot_bands.onClick(function(){specSp.band_candles(bands, sample_HHOT, label, label2, "Hist. HOT", colors.getInfo())});
+  var hlot_bands = ui.Button('View Bands');
+  hlot_bands.onClick(function(){specSp.band_candles(bands, sample_HLOT, label, label2, "Hist. LOT", colors.getInfo())});
 
 
   print(cont_lab);
