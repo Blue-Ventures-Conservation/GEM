@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 20 April 2026
+Last update: 22 April 2026
 
 */
 
@@ -147,6 +147,15 @@ exports.water_mask = function(hist_img, cont_img, combo_water_mask){
   }
 };
 
+exports.detect_and_rename_old_bands = function(img) {
+  var bands = img.bandNames();
+  return ee.Image(ee.Algorithms.If(
+    bands.contains("B4"),
+    img.rename(ee.List(ls_human_bands).cat(bands.slice(6))),
+    img
+  ));
+};
+
 function fits_s2_range(year, months) {
   var finalYearMaxLen = 13 - s2_start_month;
   return (year > s2_start_year) || (year == s2_start_year  && (months.length <= finalYearMaxLen && months[0] >= s2_start_month));
@@ -167,7 +176,7 @@ function filter_collection(force_ls7, collection_name, roi, cloud_property, clou
       .filterDate(year1 + '-01-01', y2 + '-01-01');
   }
   images = images.filterBounds(roi)
-    .filterMetadata(cloud_property, 'not_greater_than', cloud_limit);
+    .filter(ee.Filter.gt(cloud_property, cloud_limit).not());
   
   return filterMonths(images, months);
 }
