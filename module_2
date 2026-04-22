@@ -300,6 +300,13 @@ var combo_hist_out = true;     // Combination historical Imagery
 var RFclass = require('users/courtlandfowler/gemv2:rf_classer');
 var InCor = require('users/yanchojo/GEM_LS9_colors/:modules/input_correlation');
 var specSp = require('users/yanchojo/GEM_LS9_colors/:modules/spec_area');
+var imagery = require('users/courtlandfowler/gemv2:imagery');
+
+// to allow older imagery to continue to be of use after human-readable naming implemented
+Chot = imagery.detect_and_rename_old_bands(Chot);
+Clot = imagery.detect_and_rename_old_bands(Clot);
+Hhot = imagery.detect_and_rename_old_bands(Hhot);
+Hlot = imagery.detect_and_rename_old_bands(Hlot);
 
 var label = class_label_numeric;
 var label2 = class_label_character;
