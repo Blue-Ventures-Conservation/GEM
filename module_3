@@ -258,7 +258,14 @@ var nested_grid_scale = 3000;
 // added directly to the map viewer and LPG images will begin to export in the tasks
 // tab.
 
-//
+var imagery = require('users/courtlandfowler/gemv2:imagery');
+
+// to allow older imagery to continue to be of use after human-readable naming implemented
+Chot_image = imagery.detect_and_rename_old_bands(Chot_image);
+Clot_image = imagery.detect_and_rename_old_bands(Clot_image);
+Hhot_image = imagery.detect_and_rename_old_bands(Hhot_image);
+Hlot_image = imagery.detect_and_rename_old_bands(Hlot_image);
+
 var label = class_label_numeric;
 var label2 = class_label_character;
 
