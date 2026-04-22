@@ -144,11 +144,11 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
->https://code.earthengine.google.com/d6101d517826cbf7d5da64ebb349d9aa?noload=true
+>https://code.earthengine.google.com/86e6e8d73c2753d33013e4b5fda46b83?noload=true
 
 #### Module 3: Dynamics and Qualitative Accuracy Assessment (QAA)
 
->https://code.earthengine.google.com/5ba2b549d742077b5b200db48ab2a5b7?noload=true
+>https://code.earthengine.google.com/c8d2506697722012bdc1f28149c03230?noload=true
 
 The second option for using the GEM is to copy each of the three Module 
 scripts, and each of the function scripts into individual scripts saved to 
