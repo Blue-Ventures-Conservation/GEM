@@ -4,7 +4,7 @@ This is the spectral area/seperability module, which is part
 of the BVC GEM v1.2 library. It is used to determine if input 
 land cover classification reference data a spectral distinguishable.
 
-Last update: July 1, 2022
+Last update: 22 April 2026
 
 */
 
@@ -15,7 +15,8 @@ exports.doc = 'The spectral area/seperability module is used'+
     '\ngraphs to be viewed in the GEE GUI console. There are two'+
     '\nfunctions included in this module.'+
     '\n' +
-    '\n ls_candles(sample, label, label2, name):' +
+    '\n band_candles(sample, label, label2, name):' +
+    '\n   @param {ee.List} bands: the names of the bands that we should find in the sample' +
     '\n   @param {ee.FeatureCollection} sample: trained subset of classification reference data' +
     '\n   @param {text} label: column name for the numeric land cover class in the training data' +
     '\n   @param {text} label2: column name for the text-name for each land cover class in the training data' +
@@ -30,26 +31,20 @@ exports.doc = 'The spectral area/seperability module is used'+
     '\n   @param {text} name: text name to include in the chart title' +
     '\n   @print {ee.Chart} bar-and-whisker style chart for each land cover class for the selected band.';
 
-exports.ls_candles = function(sample, label, label2, name, colors){
-
-  var bands =  ['B1','B2','B3','B4','B5','B7'];
-  
-  var l1 = sample.distinct(label).aggregate_array(label).getInfo();
+exports.band_candles = function(bands, sample, label, label2, name, colors){
+  var l1 = sample.distinct(label).aggregate_array(label);
   var l2 = sample.distinct(label2).aggregate_array(label2);
-  var lab_zip = ee.List(l1).zip(l2).sort(l1);
-  var IDs_int = sample.distinct(label).aggregate_array(label).sort();
-  var IDs_str =  IDs_int.map(function(i){
-                  return ee.String(ee.Number(i).toFloat());
-                  });
+  var lab_zip = l1.zip(l2).sort(l1);
+  l1 = ee.List(lab_zip.unzip().get(0));
+  l2 = ee.List(lab_zip.unzip().get(1));
  
   var rep_func = function(n){
-  
-    var feat2 = sample.filterMetadata(label, 'equals', n);
+    var feat2 = sample.filter(ee.Filter.eq(label, n));
 
-    var mins = ee.Number(feat2.reduceColumns(ee.Reducer.min().forEach(bands), bands));
-    var maxs = ee.Number(feat2.reduceColumns(ee.Reducer.max().forEach(bands), bands));
-    var mean = ee.Number(feat2.reduceColumns(ee.Reducer.mean().forEach(bands), bands));
-    var std = ee.Number(feat2.reduceColumns(ee.Reducer.stdDev().forEach(bands), bands));
+    var mins = feat2.reduceColumns(ee.Reducer.min().forEach(bands), bands);
+    var maxs = feat2.reduceColumns(ee.Reducer.max().forEach(bands), bands);
+    var mean = feat2.reduceColumns(ee.Reducer.mean().forEach(bands), bands);
+    var std = feat2.reduceColumns(ee.Reducer.stdDev().forEach(bands), bands);
 
     mins = ee.Dictionary(mins).toArray();
     maxs = ee.Dictionary(maxs).toArray();
@@ -59,68 +54,49 @@ exports.ls_candles = function(sample, label, label2, name, colors){
     var s1 = mean.subtract(std);
     var s2 = mean.add(std);
 
-    return ee.Array.cat([mins.getInfo(), s1.getInfo(), s2.getInfo(), maxs.getInfo()], 1);
- 
+    return ee.Array.cat([mins, s1, s2, maxs], 1);
   };
 
   var out_ar = ee.Array.cat(l1.map(rep_func), 1);
-
   
-  var lst = ee.List([]);
-  var v = ee.List.sequence(0, 6, 1).getInfo();
+  var series = ee.List(l2.iterate(function(item, prev) {
+    return ee.List(prev).add(ee.Dictionary({labelInLegend: ee.String(item)}));
+  }, ee.List([])));
   
-  for (var i = 0; i < 6; i++){
-    var in_1 = ee.String(ee.List(v).get(i)).getInfo();
-    var in_2 = ee.String(ee.List(bands).get(i)).getInfo();
-    lst = lst.add(ee.Dictionary({v: in_1,
-                                f: in_2})); 
-  }
+  var both = ee.List([bands, series]).getInfo();
   
-  var lst2 = ee.List([]);
-  var n = ee.Number(IDs_str.length()).getInfo();
-  
-  for (var q = 0; q < n; q++){
-    lst2 = lst2.add(ee.Dictionary({labelInLegend: l2.get(q)}));
-  }
-
   // Prepare the chart.
   var chart =
   ui.Chart.array.values({
       array: out_ar,
+      xLabels: both[0],
       axis: 0,})
     .setChartType('CandlestickChart')
     .setOptions({
       title: name + " "+ " Values by Landcover",
       hAxis: {
-        title: 'Landsat Bands',
-        ticks: lst.getInfo()
-                },
-        vAxis: {
-        title: 'Refeclance (dn)'
+        title: 'Bands',
       },
-      series: lst2.getInfo(),
+        vAxis: {
+        title: 'Reflectance (dn)'
+      },
+      series: both[1],
       lineWidth: 1,
       pointSize: 3,
-      colors: colors
+      colors: colors,
       });
   print(chart);
 };
- 
-
 
 exports.whiskerCharts2 = function(sample, label, label2, band, name){
-
   var l1 = sample.distinct(label).aggregate_array(label);
   var l2 = sample.distinct(label2).aggregate_array(label2);
   var lab_zip = l1.zip(l2).sort(l1);
-  var IDs_int = sample.distinct(label).aggregate_array(label).sort();
-  var IDs_str =  IDs_int.map(function(i){
-                  return ee.String(ee.Number(i).toFloat());
-                  });
- // print(IDs_str);
-  var collector = function(num){
+  l1 = ee.List(lab_zip.unzip().get(0));
+  l2 = ee.List(lab_zip.unzip().get(1));
   
-    var feat2 = sample.filterMetadata(label, 'equals', num);
+  var collector = function(num){
+    var feat2 = sample.filter(ee.Filter.eq(label, num));
   
     var mins = ee.Number(feat2.reduceColumns(ee.Reducer.min(), [band]).get('min'));
     var maxs = ee.Number(feat2.reduceColumns(ee.Reducer.max(), [band]).get('max'));
@@ -130,44 +106,29 @@ exports.whiskerCharts2 = function(sample, label, label2, band, name){
     var s2 = mean.add(std);
   
     return ee.List([mins, s1, s2, maxs]);
-  
   };
     
-  var values = IDs_int.map(collector);
-  var keys = ee.List(IDs_str);
-  var dict = ee.Dictionary.fromLists(keys, values);
-
-
-
-  var lst = ee.List([]);
-  var v = ee.List.sequence(0, IDs_str.length().subtract(1));
-  var n = ee.Number(IDs_str.length()).getInfo();
-
-  for (var i = 0; i < n; i++){
+  var values = l1.map(collector);
+  var dict = ee.Dictionary.fromLists(l2, values);
   
-    var in_1 = ee.String(v.get(i)).slice(0,1).getInfo();
-    var in_2 = ee.String(ee.List(lab_zip.get(i)).get(1)).getInfo();
-    lst = lst.add(ee.Dictionary({v: in_1,
-                                f: in_2})); 
-  }
-
   // Prepare the chart.
   var chart =
   ui.Chart.array.values({
       array: dict.values(),
+      xLabels: l2,
       axis: 0,})
     .setChartType('CandlestickChart')
     .setOptions({
       title: name + " " + band + " Values by Landcover",
       hAxis: {
         title: 'Land Cover Class',
-        ticks: lst.getInfo()
-                },
+      },
         vAxis: {
         title: band
       },
       lineWidth: 1,
       pointSize: 3,
+      legend: {position: 'none'}
       });
   print(chart);
 };
