@@ -862,6 +862,8 @@ step_1_button.onClick(function() {
             if (sizes) {
               print('No. Historical Images: ' + sizes[0]);
               print('No. Contemporary Images: ' + sizes[1]);
+            } else {
+              print(failure);
             }
             doStepFour();
           });
