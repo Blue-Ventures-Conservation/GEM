@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 23 April 2026
+Last updated: 24 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -796,14 +796,6 @@ step_1_button.onClick(function() {
             '\nor historical, high or low tide' +
             '\nimagery to the map.'+
             '\n\nClick the buttons to view the imagery!');
-      print('After calculating the number of historical'+
-            '\nand contemporary images, the button to'+
-            '\nproceed to Section 4 will appear.');
-      print('These calculations should let you know'+
-            '\nwhether your inputs to module 1 are'+
-            '\nproducing enough imagery to create' +
-            '\nsolid composites for both historical' +
-            '\nand contemporary time periods.');
       Map.clear(); // Reset the map
       if (inland_mang === true) {
         ROI = ROI.buffer(buff_dist);
@@ -822,6 +814,12 @@ step_1_button.onClick(function() {
       var hist_imagery = hist_result[0];
       var imagery_scale = cont_result[1];
       
+      if (force_ls) {
+        print("Using Landsat at " + imagery_scale + "m scale");
+      } else {
+        print("Using Sentinel-2 at " + imagery_scale + "m scale");
+      }
+      
       // Build the contemporary BAP composites
       var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
       var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
@@ -833,6 +831,21 @@ step_1_button.onClick(function() {
       var hlot_vis = Hlot;
       var chot_vis = Chot;
       var clot_vis = Clot;
+      var false_colour_bands = ['NIR','SWIR1','Red'];
+      var vis = {bands: false_colour_bands, min: 0, max: 0.27};
+      
+      function visualize_imagery(img, buttonLabel, layerLabel) {
+        var add_imagery = ui.Button(buttonLabel);
+        add_imagery.onClick(function() {
+           Map.addLayer(img, vis, layerLabel);
+        });
+        print(add_imagery);
+      }
+      
+      visualize_imagery(hhot_vis, 'Add Historical High Tide Imagery', 'Historical High Tide');
+      visualize_imagery(hlot_vis, 'Add Historical Low Tide Imagery', 'Historical Low Tide');
+      visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide');
+      visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide');
       
       // chop off mndwi, inv_mndwi, day, month and year bands
       var bnames = Chot.bandNames().slice(0, -5);
@@ -858,6 +871,15 @@ step_1_button.onClick(function() {
       ROI.convexHull(1).area().divide(10000).lt(2500000).evaluate(function(nm, fail) {
         if (nm && nm > 0) {
           notMassive = true;
+          print("Counting historical and contemporary images...");
+          print('After calculating the number of historical'+
+            '\nand contemporary images, the button to'+
+            '\nproceed to Section 4 will appear.');
+          print('These calculations should let you know'+
+            '\nwhether your inputs to module 1 are'+
+            '\nproducing enough imagery to create' +
+            '\nsolid composites for both historical' +
+            '\nand contemporary time periods.');
           ee.List([ee.String(ee.ImageCollection(hist_imagery).size()), ee.String(ee.ImageCollection(cont_imagery).size())]).evaluate(function(sizes, failure) {
             if (sizes) {
               print('No. Historical Images: ' + sizes[0]);
@@ -871,28 +893,6 @@ step_1_button.onClick(function() {
           doStepFour();
         }
       });
-      
-      if (force_ls) {
-        print("Using Landsat at " + imagery_scale + "m scale");
-      } else {
-        print("Using Sentinel-2 at " + imagery_scale + "m scale");
-      }
-      
-      var false_colour_bands = ['NIR','SWIR1','Red'];
-      var vis = {bands: false_colour_bands, min: 0, max: 0.27};
-      
-      function visualize_imagery(img, buttonLabel, layerLabel) {
-        var add_imagery = ui.Button(buttonLabel);
-        add_imagery.onClick(function() {
-           Map.addLayer(img, vis, layerLabel);
-        });
-        print(add_imagery);
-      }
-      
-      visualize_imagery(hhot_vis, 'Add Historical High Tide Imagery', 'Historical High Tide');
-      visualize_imagery(hlot_vis, 'Add Historical Low Tide Imagery', 'Historical Low Tide');
-      visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide');
-      visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide');
     });
     print(step_3_button);
   });
@@ -1003,8 +1003,19 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
       var dsm = topography.dsm_id(topo, topo_path);
       var topo_mask = topography.topo_mask_func(dsm, kn_mang_ext, mang_topo, elevation, slope);
       
+      function waterImagesDescription() {
+        print("If your water mask and final mask are incomplete,\n"+
+          "review below the number of contemporary and historical\n"+
+          "low-tide images available for the water mask.\n\n"+
+          "There must be enough images to cover your entire ROI -\n"+
+          "if not enough, widen the months and/or years windows\n"+
+          "to filter in more imagery."
+        );
+      }
+      
       var waterMask = ee.Image(1);
       if (remove_water === true) {
+        print("Counting historical and contemporary water mask images...");
         if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
           var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months);
           var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months);
@@ -1025,6 +1036,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           if (notMassive) {
             ee.List([ee.String(sar_hist_images.size()), ee.String(sar_cont_images.size())]).evaluate(function(sarCounts, failure) {
               if (sarCounts) {
+                waterImagesDescription();
                 print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + sarCounts[0]);
                 print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + sarCounts[1]);
               }
@@ -1043,6 +1055,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           if (notMassive) {
             ee.List([ee.String(hlot_water.size()), ee.String(clot_water.size())]).evaluate(function(optCounts, failure) {
               if (optCounts) {
+                waterImagesDescription();
                 print('No. Historical Low-Tide Images for Water Mask: ' + optCounts[0]);
                 print('No. Contemporary Low-Tide Images for Water Mask: ' + optCounts[1]);
               }
@@ -1050,13 +1063,6 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           }
         }
       }
-      
-      print("If your water mask and final mask are incomplete,\n"+
-        "review above the number of contemporary and historical\n"+
-        "low-tide images available for the water mask.\n\n"+
-        "There must be enough images to cover your entire ROI -\n"+
-        "if not enough, widen the months and/or years windows\n"+
-        "to filter in more imagery.");
       
       // Combine the topo and water masks
       var final_mask = waterMask.multiply(topo_mask).eq(1);
