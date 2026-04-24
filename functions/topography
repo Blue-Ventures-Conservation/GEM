@@ -9,7 +9,7 @@ dsm_id: determines whether the user will use the GEE JAXA topographic dataset
 topo_mask_func: the topographic data is used to generate a pixel masck, based
                 on elevation and slope thresholds.
 
-Last update: 25 March 2026
+Last update: 23 April 2026
 
 */
 exports.dsm_id = function(topo, topo_path){
@@ -65,10 +65,15 @@ exports.topo_mask_func = function(dsm, mangroves, mang_topo, elevation, slope){
   var el_img = ee.Image.constant(mang_elv.get('elev'));
   var slp_img = ee.Image.constant(mang_slope.get('slope'));
   
-  var fetchedVals = ee.List([el_val, slp_val]).getInfo();
-  
-  print("99th percentile known mangrove elevation: " + fetchedVals[0]);
-  print("99th percentile known mangrove slope: " + fetchedVals[1]);
+  print("Fetching 99th percentile elevation and\nslope for known mangrove extent...");
+  ee.List([el_val, slp_val]).evaluate(function(vals, failure) {
+    if (vals) {
+      print("99th percentile known mangrove elevation: " + vals[0]);
+      print("99th percentile known mangrove slope: " + vals[1]);
+    } else {
+      print(failure);
+    }
+  });
   
   if (mang_topo === true){
     var topo_mask = dsm.select('elev').lte(el_img)
