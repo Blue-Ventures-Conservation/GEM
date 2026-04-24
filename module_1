@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 20 April 2026
+Last updated: 23 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -625,6 +625,7 @@ step_1_button.onClick(function() {
   
   // Print Index selection instructions
   print('Select the indices to be calculated in Section 4');
+  print('We have pre-selected our suggested mangrove indices.');
   
   // Ingest the topographic data (DSM)
   var dsm = topography.dsm_id(topo);
@@ -667,20 +668,28 @@ step_1_button.onClick(function() {
     maxPixels: 1e13,
   }).filter(ee.Filter.gt('count', 10)).geometry().simplify(75);
   
-  // Generate the empty index list
-  var indx = ee.List([]);
-  
-  // List of refernce indices
-  var OG_band_list = ui.data.ActiveList(['SR','NDVI','NDWI','MNDWI','CMRI','MMRI','SAVI',
+  // List of reference indices
+  var suggestedIndices = ['MNDWI','CMRI','MMRI','SAVI'];
+  var OG_band_list = ui.data.ActiveList(['MNDWI','CMRI','MMRI','SAVI','SR','NDVI','NDWI',
   'OSAVI','EVI','MRI','SMRI','LSWI','NDTI']);
+  
+  // Generate the empty index list
+  var indx = suggestedIndices;
   
   // Create checkboxes 
   OG_band_list.forEach(function(x){
-    var ind_box = ui.Checkbox(x, false);
+    var startChecked = suggestedIndices.indexOf(x) > -1;
+    var ind_box = ui.Checkbox(x, startChecked);
     ind_box.onChange(function(checked) {
     // Add/remove the index to the list
-    if (checked === true){indx = indx.add(x);
-    } else {indx = indx.remove(x);}}); 
+    if (checked === true){
+      indx.push(x);
+    } else {
+      var i = indx.indexOf(x);
+      if (i > -1) {
+        indx.splice(i, 1);
+      }
+    }});
     print(ind_box);
   });
   
@@ -691,8 +700,8 @@ step_1_button.onClick(function() {
   var button = ui.Button({
   label: 'Print Index List',
   onClick: function() {
-    print('Index List', indx.distinct());
-    return ee.List(indx.distinct());
+    print('Index List', indx);
+    return ee.List(indx);
     }
   });
   print(button);
@@ -782,13 +791,19 @@ step_1_button.onClick(function() {
                          fontSize: '18px',
                          textAlign: 'center'}
                 }));
-      print('When the imagery has been prepared, '+
-            '\nbuttons will appear to display the imagery;'+
-            '\nindicating to add either the contemporary'+
-            '\nand/or historical imagery to the map.'+
-            '\nDo not proceed before these buttons populate'+
-            '\nthe console. Click the buttons to view the '+
-            '\nimagery.');
+      print('Four buttons appear below, indicating'+
+            '\nto add either the contemporary'+
+            '\nor historical, high or low tide' +
+            '\nimagery to the map.'+
+            '\n\nClick the buttons to view the imagery!');
+      print('After calculating the number of historical'+
+            '\nand contemporary images, the button to'+
+            '\nproceed to Section 4 will appear.');
+      print('These calculations should let you know'+
+            '\nwhether your inputs to module 1 are'+
+            '\nproducing enough imagery to create' +
+            '\nsolid composites for both historical' +
+            '\nand contemporary time periods.');
       Map.clear(); // Reset the map
       if (inland_mang === true) {
         ROI = ROI.buffer(buff_dist);
@@ -796,11 +811,8 @@ step_1_button.onClick(function() {
       for (var i = 0; i < exclusion_geometries.length; i++) {
         ROI = ROI.difference(exclusion_geometries[i]);
       }
-      Map.addLayer(ROI, {color: '1E266F'}, "ROI"); // Add ROI to map
       
-      // Clip the known mangrove extent
-      var kn_mang_ext = mang_img.clip(ROI);
-      var false_colour_bands = ['NIR','SWIR1','Red'];
+      Map.addLayer(ROI, {color: '1E266F'}, "ROI"); // Add ROI to map
       
       // Create hist./cont. image collections
       var force_ls = force_landsat || !imagery.should_use_s2(contemporary_start_year, contemporary_months, historical_start_year, historical_months);
@@ -810,273 +822,75 @@ step_1_button.onClick(function() {
       var hist_imagery = hist_result[0];
       var imagery_scale = cont_result[1];
       
-      if (force_ls) {
-        print("Using Landsat at " + imagery_scale + "m scale");
-      } else {
-        print("Using Sentinel-2 at " + imagery_scale + "m scale");
-      }
-
-      print('No. Contemporary Images: ' + ee.String(ee.ImageCollection(cont_imagery).size()).getInfo());
-      print('No. Historical Images: ' + ee.String(ee.ImageCollection(hist_imagery).size()).getInfo());
-      
-      var export_max_pixels = 1e13;
-      
       // Build the contemporary BAP composites
       var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
       var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
-      var chot_vis = Chot;
-      var clot_vis = Clot;
-      
-      // Add the contemporary imagery once it has finished processing 
-      clot_vis.evaluate(function(){
-        var add_c_imagery = ui.Button('Add Contemporary Imagery');
-        add_c_imagery.onClick(function(){
-        // Add to Map
-          var vis = {bands: false_colour_bands, min: 0, max: 0.27};
-          Map.addLayer(chot_vis, vis, 'Contemporary High Tide');
-          Map.addLayer(clot_vis, vis, 'Contemporary Low Tide');
-        });
-        print(add_c_imagery);
-      });
-      
       // Build the historical BAP composites
       var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.mod_water_index).clip(ROI);
       var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+      
       var hhot_vis = Hhot;
       var hlot_vis = Hlot;
-
-      // Add the historical imagery once it has finished processing
-      hlot_vis.evaluate(function(result){
-        var add_h_imagery = ui.Button('Add Historical Imagery');
-        add_h_imagery.onClick(function(){
-          // Add to Map
-          var vis = {bands: false_colour_bands, min: 0, max: 0.27};
-          Map.addLayer(hhot_vis, vis, 'Historical High Tide');
-          Map.addLayer(hlot_vis, vis, 'Historical Low Tide');
-        });
-        print(add_h_imagery);
-      });
+      var chot_vis = Chot;
+      var clot_vis = Clot;
       
       // chop off mndwi, inv_mndwi, day, month and year bands
       var bnames = Chot.bandNames().slice(0, -5);
-      
       Chot = Chot.select(bnames);
       Clot = Clot.select(bnames);
       Hhot = Hhot.select(bnames);
       Hlot = Hlot.select(bnames);
       
-      ///////////////
-      // Section 4 //
-      ///////////////
-      // The indices variables selected in Section 1 are calculated. Once 
-      // calculated, the user will be prompted to export the imagery
-      // to their GEE asset folder. 
+      // If the convex hull is bigger than 2.5 million hectares (a limit we have arrived at
+      // experimentally), we typically start to run into timeouts. The strategy is then to
+      // avoid asking GEE any questions about this imagery via evaluate calls, and to just
+      // move to exporting. This should help keep things moving for users and avoid errors
+      // that may seem quite opaque to them otherwise.
+      var notMassive = false;
       
-      // Calculation of the spectral indices
-      var step_4_button = ui.Button('Section 4: Calculate the Spectral Indices');
-      step_4_button.onClick(function(){
-        print(ui.Label({value:'Module 1: Section 4',
-                  style:{fontWeight: 'bold',
-                         fontSize: '18px',
-                         textAlign: 'center'}
-                }));
-        print('When the indices have been calculated'+
-            '\nthe imagery and indices will be prepared for export.'+
-            '\nThen, an alert will appear in the console when the '+
-            '\nindices are calculated. The task tab will turn yellow.'+
-            '\n'+
-            '\nOnce the task tab turns yellow, click the tab and click'+
-            '\non Run for each item that has populated the Tasks tab.'+
-            '\nBe sure that the export is directed to your asset folder.');
-
-        // Add single-image indices     
-        var Chot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Chot));
-        var Clot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Clot));
-        var Hhot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Hhot));
-        var Hlot1 = ee.Image(indx_mod.addIndex_simple(indx_list, Hlot));
-        
-        // Add SMRI if in list
-        var Chot2 = ee.Algorithms.If(indx_list.contains('SMRI'), 
-        ee.Image(Chot1).addBands(indx_mod.SMRI(Chot1, Clot1)),  ee.Image(Chot1));
-        var Clot2 = ee.Algorithms.If(indx_list.contains('SMRI'), 
-        ee.Image(Clot1).addBands(indx_mod.SMRI(Chot1, Clot1)),  ee.Image(Clot1));
-        var Hhot2 = ee.Algorithms.If(indx_list.contains('SMRI'), 
-        ee.Image(Hhot1).addBands(indx_mod.SMRI(Hhot1, Hlot1)),  ee.Image(Hhot1));
-        var Hlot2 = ee.Algorithms.If(indx_list.contains('SMRI'), 
-        ee.Image(Hlot1).addBands(indx_mod.SMRI(Hhot1, Hlot1)),  ee.Image(Hlot1));
-        
-        // Add MRI if in list
-        var Chot3 = ee.Algorithms.If(indx_list.contains('MRI'), 
-        ee.Image(Chot2).addBands(indx_mod.MRI(Chot2, Clot2)),  ee.Image(Chot2));
-        var Clot3 = ee.Algorithms.If(indx_list.contains('MRI'), 
-        ee.Image(Clot2).addBands(indx_mod.MRI(Chot2, Clot2)),  ee.Image(Clot2));
-        var Hhot3 = ee.Algorithms.If(indx_list.contains('MRI'), 
-        ee.Image(Hhot2).addBands(indx_mod.MRI(Hhot2, Hlot2)),  ee.Image(Hhot2));
-        var Hlot3 = ee.Algorithms.If(indx_list.contains('MRI'), 
-        ee.Image(Hlot2).addBands(indx_mod.MRI(Hhot2, Hlot2)),  ee.Image(Hlot2));
-        
-        // Export Imagery with indices as bands
-        Chot3 = ee.Image(Chot3).float();
-        Clot3 = ee.Image(Clot3).float();
-        Hhot3 = ee.Image(Hhot3).float();
-        Hlot3 = ee.Image(Hlot3).float();
-        var test = ee.Image(Hlot3).addBands(ee.Image.constant(2));              
-       
-        // Export Imagery with indices as bands
-        Export.image.toAsset({
-            image: ee.Image(Chot3),
-            description: 'HOT_Img_contemporary',
-            region: ROI,
-            scale: imagery_scale,
-            maxPixels: export_max_pixels
-          });
-
-        Export.image.toAsset({
-            image: ee.Image(Clot3),
-            description: 'LOT_Img_contemporary',
-            region: ROI,
-            scale: imagery_scale,
-            maxPixels: export_max_pixels
-          });
-
-        Export.image.toAsset({
-            image: ee.Image(Hhot3),
-            description: 'HOT_Img_historical',
-            region: ROI,
-            scale: imagery_scale,
-            maxPixels: export_max_pixels
-          });
-
-        Export.image.toAsset({
-            image: ee.Image(Hlot3),
-            description: 'LOT_Img_historical',
-            region: ROI,
-            scale: imagery_scale,
-            maxPixels: export_max_pixels
-          });
-
-        ///////////////
-        // Section 5 //
-        ///////////////
-        // Section 5 will create the masks, and ultimately the final mask
-        // for the classification(s). The exports will automatically populate  
-        // the task tab. Just like the imagery it should be exported to each 
-        // user's asset folder.
-        
-        // section 5 button
-        var step_5_button = ui.Button('Section 5: Prepare Image Mask');
-        step_5_button.onClick(function(){
-          print(ui.Label({value:'Module 1: Section 5',
-                  style:{fontWeight: 'bold',
-                         fontSize: '18px',
-                         textAlign: 'center'}
-                }));
-          print('When the final mask has been prepared the task tab'+
-              '\nwill turn yellow, prompting for export. The final mask'+
-              '\nand the other intermediary outputs can be viewed in the'+
-              '\npanel by clicking on the corresponding button.'+
-              '\n'+
-              '\nOnce all the of intermediary outputs have begun to export'+
-              '\nGEM Module 1 is complete. Proceed to GEM Module 2'+
-              '\nafter all outputs have successfully been exported and'+
-              '\nadded to the asset GEE asset folder.');
-        
-          // Bring in topo data and create the mask
-          var dsm = topography.dsm_id(topo, topo_path);
-          var topo_mask = topography.topo_mask_func(dsm, kn_mang_ext, mang_topo, elevation, slope);
-          
-          var waterMask = ee.Image(1);
-          if (remove_water === true) {
-            if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
-              var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months);
-              var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months);
-              
-              var sar_cont_water = sar_cont_result[0];
-              var sar_cont_images = sar_cont_result[1];
-              
-              var sar_hist_water = sar_hist_result[0];
-              var sar_hist_images = sar_hist_result[1];
-              
-              var sar_water_mask = null;
-              if (combo_water_mask) {
-                sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
-              } else {
-                sar_water_mask = sar_hist_water;
-              }
-              print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_cont_images.size()).getInfo());
-              print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + ee.String(sar_hist_images.size()).getInfo());
-              waterMask = sar_water_mask;
-            } else {
-              // Use low tide images to create water mask
-              var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-              print('No. Contemporary Low-Tide Images for Water Mask: ' + ee.String(clot_water.size()).getInfo());
-              clot_water = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-              var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-              print('No. Historical Low-Tide Images for Water Mask: ' + ee.String(hlot_water.size()).getInfo());
-              hlot_water = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-              waterMask = imagery.water_mask(hlot_water, clot_water, combo_water_mask);
+      // Prepare the next section to appear after an evaluate call below
+      function doStepFour() {
+        var step_4_button = ui.Button('Section 4: Calculate the Spectral Indices');
+        step_4_button.onClick(produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, notMassive));
+        print(step_4_button);
+      }
+      
+      ROI.convexHull(1).area().divide(10000).lt(2500000).evaluate(function(nm, fail) {
+        if (nm && nm > 0) {
+          notMassive = true;
+          ee.List([ee.String(ee.ImageCollection(hist_imagery).size()), ee.String(ee.ImageCollection(cont_imagery).size())]).evaluate(function(sizes, failure) {
+            if (sizes) {
+              print('No. Historical Images: ' + sizes[0]);
+              print('No. Contemporary Images: ' + sizes[1]);
             }
-          }
-          
-          print("If your water mask and final mask are incomplete,\n"+
-            "review above the number of contemporary and historical\n"+
-            "low-tide images available for the water mask.\n\n"+
-            "There must be enough images to cover your entire ROI -\n"+
-            "if not enough, widen the months and/or years windows\n"+
-            "to filter in more imagery.");
-          
-          // Combine the topo and water masks
-          var final_mask = waterMask.multiply(topo_mask).eq(1);
-          
-          // Add buttons to view the mask outputs
-          var topo_mask_butt = ui.Button('View Topo Mask?');
-              topo_mask_butt.onClick(function(){
-                Map.addLayer(ee.Image(topo_mask.clip(ROI)), {}, 'Topographic Mask');});
-          var water_mask_butt = ui.Button('View water Mask?');
-              water_mask_butt.onClick(function(){
-                Map.addLayer(ee.Image(waterMask.clip(ROI)), {}, 'Water Mask');});
-          var final_mask_butt = ui.Button('View Final Mask?');
-              final_mask_butt.onClick(function(){
-                Map.addLayer(ee.Image(final_mask.clip(ROI)), {}, 'Final Mask');});
-          
-          // Export final mask
-          Export.image.toAsset({
-              image: final_mask,
-              description: 'Final_mask',
-              region: ROI,
-              scale: imagery_scale,
-              maxPixels: export_max_pixels
-            });
-            
-          // Prepare final ROI for export
-          var ROI_out = ee.FeatureCollection(ee.Feature(ROI, {name: 'ROI'}));
-          // Export final ROI
-          Export.table.toAsset({
-            collection: ROI_out,
-            description: "ROI",
-            assetId: 'ROI'
-            });
-              
-          // Create Panel
-          var mask_panel = ui.Panel({
-            layout: ui.Panel.Layout.flow('vertical'),
-            style: {width: '300px'}
-            });
-            
-          // Add buttons to the panel
-          mask_panel.add(topo_mask_butt);
-          mask_panel.add(water_mask_butt);
-          mask_panel.add(final_mask_butt);
-          
-          // Add the panel to the map
-          ui.root.add(mask_panel);
-
-        });
-        test.evaluate(function(){ // Safety to not proceed until ready
-          print('ALERT: Spectral Indices Successfully Calculated');
-          print(step_5_button);});
+            doStepFour();
+          });
+        } else {
+          doStepFour();
+        }
       });
-      print(step_4_button);
+      
+      if (force_ls) {
+        print("Using Landsat at " + imagery_scale + "m scale");
+      } else {
+        print("Using Sentinel-2 at " + imagery_scale + "m scale");
+      }
+      
+      var false_colour_bands = ['NIR','SWIR1','Red'];
+      var vis = {bands: false_colour_bands, min: 0, max: 0.27};
+      
+      function visualize_imagery(img, buttonLabel, layerLabel) {
+        var add_imagery = ui.Button(buttonLabel);
+        add_imagery.onClick(function() {
+           Map.addLayer(img, vis, layerLabel);
+        });
+        print(add_imagery);
+      }
+      
+      visualize_imagery(hhot_vis, 'Add Historical High Tide Imagery', 'Historical High Tide');
+      visualize_imagery(hlot_vis, 'Add Historical Low Tide Imagery', 'Historical Low Tide');
+      visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide');
+      visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide');
     });
     print(step_3_button);
   });
@@ -1086,6 +900,211 @@ print(step_1_button);
 });
 alert('First we will select the months of interest\n(for Contemporary & Historical year ranges)');
 print(months_step_button);
+
+
+function produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, notMassive) {
+  return function() {
+    ///////////////
+    // Section 4 //
+    ///////////////
+    // The indices variables selected in Section 1 are calculated. Once 
+    // calculated, the user will be prompted to export the imagery
+    // to their GEE asset folder. 
+    
+    // Calculation of the spectral indices
+    print(ui.Label({value:'Module 1: Section 4',
+              style:{fontWeight: 'bold',
+                     fontSize: '18px',
+                     textAlign: 'center'}
+            }));
+    print('When the indices have been calculated, four images'+
+        '\nalong with their indices will be prepared for export.'+
+        '\nThe task tab will turn yellow.'+
+        '\n'+
+        '\nOnce the task tab turns yellow, click the tab and click'+
+        '\non Run for each item that has populated the Tasks tab.'+
+        '\nBe sure that the export is directed to your asset folder.');
+    
+    // Add indices.
+    var cont_indxs = indx_mod.add_indices(indx_list, Chot, Clot);
+    var hist_indxs = indx_mod.add_indices(indx_list, Hhot, Hlot);
+    
+    Chot = ee.Image(cont_indxs[0]).float();
+    Clot = ee.Image(cont_indxs[1]).float();
+    Hhot = ee.Image(hist_indxs[0]).float();
+    Hlot = ee.Image(hist_indxs[1]).float();
+    
+    var export_max_pixels = 1e13;
+   
+    // Export Imagery with indices as bands
+    Export.image.toAsset({
+        image: ee.Image(Chot),
+        description: 'HOT_Img_contemporary',
+        region: ROI,
+        scale: imagery_scale,
+        maxPixels: export_max_pixels
+      });
+  
+    Export.image.toAsset({
+        image: ee.Image(Clot),
+        description: 'LOT_Img_contemporary',
+        region: ROI,
+        scale: imagery_scale,
+        maxPixels: export_max_pixels
+      });
+  
+    Export.image.toAsset({
+        image: ee.Image(Hhot),
+        description: 'HOT_Img_historical',
+        region: ROI,
+        scale: imagery_scale,
+        maxPixels: export_max_pixels
+      });
+  
+    Export.image.toAsset({
+        image: ee.Image(Hlot),
+        description: 'LOT_Img_historical',
+        region: ROI,
+        scale: imagery_scale,
+        maxPixels: export_max_pixels
+      });
+  
+    ///////////////
+    // Section 5 //
+    ///////////////
+    // Section 5 will create the masks, and ultimately the final mask
+    // for the classification(s). The exports will automatically populate  
+    // the task tab. Just like the imagery it should be exported to each 
+    // user's asset folder.
+    
+    // section 5 button
+    var step_5_button = ui.Button('Section 5: Prepare Image Mask');
+    step_5_button.onClick(function() {
+      print(ui.Label({value:'Module 1: Section 5',
+              style:{fontWeight: 'bold',
+                     fontSize: '18px',
+                     textAlign: 'center'}
+            }));
+      print('When the final mask has been prepared the task tab'+
+          '\nwill turn yellow, prompting for export. The final mask'+
+          '\nand the other intermediary outputs can be viewed in the'+
+          '\npanel by clicking on the corresponding button.'+
+          '\n'+
+          '\nOnce all the of intermediary outputs have begun to export'+
+          '\nGEM Module 1 is complete. Proceed to GEM Module 2'+
+          '\nafter all outputs have successfully been exported and'+
+          '\nadded to the asset GEE asset folder.');
+      // Clip the known mangrove extent
+      var kn_mang_ext = mang_img.clip(ROI);
+    
+      // Bring in topo data and create the mask
+      var dsm = topography.dsm_id(topo, topo_path);
+      var topo_mask = topography.topo_mask_func(dsm, kn_mang_ext, mang_topo, elevation, slope);
+      
+      var waterMask = ee.Image(1);
+      if (remove_water === true) {
+        if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
+          var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months);
+          var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months);
+          
+          var sar_cont_water = sar_cont_result[0];
+          var sar_cont_images = sar_cont_result[1];
+          
+          var sar_hist_water = sar_hist_result[0];
+          var sar_hist_images = sar_hist_result[1];
+          
+          var sar_water_mask = null;
+          if (combo_water_mask) {
+            sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
+          } else {
+            sar_water_mask = sar_hist_water;
+          }
+          
+          if (notMassive) {
+            ee.List([ee.String(sar_hist_images.size()), ee.String(sar_cont_images.size())]).evaluate(function(sarCounts, failure) {
+              if (sarCounts) {
+                print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + sarCounts[0]);
+                print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + sarCounts[1]);
+              }
+            });
+          }
+          
+          waterMask = sar_water_mask;
+        } else {
+          // Use low tide images to create water mask
+          var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
+          clot_water = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+          var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
+          hlot_water = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+          waterMask = imagery.water_mask(hlot_water, clot_water, combo_water_mask);
+          
+          if (notMassive) {
+            ee.List([ee.String(hlot_water.size()), ee.String(clot_water.size())]).evaluate(function(optCounts, failure) {
+              if (optCounts) {
+                print('No. Historical Low-Tide Images for Water Mask: ' + optCounts[0]);
+                print('No. Contemporary Low-Tide Images for Water Mask: ' + optCounts[1]);
+              }
+            });
+          }
+        }
+      }
+      
+      print("If your water mask and final mask are incomplete,\n"+
+        "review above the number of contemporary and historical\n"+
+        "low-tide images available for the water mask.\n\n"+
+        "There must be enough images to cover your entire ROI -\n"+
+        "if not enough, widen the months and/or years windows\n"+
+        "to filter in more imagery.");
+      
+      // Combine the topo and water masks
+      var final_mask = waterMask.multiply(topo_mask).eq(1);
+      
+      // Add buttons to view the mask outputs
+      var topo_mask_butt = ui.Button('View Topo Mask?');
+          topo_mask_butt.onClick(function(){
+            Map.addLayer(ee.Image(topo_mask.clip(ROI)), {}, 'Topographic Mask');});
+      var water_mask_butt = ui.Button('View water Mask?');
+          water_mask_butt.onClick(function(){
+            Map.addLayer(ee.Image(waterMask.clip(ROI)), {}, 'Water Mask');});
+      var final_mask_butt = ui.Button('View Final Mask?');
+          final_mask_butt.onClick(function(){
+            Map.addLayer(ee.Image(final_mask.clip(ROI)), {}, 'Final Mask');});
+      
+      // Export final mask
+      Export.image.toAsset({
+          image: final_mask,
+          description: 'Final_mask',
+          region: ROI,
+          scale: imagery_scale,
+          maxPixels: export_max_pixels
+        });
+        
+      // Prepare final ROI for export
+      var ROI_out = ee.FeatureCollection(ee.Feature(ROI, {name: 'ROI'}));
+      // Export final ROI
+      Export.table.toAsset({
+        collection: ROI_out,
+        description: "ROI",
+        assetId: 'ROI'
+        });
+          
+      // Create Panel
+      var mask_panel = ui.Panel({
+        layout: ui.Panel.Layout.flow('vertical'),
+        style: {width: '300px'}
+        });
+        
+      // Add buttons to the panel
+      mask_panel.add(topo_mask_butt);
+      mask_panel.add(water_mask_butt);
+      mask_panel.add(final_mask_butt);
+      
+      // Add the panel to the map
+      ui.root.add(mask_panel);
+    });
+    print(step_5_button);
+  };
+}
 
 
 /*
