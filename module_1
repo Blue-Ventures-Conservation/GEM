@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 24 April 2026
+Last updated: 28 April 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -854,7 +854,7 @@ step_1_button.onClick(function() {
       Hhot = Hhot.select(bnames);
       Hlot = Hlot.select(bnames);
       
-      // If the convex hull is bigger than 2.5 million hectares (a limit we have arrived at
+      // If the AOI is bigger than 2.5 million hectares (a limit we have arrived at
       // experimentally), we typically start to run into timeouts. The strategy is then to
       // avoid asking GEE any questions about this imagery via evaluate calls, and to just
       // move to exporting. This should help keep things moving for users and avoid errors
@@ -868,7 +868,9 @@ step_1_button.onClick(function() {
         print(step_4_button);
       }
       
-      ROI.convexHull(1).area().divide(10000).lt(2500000).evaluate(function(nm, fail) {
+      print("Measuring the AOI, if it's not massive we'll count your images!");
+      print("If it is massive, you'll move on to Section 4 soon...");
+      ROI.area().divide(10000).lt(2500000).evaluate(function(nm, fail) {
         if (nm && nm > 0) {
           notMassive = true;
           print("Counting historical and contemporary images...");
