@@ -9,7 +9,7 @@ dtm: determines whether the user will use the GEE JAXA topographic dataset
 topo_mask_func: the topographic data is used to generate a pixel masck, based
                 on elevation and slope thresholds.
 
-Last update: 2 May 2026
+Last update: 3 May 2026
 
 */
 exports.dtm = function(topo, topo_path){
@@ -18,10 +18,10 @@ exports.dtm = function(topo, topo_path){
     // when 'TRUE' the topo data from GEE will be ingested
     var elev = ee.ImageCollection('JAXA/ALOS/AW3D30/V4_1').select('DSM');
     var proj = elev.first().select(0).projection();
-    var dsm = elev.mosaic().setDefaultProjection(proj).toFloat().rename("elev");
-    var dtm = ee.Image("projects/sat-io/open-datasets/DELTARES/deltadtm_v1").rename('elev');
-    dtm = dtm.updateMask(dtm.neq(10));
-    var combined = ee.ImageCollection([dsm, dtm]).mosaic();
+    var dsm = elev.mosaic().toFloat().rename("elev");
+    var dtm = ee.Image("projects/sat-io/open-datasets/DELTARES/deltadtm_v1");
+    dtm = dtm.updateMask(dtm.neq(10)).toFloat().rename('elev');
+    var combined = ee.ImageCollection([dsm, dtm]).mosaic().setDefaultProjection(proj);
     return combined;
   };
   
@@ -41,7 +41,6 @@ exports.dtm = function(topo, topo_path){
 };
 
 exports.topo_mask_func = function(dtm, mangroves, mang_topo, elevation, slope){
-
   dtm = ee.Image(dtm);
   //extract slope and elevation 99.9th precentile from known mangrove extent
   var mang_elv = dtm.select('elev').updateMask(mangroves)
