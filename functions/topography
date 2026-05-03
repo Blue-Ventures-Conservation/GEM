@@ -3,57 +3,59 @@
 This is the topography module, which is part of the BVC GEM v1.2 library.
 Two funtions:
 
-dsm_id: determines whether the user will use the GEE JAXA topographic dataset
+dtm: determines whether the user will use the GEE JAXA topographic dataset
         or the user prefers to ingest their own raster-based topographic data
 
 topo_mask_func: the topographic data is used to generate a pixel masck, based
                 on elevation and slope thresholds.
 
-Last update: 23 April 2026
+Last update: 2 May 2026
 
 */
-exports.dsm_id = function(topo, topo_path){
+exports.dtm = function(topo, topo_path){
   // topo is true/false user identified boolean value 
   var topo_t = function(){
-      // when 'TRUE' the topo data from GEE will be ingested
-      var elev = ee.ImageCollection('JAXA/ALOS/AW3D30/V4_1').select('DSM');
-      var proj = elev.first().select(0).projection();
-      return elev.mosaic().setDefaultProjection(proj).rename("elev");
+    // when 'TRUE' the topo data from GEE will be ingested
+    var elev = ee.ImageCollection('JAXA/ALOS/AW3D30/V4_1').select('DSM');
+    var proj = elev.first().select(0).projection();
+    var dsm = elev.mosaic().setDefaultProjection(proj).toFloat().rename("elev");
+    var dtm = ee.Image("projects/sat-io/open-datasets/DELTARES/deltadtm_v1").rename('elev');
+    dtm = dtm.updateMask(dtm.neq(10));
+    var combined = ee.ImageCollection([dsm, dtm]).mosaic();
+    return combined;
   };
-
+  
   var topo_f = function(topo_path){
     // when false the users topo data will be brought in
     return ee.Image(topo_path).rename('elev');
   }; 
-
-  var dsm = ee.Algorithms.If(topo, topo_t(), topo_f(topo_path));
-
-  var slp_img = ee.Terrain.slope(ee.Image(dsm).select('elev'))
+  
+  var dtm = ee.Algorithms.If(topo, topo_t(), topo_f(topo_path));
+  
+  var slp_img = ee.Terrain.slope(ee.Image(dtm).select('elev'))
                 .double().rename('slope');
   
-  dsm = ee.Image(dsm).addBands(slp_img);
+  dtm = ee.Image(dtm).addBands(slp_img);
   
-  
-  return dsm;
+  return dtm;
 };
 
+exports.topo_mask_func = function(dtm, mangroves, mang_topo, elevation, slope){
 
-exports.topo_mask_func = function(dsm, mangroves, mang_topo, elevation, slope){
-
-  dsm = ee.Image(dsm);
-  //extract slope and elevation 99th precentile from known mangrove extent
-  var mang_elv = dsm.select('elev').updateMask(mangroves)
+  dtm = ee.Image(dtm);
+  //extract slope and elevation 99.9th precentile from known mangrove extent
+  var mang_elv = dtm.select('elev').updateMask(mangroves)
                   .reduceRegion({
-                    reducer: ee.Reducer.percentile({percentiles: [99]}),
+                    reducer: ee.Reducer.percentile({percentiles: [99.9]}),
                     geometry: mangroves.geometry(),
                     scale: 30,
                     maxPixels: 1e12,
                     bestEffort: true
                     });
 
-  var mang_slope = dsm.select('slope').updateMask(mangroves)
+  var mang_slope = dtm.select('slope').updateMask(mangroves)
                    .reduceRegion({
-                    reducer: ee.Reducer.percentile({percentiles: [99]}),
+                    reducer: ee.Reducer.percentile({percentiles: [99.9]}),
                     geometry: mangroves.geometry(),
                     scale: 30,
                     maxPixels: 1e12,
@@ -65,25 +67,26 @@ exports.topo_mask_func = function(dsm, mangroves, mang_topo, elevation, slope){
   var el_img = ee.Image.constant(mang_elv.get('elev'));
   var slp_img = ee.Image.constant(mang_slope.get('slope'));
   
-  print("Fetching 99th percentile elevation and\nslope for known mangrove extent...");
+  print("Fetching 99.9th percentile elevation and\nslope for known mangrove extent...");
   ee.List([el_val, slp_val]).evaluate(function(vals, failure) {
     if (vals) {
-      print("99th percentile known mangrove elevation: " + vals[0]);
-      print("99th percentile known mangrove slope: " + vals[1]);
+      print("99.9th percentile known mangrove elevation: " + vals[0]);
+      print("99.9th percentile known mangrove slope: " + vals[1]);
     } else {
       print(failure);
     }
   });
   
+  var topo_mask = null;
   if (mang_topo === true){
-    var topo_mask = dsm.select('elev').lte(el_img)
-                        .and(dsm.select('slope').lte(slp_img)).double();
-    return topo_mask; 
+    topo_mask = dtm.select('elev').lte(el_img)
+                        .and(dtm.select('slope').lte(slp_img)).double();
   } else {
-    var topo_mask = dsm.select('elev').lte(elevation)
-                        .and(dsm.select('slope').lte(slope)).double();
-    return topo_mask; 
+    topo_mask = dtm.select('elev').lte(elevation)
+                        .and(dtm.select('slope').lte(slope)).double();
   }
+  
+  return topo_mask;
 };
 
 
