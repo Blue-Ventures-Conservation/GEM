@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 28 April 2026
+Last updated: 2 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -207,7 +207,7 @@ var cst_path = 'users/yanchojo/gadm36_mmr_0_shore';
      their own data by filling in the 'topo_path' variable below.
      
      Enter:
-          var topo = true; (to use the GEE JAXA-ALOS satellite radar DSM (30 m))
+          var topo = true; (to use the combined DeltaDTM & GEE JAXA-ALOS satellite radar DTM + DSM (30 m))
           var topo = false; (to map to the user's uploaded 'topographic' asset)
                               ^--- Must enter an asset path
 */
@@ -549,7 +549,7 @@ var inland_mang = false;
 // This is where the required functions are called into the script
 var known_ext =  require('users/yanchojo/GEM_LS9_colors/:modules/known_mangroves');
 var coastline =  require('users/courtlandfowler/gemv2:coastline');
-var topography =  require('users/yanchojo/GEM_LS9_colors/:modules/topography');
+var topography =  require('users/courtlandfowler/gemv2:topography');
 var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
 var imagery = require('users/courtlandfowler/gemv2:imagery');
 var indx_mod = require('users/courtlandfowler/gemv2:indices');
@@ -626,9 +626,6 @@ step_1_button.onClick(function() {
   // Print Index selection instructions
   print('Select the indices to be calculated in Section 4');
   print('We have pre-selected our suggested mangrove indices.');
-  
-  // Ingest the topographic data (DSM)
-  var dsm = topography.dsm_id(topo);
   
   // Create the coastline from the coarse ROI
   var coast = coastline.coast_In(cst, cst_path, coarse_roi);
@@ -1002,8 +999,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
       var kn_mang_ext = mang_img.clip(ROI);
     
       // Bring in topo data and create the mask
-      var dsm = topography.dsm_id(topo, topo_path);
-      var topo_mask = topography.topo_mask_func(dsm, kn_mang_ext, mang_topo, elevation, slope);
+      var topo_mask = topography.topo_mask_func(topography.dtm(topo, topo_path), kn_mang_ext, mang_topo, elevation, slope);
       
       function waterImagesDescription() {
         print("If your water mask and final mask are incomplete,\n"+
