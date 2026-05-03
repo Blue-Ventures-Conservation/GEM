@@ -4,7 +4,7 @@ This is the spectral band/index correlation module, which is part
 of the BVC GEM v1.2 library. It is used to determine the correlation
 between potential spectral classification inputs.
 
-Last Updated: 18 April 2026
+Last Updated: 2 May 2026
 */
 
 exports.pearson_cor_mat = function(img, bands, geom){
@@ -13,6 +13,7 @@ exports.pearson_cor_mat = function(img, bands, geom){
 };
 
 function pearson_correlation(img, bands, geom) {
+  bands = ee.List(bands);
   var bcount = bands.size();
   var p1 = bcount.divide(3).round();
   var p2 = p1.add(p1);
@@ -30,6 +31,7 @@ function correlation_rows(subset, bands, img, geom) {
 }
 
 function correlation_row(band, bands, img, geom) {
+  bands = ee.List(bands);
   var fifth = bands.size().divide(5).int().add(1);
   
   var base = img.select([band], ['base']);
