@@ -4,7 +4,7 @@ This is the spectral area/seperability module, which is part
 of the BVC GEM v1.2 library. It is used to determine if input 
 land cover classification reference data a spectral distinguishable.
 
-Last update: 22 April 2026
+Last update: 2 May 2026
 
 */
 
@@ -63,29 +63,33 @@ exports.band_candles = function(bands, sample, label, label2, name, colors){
     return ee.List(prev).add(ee.Dictionary({labelInLegend: ee.String(item)}));
   }, ee.List([])));
   
-  var both = ee.List([bands, series]).getInfo();
-  
-  // Prepare the chart.
-  var chart =
-  ui.Chart.array.values({
-      array: out_ar,
-      xLabels: both[0],
-      axis: 0,})
-    .setChartType('CandlestickChart')
-    .setOptions({
-      title: name + " "+ " Values by Landcover",
-      hAxis: {
-        title: 'Bands',
-      },
-        vAxis: {
-        title: 'Reflectance (dn)'
-      },
-      series: both[1],
-      lineWidth: 1,
-      pointSize: 3,
-      colors: colors,
-      });
-  print(chart);
+  ee.List([bands, series]).evaluate(function(both, failure) {
+    if (!both) {
+      print(failure);
+      return;
+    }
+    // Prepare the chart.
+    var chart =
+    ui.Chart.array.values({
+        array: out_ar,
+        xLabels: both[0],
+        axis: 0,})
+      .setChartType('CandlestickChart')
+      .setOptions({
+        title: name + " "+ " Values by Landcover",
+        hAxis: {
+          title: 'Bands',
+        },
+          vAxis: {
+          title: 'Reflectance (dn)'
+        },
+        series: both[1],
+        lineWidth: 1,
+        pointSize: 3,
+        colors: colors,
+        });
+    print(chart);
+  });
 };
 
 exports.whiskerCharts2 = function(sample, label, label2, band, name){
