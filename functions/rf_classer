@@ -4,7 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: 11 April 2026
+Last update: 2 May 2026
 
 */
 
@@ -145,64 +145,72 @@ function classify(name, img, t_poly, label, bands, ROI, trees, splits, leafpop, 
       });
   };
   exportFunc();
-
-              
-  classified.evaluate(function() {
-              
-              var min_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.min(),
-                                 selectors: [label]}).get('min');
-              var max_no = t_poly.reduceColumns({
-                                 reducer: ee.Reducer.max(),
-                                 selectors: [label]}).get('max');
-              var order = t_poly.aggregate_array(label).distinct().sort();
-              
-              Map.addLayer(classified.clip(ROI), {min:min_no.getInfo(), max:max_no.getInfo(),
-                          palette: colors.getInfo()}, name);
-              
-              // Get a confusion matrix resubstitution accuracy.
-              // Because there is no order argument available for the confusionMatrix
-              // function, we need to iterate over the matrix and remove all rows and
-              // columns that represent sequential class IDs that we didn't actually use.
-              var confList = trained_classifier.confusionMatrix().array().toList();
-              var result = ee.List(order.iterate(function(rowIndx, previous) {
-                var plist = ee.List(previous);
-                var conf = ee.List(plist.get(0));
-                var ord = ee.List(plist.get(1));
-                var matrix = ee.List(plist.get(2));
-                
-                var row = ee.List(confList.get(rowIndx));
-                
-                var matrixRow = ee.List(ord.iterate(function(colIndx, prev) {
-                  var p = ee.List(prev);
-                  var r = ee.List(p.get(0));
-                  var mrow = ee.List(p.get(1));
-                  return ee.List([r, mrow.add(r.get(colIndx))]);
-                }, ee.List([row, ee.List([])]))).get(1);
-                
-                return ee.List([conf, ord, matrix.add(matrixRow)]);
-              }, ee.List([confList, order, ee.List([])])));
-              
-              // The order argument here just names the rows/columns and wouldn't do the filtering above for us.
-              var trainAccuracy = ee.ConfusionMatrix(ee.Array(ee.List(result.get(2))), order);
-              
-              print(name + ' Resubstitution error matrix: ', trainAccuracy);
-              print(name + ' Resubstitution overall accuracy: ', trainAccuracy.accuracy());
-
-              // Classify the validation data.
-              var validated = validation.classify(trained_classifier);
-              
-              // Get a confusion matrix representing expected accuracy.
-              // Passing the order argument here filters the matrix to remove the sequential rows/cols
-              // that aren't actually part of our classification.
-              var testAccuracy = validated.errorMatrix(label, 'classification', order);
-              print(name + ' Validation error matrix: ', testAccuracy);
-              print(name + ' Validation overall accuracy: ', testAccuracy.accuracy());
-              var button = ui.Button({
-                label: 'Export ' + name,
-                onClick: exportFunc,
-              });
-              print(button);
+  
+  var min_no = t_poly.reduceColumns({
+    reducer: ee.Reducer.min(),
+    selectors: [label]
+  }).get('min');
+  var max_no = t_poly.reduceColumns({
+    reducer: ee.Reducer.max(),
+    selectors: [label]
+  }).get('max');
+  var order = t_poly.aggregate_array(label).distinct().sort();
+  
+  ee.List([min_no, max_no]).evaluate(function(both, failure) {
+    if (!both) {
+      print(failure);
+      return;
+    }
+    
+    var min_no = both[0];
+    var max_no = both[1];
+    
+    Map.addLayer(classified.clip(ROI), {min: min_no, max: max_no,
+      palette: colors}, name);
+  
+    // Get a confusion matrix resubstitution accuracy.
+    // Because there is no order argument available for the confusionMatrix
+    // function, we need to iterate over the matrix and remove all rows and
+    // columns that represent sequential class IDs that we didn't actually use.
+    var confList = trained_classifier.confusionMatrix().array().toList();
+    var result = ee.List(order.iterate(function(rowIndx, previous) {
+      var plist = ee.List(previous);
+      var conf = ee.List(plist.get(0));
+      var ord = ee.List(plist.get(1));
+      var matrix = ee.List(plist.get(2));
+      
+      var row = ee.List(confList.get(rowIndx));
+      
+      var matrixRow = ee.List(ord.iterate(function(colIndx, prev) {
+        var p = ee.List(prev);
+        var r = ee.List(p.get(0));
+        var mrow = ee.List(p.get(1));
+        return ee.List([r, mrow.add(r.get(colIndx))]);
+      }, ee.List([row, ee.List([])]))).get(1);
+      
+      return ee.List([conf, ord, matrix.add(matrixRow)]);
+    }, ee.List([confList, order, ee.List([])])));
+    
+    // The order argument here just names the rows/columns and wouldn't do the filtering above for us.
+    var trainAccuracy = ee.ConfusionMatrix(ee.Array(ee.List(result.get(2))), order);
+    
+    print(name + ' Resubstitution error matrix: ', trainAccuracy);
+    print(name + ' Resubstitution overall accuracy: ', trainAccuracy.accuracy());
+  
+    // Classify the validation data.
+    var validated = validation.classify(trained_classifier);
+    
+    // Get a confusion matrix representing expected accuracy.
+    // Passing the order argument here filters the matrix to remove the sequential rows/cols
+    // that aren't actually part of our classification.
+    var testAccuracy = validated.errorMatrix(label, 'classification', order);
+    print(name + ' Validation error matrix: ', testAccuracy);
+    print(name + ' Validation overall accuracy: ', testAccuracy.accuracy());
+    var button = ui.Button({
+      label: 'Export ' + name,
+      onClick: exportFunc,
+    });
+    print(button);
   });
 }
 
