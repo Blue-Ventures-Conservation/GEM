@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 22 April 2026
+Last updated: 2 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -312,60 +312,92 @@ var label = class_label_numeric;
 var label2 = class_label_character;
 var label3 = plot_id_label;
 
+var lc_names = [];
+var colors = [];
+var blist = [];
+var indx = [];
+var clz = [];
+var imagery_scale = 30;
 
+var scaleFetch = Chot.projection().nominalScale();
+var classesFetch = ee.FeatureCollection(class_ref_cont).distinct(label).sort(label).aggregate_array(label2);
+var bandsFetch = Chot.bandNames();
 
-var lc_names = ui.data.ActiveList(ee.FeatureCollection(class_ref_cont).distinct(label).sort(label)
-                                  .aggregate_array(label2).getInfo());
+var initFetch = ee.List([scaleFetch, classesFetch, bandsFetch]);
 
-var colList = {'purple':'purple', 'red':'red','pink':'pink','orange':'orange',
+initFetch.evaluate(function(init, failure) {
+  if (!init) {
+    print(failure);
+    return;
+  }
+  
+  imagery_scale = init[0];
+  lc_names = init[1];
+  blist = init[2];
+  setup_colors();
+});
+
+function setup_colors() {
+  var colList = {'purple':'purple', 'red':'red','pink':'pink','orange':'orange',
                'yellow':'yellow', 'darkgreen':'darkgreen', 'green': 'limegreen', 'lightgreen':'lightgreen',
                'cyan':'cyan','lightblue':'lightblue','blue':'blue','brown':'saddlebrown', 'lightbrown':'burlywood',
                'black':'black', 'white':'white', 'grey':'grey', 'lightgrey':'lightgrey'};
+  
+  for (var names_index = 0; names_index < lc_names.length; names_index++) {
+    colors.push("");
+  }
+  
+  function makeColorsOnChange(index) {
+    return function(color_index) {
+      colors[index] = colList[color_index];
+    };
+  }
+  
+  for (var ni = 0; ni < lc_names.length; ni++) {
+    var name = lc_names[ni];
+    var col_drop = ui.Select({
+      placeholder: "Select " + name + " Colour",
+      items: Object.keys(colList),
+      onChange: makeColorsOnChange(ni)
+    });
+    print(name);
+    print(col_drop);
+  }
 
-var colors = ee.List.sequence(0,ee.Number(lc_names.length()).subtract(1),1);
+  print(ui.Label({
+    value: 'View Color Selection',
+    style: {
+      fontWeight: 'bold',
+      fontSize: '14px',
+      textAlign: 'center'
+      }
+  }));   
 
-lc_names.forEach(function(x){
-  var col_drop = ui.Select({
-                              placeholder: ee.String("Select " + x + " Colour").getInfo(),
-                              items: Object.keys(colList),
-                              onChange: function(key) { colors = colors.set(lc_names.indexOf(x), colList[key])}
-                              });
- print(x);
- print(col_drop);
-});
-
-print(ui.Label({
-                            value: 'View Color Selection',
-                            style: {
-                                    fontWeight: 'bold',
-                                    fontSize: '14px',
-                                    textAlign: 'center'
-                                    }
-                          }));   
-
-// Print color list button
-var button = ui.Button({
-  label: 'Print Colour List',
-  onClick: function() {
-    var ordered_labs = ee.FeatureCollection(class_ref_cont).distinct(label).sort(label)
-                                  .aggregate_array(label2);
-    alert('Land Cover Color List:' + ee.String.encodeJSON(ee.Dictionary.fromLists(ordered_labs, ee.List(colors)))
-                          .replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
-                          .replace('}', '', 'g' ).getInfo());
-    return ee.List(colors);
+  // Print color list button
+  var button = ui.Button({
+    label: 'Print Colour List',
+    onClick: function() {
+      var alertText = "Land Cover Color List:\n";
+      for (var i = 0; i < lc_names.length; i++) {
+        alertText = alertText + lc_names[i] + ": " + colors[i] + "\n";
+      }
+      alert(alertText);
     }
   });
-print(button);
+  print(button);
 
-print(ui.Label({
-                            value: 'Sections 2 & 3',
-                            style: {
-                                    fontWeight: 'bold',
-                                    fontSize: '16px',
-                                    textAlign: 'center'
-                                    }
-                          }));      
-
+  print(ui.Label({
+    value: 'Sections 2 & 3',
+    style: {
+      fontWeight: 'bold',
+      fontSize: '16px',
+      textAlign: 'center'
+    }
+  }));
+  
+  setupStep1();
+  setupStep2();
+}
 
 ///////////////////////////////////////////////
 ///     Section 2: Spectral Separability    ///
@@ -374,330 +406,357 @@ print(ui.Label({
 // between their CRAs and their input imagery/indices. The graphs can be expanded and
 // saved as independant PNG or SVG files.
 
-var step_1_button = ui.Button('Sec. 2.) View Spectral Space \n and Ref. Data Relationships');
-step_1_button.onClick(function(){
-  
-  print(ui.Label({value:'Module 2: Section 2',
-                style:{fontWeight: 'bold',
-                        fontSize: '18px',
-                        textAlign: 'center'}
-                }));
-  print('Select the bands to be used for Pearson correlation:');
-  // Quickly re-select the indices from Module 1
-  var blist = Chot.bandNames().getInfo();
-
-  // Generate the populated index list
-  var indx = ee.List(blist);
-  
-  // List of reference indices
-  var OG_band_list = ui.data.ActiveList(blist);
-
-  // Create checkboxes 
-  OG_band_list.forEach(function(x){
-    var ind_box = ui.Checkbox(x, true);
-    ind_box.onChange(function(checked) {
-      // Add/remove the index to the list
-      if (checked === true) {
-        indx = indx.set(blist.indexOf(x), x);
-      } else {
-        indx = indx.set(blist.indexOf(x), "");
+function setupStep1() {
+  var step_1_button = ui.Button('Sec. 2.) View Spectral Space \n and Ref. Data Relationships');
+  step_1_button.onClick(function() {
+    print(ui.Label({
+      value:'Module 2: Section 2',
+      style:{
+        fontWeight: 'bold',
+        fontSize: '18px',
+        textAlign: 'center'
       }
-    }); 
-    print(ind_box);
-  });
-  
-  // Print instructions
-  print('Print the band/index list to review \ncorrelation inputs selected');
-  
-    var button2 = ui.Button({
-    label: 'View Band/Index Input',
-    onClick: function() {
-      alert('Correlation Band/Index Input:' +
-              ee.String.encodeJSON(indx.filter(ee.Filter.neq('item', "")).distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
-                            .replace('}', '', 'g' ).getInfo());
-      return ee.List(indx);
-      }
-    });
-  print(button2);
-  
-  
-  print('Select the classes to be used for scatter plots:');
-  var clz = ee.FeatureCollection(class_ref_cont).distinct(label).sort(label)
-                                  .aggregate_array(label2);
-
-  // Create checkboxes 
-  lc_names.forEach(function(x){
-    var clz_box = ui.Checkbox(x, true);
-    clz_box.onChange(function(checked) {
-    // Add/remove the class to the list
-    if (checked === true){clz = clz.add(x);
-    } else {clz = clz.remove(x);}}); 
-    print(clz_box);
-  });
-  
-  // Print instructions
-  print('Print the class list to review \nscatter plot inputs selected');
-  
-    var clz_button = ui.Button({
-    label: 'View Class Input',
-    onClick: function() {
-      alert('Scatter Plot Class Input:' +
-              ee.String.encodeJSON(clz.distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
-                            .replace('}', '', 'g' ).getInfo());
-      return ee.List(clz);
-      }
-    });
-  print(clz_button);
-
-  var step_1a_button = ui.Button('Start Spectral Analysis');
-  step_1a_button.onClick(function(){
-
-  var bands = Chot.bandNames();
-
-  // Training polygons
-  var t_poly_c = ee.FeatureCollection(class_ref_cont).sort(label);
-  var t_poly_h = ee.FeatureCollection(class_ref_hist).sort(label);
-  
-  var prop_labels = [label, label2];
-  
-  if (label3 !== null && label3 !== "") {
-    prop_labels = prop_labels.concat([label3]);
-  }
-  
-  var imagery_scale = Chot.projection().nominalScale().getInfo();
-
-  // Overlay the points on the imagery to get training for HOT
-  var sample_CHOT = RFclass.sample_image(Chot.select(bands), t_poly_c, prop_labels, imagery_scale);
-  var sample_CLOT = RFclass.sample_image(Clot.select(bands), t_poly_c, prop_labels, imagery_scale);
-  var sample_HHOT = RFclass.sample_image(Hhot.select(bands), t_poly_h, prop_labels, imagery_scale);
-  var sample_HLOT = RFclass.sample_image(Hlot.select(bands), t_poly_h, prop_labels, imagery_scale);
-
-  var header = ui.Label({
-                          value: 'View the Spectral Relationships of the Reference Data',
-                          style: {
-                                    fontWeight: 'bold',
-                                    fontSize: '20px',
-                                    textAlign: 'center'
-                                  }
-                        });   
-  print(header);   
-  print(ui.Label({value:'Index Correlations',
-                  style:{fontWeight: 'bold',
-                         fontSize: '18px',
-                         textAlign: 'center'}
-                }));
-  print('Select any of the composite buttons below'+
-        '\nto view the index band correlation matrix'+
-        '\nfor that composite.');         
-  // Create correlation buttons
-  
-  function corelationIndices() {
-    return indx.filter(ee.Filter.neq('item', "")).distinct();
-  }
-  
-  var chot_cor_but = ui.Button('View CHOT Index Band Correlation');
-  chot_cor_but.onClick(function(){
-    print('Cont. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Chot, corelationIndices(), t_poly_c);});
-  var clot_cor_but = ui.Button('View CLOT Index Band Correlation');
-  clot_cor_but.onClick(function(){
-    print('Cont. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Clot, corelationIndices(), t_poly_c);
-    });
-  var hhot_cor_but = ui.Button('View HHOT Index Band Correlation');
-  hhot_cor_but.onClick(function(){
-    print('Hist. HOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hhot, corelationIndices(), t_poly_h);});
-  var hlot_cor_but = ui.Button('View HLOT Index Band Correlation');
-  hlot_cor_but.onClick(function(){
-    print('Hist. LOT Index Band Correlation');
-    InCor.pearson_cor_mat(Hlot, corelationIndices(), t_poly_h);});
-  // Create correlation panel
-  var cor_panel = ui.Panel({layout: ui.Panel.Layout.flow('horizontal')});
-  cor_panel.add(chot_cor_but).add(clot_cor_but).add(hhot_cor_but).add(hlot_cor_but);
-  print(cor_panel);
-  print(ui.Label({value:'Spectral Separation Graphs',
-                  style:{fontWeight: 'bold',
-                         fontSize: '18px',
-                         textAlign: 'center'}
-                }));
-  var bandDict = ee.Dictionary.fromLists(bands,bands).getInfo();
-  // Create drop-down menu to select CHOT Band
-  var Chot_band_charts = ui.Select({
-                            placeholder: "Select Cont. HOT Band",
-                            items: Object.keys(bandDict),
-                            onChange: function(key) {
-                            specSp.whiskerCharts2(sample_CHOT, label, label2, key, "Cont. HOT");
-                            },
-                              style: {position: 'top-left'}
-                            });
-  // Create drop-down menu to select CLOT Band
-  var Clot_band_charts = ui.Select({
-                            placeholder: "Select Cont. LOT Band",
-                            items: Object.keys(bandDict),
-                            onChange: function(key) {
-                            specSp.whiskerCharts2(sample_CLOT, label, label2, key, "Cont. LOT");
-                            },
-                              style: {position: 'top-right'}
-                          });
-  // Create drop-down menu to select HHOT Band
-  var Hhot_band_charts = ui.Select({
-        placeholder: "Select Hist. HOT Band",
-        items: Object.keys(bandDict),
-        onChange: function(key) {
-                              specSp.whiskerCharts2(sample_HHOT, label, label2, key, "Hist. HOT");
-                              },
-                              style: {position: 'top-left'}
-                          });
-  // Create drop-down menu to select HLOT Band
-  var Hlot_band_charts = ui.Select({
-                              placeholder: "Select Hist. LOT Band",
-                              items: Object.keys(bandDict),
-                              onChange: function(key) {
-                              specSp.whiskerCharts2(sample_HLOT, label, label2, key, "Hist. LOT");
-                              },
-                            style: {position: 'top-right'}
-                            });
-                          
-
-  print('The set of charts below shows the single band/index'+
-    '\nrelationships betweeen the difference land cover classes.'+
-    '\nTo view a graph, select a band from each of the drop-down'+
-    '\nmenus, corresponding to the various image composites.');
-               
-  var cont_lab = ui.Label({
-                            value: 'Contemporary Reference Data',
-                            style: {
-                                    fontWeight: 'bold',
-                                    fontSize: '16px',
-                                    textAlign: 'center'
-                                    }
-                          });      
-  var hist_lab = ui.Label({
-                          value: 'Historic Reference Data',
-                          style: {
-                                    fontWeight: 'bold',
-                                    fontSize: '16px',
-                                    textAlign: 'center'
-                                    }
-                          });   
-  var cont_panel = ui.Panel({
-                          layout: ui.Panel.Layout.flow('horizontal'),
-                          style: {textAlign: 'center'
-                          }
-                        });
-  var hist_panel = ui.Panel({
-                            layout: ui.Panel.Layout.flow('horizontal'),
-                            style: {textAlign: 'center'
-                          }
-                      });
-  var sub_lab_chot = ui.Label({value: 'CHOT: '});   
-  var sub_lab_clot = ui.Label({value: 'CLOT: '});   
-  var sub_lab_hhot = ui.Label({value: 'HHOT: '});   
-  var sub_lab_hlot = ui.Label({value: 'HLOT: '});   
-                                
-
-  /// Spectral Scatter plots
-          
-  var ref_samp = {
-                  "Cont. HOT": ["Cont. HOT", sample_CHOT],
-                  "Cont. LOT": ["Cont. LOT", sample_CLOT],
-                  "Hist. HOT": ["Hist. HOT", sample_HHOT],
-                  "Hist. LOT": ["Hist. LOT", sample_HLOT]
-                  };
-  var bandX = 'Red';
-  var bandY = 'NIR';
-  var scat_samp = ["Cont. HOT", sample_CHOT];
-  // Create drop-down menu to select X Band
-  var bandX_drop = ui.Select({
-                              placeholder: "Select X-Axis Band",
-                              items: Object.keys(bandDict),
-                              onChange: function(key) {
-                              bandX = key;
-                              }});
-  // Create drop-down menu to select Y Band
-  var bandY_drop = ui.Select({
-                              placeholder: "Select Y-Axis Band",
-                              items: Object.keys(bandDict),
-                              onChange: function(key) {
-                              bandY = key;
-                              }});
-  // Create drop-down menu to select sample
-  var Sample_scat = ui.Select({
-                              placeholder: "Select Refence Data Sample",
-                              items: Object.keys(ref_samp),
-                              onChange: function(key) {
-                              scat_samp = ee.Dictionary(ref_samp).values([key]).flatten();
-                              }});
-  var scat_button = ui.Button('View Scatter Plot');
-  scat_button.onClick(function(){
-    var data = ee.FeatureCollection(ee.List(scat_samp).get(1)).filter(ee.Filter.inList(label2, clz));
-    data = ee.Algorithms.If(data.size().gte(5000), ee.FeatureCollection(data.map(function(elem) {
-        var feat = ee.Feature(elem);
-        return feat.set(bandX, ee.Number(feat.get(bandX)).multiply(100).round().divide(100), bandY, ee.Number(feat.get(bandY)).multiply(100).round().divide(100));
-    })).distinct(ee.List(prop_labels).add(bandX).add(bandY)), data);
+    }));
     
-    var samp_title = ee.List(scat_samp).get(0).getInfo();
-    var Sc_chart =  ui.Chart.feature.groups(ee.FeatureCollection(data), bandX, bandY, label2)
-                    .setChartType('ScatterChart')
-                    .setOptions({title: 'Spectral Area of ' + samp_title});
-    print(Sc_chart);
-    if (label3 !== null && label3 !== "") {
-          var plots_chart =  ui.Chart.feature.groups(data, bandX, bandY, label3)
-                    .setChartType('ScatterChart')
-                    .setOptions({title: 'Spectral Area of ' + samp_title});
-          print(plots_chart);
+    print('Select the bands to be used for Pearson correlation:');
+    // Quickly re-select the indices from Module 1
+    function makeBandCheckboxOnChange(index) {
+      return function(checked) {
+        // Add/remove the index to the list
+        if (checked === true) {
+          indx[index] = blist[index];
+        } else {
+          indx[index] = "";
+        }
+      };
     }
     
+    function doSeparability() {
+      // Generate the populated index list
+      for (var bi = 0; bi < blist.length; bi++) {
+        var name = blist[bi];
+        indx.push(name);
+        var ind_box = ui.Checkbox(name, true);
+        var bii = bi;
+        ind_box.onChange(makeBandCheckboxOnChange(bii));
+        print(ind_box);
+      }
+      
+      // Print instructions
+      print('Print the band/index list to review \ncorrelation inputs selected');
+      
+      var band_button = ui.Button({
+        label: 'View Band/Index Input',
+        onClick: function() {
+          var alertText = 'Correlation Band/Index Input:\n';
+          for (var i = 0; i < indx.length; i++) {
+            var name = indx[i];
+            if (name !== "") {
+              alertText = alertText + name + "\n";
+            }
+          }
+          alert(alertText);
+        }
+      });
+      print(band_button);
+      
+      print('Select the classes to be used for scatter plots:');
+      
+      function makeClassCheckboxOnChange(lci) {
+        return function(checked) {
+          // Add/remove the class to the list
+          if (checked === true) {
+            clz[lci] = lc_names[lci];
+          } else {
+            clz[lci] = "";
+          }
+        };
+      }
+      
+      for (var lci = 0; lci < lc_names.length; lci++) {
+        var lcname = lc_names[lci];
+        clz.push(lcname);
+        var clz_box = ui.Checkbox(lcname, true);
+        clz_box.onChange(makeClassCheckboxOnChange(lci));
+        print(clz_box);
+      }
+    
+      // Print instructions
+      print('Print the class list to review \nscatter plot inputs selected');
+    
+      var clz_button = ui.Button({
+        label: 'View Class Input',
+        onClick: function() {
+          var alertText = 'Scatter Plot Class Input:\n';
+          for (var i = 0; i < clz.length; i++) {
+            var name = clz[i];
+            if (name !== "") {
+              alertText = alertText + name + "\n";
+            }
+          }
+          alert(alertText);
+        }
+      });
+      print(clz_button);
+      
+      var step_1a_button = ui.Button('Start Spectral Analysis');
+      step_1a_button.onClick(function() {
+        var bands = Chot.bandNames();
+        
+        // Training polygons
+        var t_poly_c = ee.FeatureCollection(class_ref_cont).sort(label);
+        var t_poly_h = ee.FeatureCollection(class_ref_hist).sort(label);
+        
+        var prop_labels = [label, label2];
+        
+        if (label3 !== null && label3 !== "") {
+          prop_labels = prop_labels.concat([label3]);
+        }
+        
+        // Overlay the points on the imagery to get training for HOT
+        var sample_CHOT = RFclass.sample_image(Chot.select(bands), t_poly_c, prop_labels, imagery_scale);
+        var sample_CLOT = RFclass.sample_image(Clot.select(bands), t_poly_c, prop_labels, imagery_scale);
+        var sample_HHOT = RFclass.sample_image(Hhot.select(bands), t_poly_h, prop_labels, imagery_scale);
+        var sample_HLOT = RFclass.sample_image(Hlot.select(bands), t_poly_h, prop_labels, imagery_scale);
+        
+        var header = ui.Label({
+          value: 'View the Spectral Relationships of the Reference Data',
+          style: {
+            fontWeight: 'bold',
+            fontSize: '20px',
+            textAlign: 'center'
+          }
+        });   
+        print(header);   
+        print(ui.Label({
+          value:'Index Correlations',
+          style:{
+            fontWeight: 'bold',
+            fontSize: '18px',
+            textAlign: 'center'
+          }
+        }));
+        print('Select any of the composite buttons below'+
+              '\nto view the index band correlation matrix'+
+              '\nfor that composite.');         
+        // Create correlation buttons
+        
+        function corelationIndices() {
+          var filtered = [];
+          for (var i = 0; i < indx.length; i++) {
+            var name = indx[i];
+            if (name !== "") {
+              filtered.push(name);
+            }
+          }
+          return filtered;
+        }
+        
+        var chot_cor_but = ui.Button('View CHOT Index Band Correlation');
+        chot_cor_but.onClick(function() {
+          print('Cont. HOT Index Band Correlation');
+          InCor.pearson_cor_mat(Chot, corelationIndices(), t_poly_c);
+        });
+        var clot_cor_but = ui.Button('View CLOT Index Band Correlation');
+        clot_cor_but.onClick(function() {
+          print('Cont. LOT Index Band Correlation');
+          InCor.pearson_cor_mat(Clot, corelationIndices(), t_poly_c);
+        });
+        var hhot_cor_but = ui.Button('View HHOT Index Band Correlation');
+        hhot_cor_but.onClick(function() {
+          print('Hist. HOT Index Band Correlation');
+          InCor.pearson_cor_mat(Hhot, corelationIndices(), t_poly_h);
+        });
+        var hlot_cor_but = ui.Button('View HLOT Index Band Correlation');
+        hlot_cor_but.onClick(function() {
+          print('Hist. LOT Index Band Correlation');
+          InCor.pearson_cor_mat(Hlot, corelationIndices(), t_poly_h);
+        });
+        // Create correlation panel
+        var cor_panel = ui.Panel({layout: ui.Panel.Layout.flow('horizontal')});
+        cor_panel.add(chot_cor_but).add(clot_cor_but).add(hhot_cor_but).add(hlot_cor_but);
+        print(cor_panel);
+        print(ui.Label({
+          value:'Spectral Separation Graphs',
+          style:{
+            fontWeight: 'bold',
+            fontSize: '18px',
+            textAlign: 'center'
+          }
+        }));
+        
+        // Create drop-down menu to select CHOT Band
+        var Chot_band_charts = ui.Select({
+          placeholder: "Select Cont. HOT Band",
+          items: blist,
+          onChange: function(key) {
+            specSp.whiskerCharts2(sample_CHOT, label, label2, key, "Cont. HOT");
+          },
+          style: {position: 'top-left'}
+        });
+        // Create drop-down menu to select CLOT Band
+        var Clot_band_charts = ui.Select({
+          placeholder: "Select Cont. LOT Band",
+          items: blist,
+          onChange: function(key) {
+            specSp.whiskerCharts2(sample_CLOT, label, label2, key, "Cont. LOT");
+          },
+          style: {position: 'top-right'}
+        });
+        // Create drop-down menu to select HHOT Band
+        var Hhot_band_charts = ui.Select({
+          placeholder: "Select Hist. HOT Band",
+          items: blist,
+          onChange: function(key) {
+            specSp.whiskerCharts2(sample_HHOT, label, label2, key, "Hist. HOT");
+          },
+          style: {position: 'top-left'}
+        });
+        // Create drop-down menu to select HLOT Band
+        var Hlot_band_charts = ui.Select({
+          placeholder: "Select Hist. LOT Band",
+          items: blist,
+          onChange: function(key) {
+            specSp.whiskerCharts2(sample_HLOT, label, label2, key, "Hist. LOT");
+          },
+          style: {position: 'top-right'}
+        });
+        
+        print('The set of charts below shows the single band/index'+
+          '\nrelationships betweeen the difference land cover classes.'+
+          '\nTo view a graph, select a band from each of the drop-down'+
+          '\nmenus, corresponding to the various image composites.');
+        
+        var cont_lab = ui.Label({
+          value: 'Contemporary Reference Data',
+          style: {
+            fontWeight: 'bold',
+            fontSize: '16px',
+            textAlign: 'center'
+          }
+        });      
+        var hist_lab = ui.Label({
+          value: 'Historic Reference Data',
+          style: {
+            fontWeight: 'bold',
+            fontSize: '16px',
+            textAlign: 'center'
+          }
+        });   
+        var cont_panel = ui.Panel({
+          layout: ui.Panel.Layout.flow('horizontal'),
+          style: {
+            textAlign: 'center'
+          }
+        });
+        var hist_panel = ui.Panel({
+          layout: ui.Panel.Layout.flow('horizontal'),
+          style: {
+            textAlign: 'center'
+          }
+        });
+        var sub_lab_chot = ui.Label({value: 'CHOT: '});   
+        var sub_lab_clot = ui.Label({value: 'CLOT: '});   
+        var sub_lab_hhot = ui.Label({value: 'HHOT: '});   
+        var sub_lab_hlot = ui.Label({value: 'HLOT: '});   
+        
+        /// Spectral Scatter plots
+        
+        var ref_samp = {
+          "Cont. HOT": ["Cont. HOT", sample_CHOT],
+          "Cont. LOT": ["Cont. LOT", sample_CLOT],
+          "Hist. HOT": ["Hist. HOT", sample_HHOT],
+          "Hist. LOT": ["Hist. LOT", sample_HLOT]
+        };
+        var bandX = 'Red';
+        var bandY = 'NIR';
+        var scat_samp = ["Cont. HOT", sample_CHOT];
+        // Create drop-down menu to select X Band
+        var bandX_drop = ui.Select({
+          placeholder: "Select X-Axis Band",
+          items: blist,
+          onChange: function(key) {
+            bandX = key;
+        }});
+        // Create drop-down menu to select Y Band
+        var bandY_drop = ui.Select({
+          placeholder: "Select Y-Axis Band",
+          items: blist,
+          onChange: function(key) {
+            bandY = key;
+        }});
+        // Create drop-down menu to select sample
+        var Sample_scat = ui.Select({
+          placeholder: "Select Refence Data Sample",
+          items: Object.keys(ref_samp),
+          onChange: function(key) {
+            scat_samp = ref_samp[key];
+          }});
+        var scat_button = ui.Button('View Scatter Plot');
+        scat_button.onClick(function(){
+          var data = ee.FeatureCollection(scat_samp[1]).filter(ee.Filter.inList(label2, clz));
+          data = ee.Algorithms.If(data.size().gte(5000), ee.FeatureCollection(data.map(function(elem) {
+            var feat = ee.Feature(elem);
+            return feat.set(bandX, ee.Number(feat.get(bandX)).multiply(100).round().divide(100), bandY, ee.Number(feat.get(bandY)).multiply(100).round().divide(100));
+          })).distinct(ee.List(prop_labels).add(bandX).add(bandY)), data);
+          
+          var samp_title = scat_samp[0];
+          var Sc_chart =  ui.Chart.feature.groups(ee.FeatureCollection(data), bandX, bandY, label2)
+            .setChartType('ScatterChart')
+            .setOptions({title: 'Spectral Area of ' + samp_title});
+          print(Sc_chart);
+          if (label3 !== null && label3 !== "") {
+            var plots_chart =  ui.Chart.feature.groups(data, bandX, bandY, label3)
+              .setChartType('ScatterChart')
+              .setOptions({title: 'Spectral Area of ' + samp_title});
+            print(plots_chart);
+          }
+        });
+        
+        var scatter_panel = ui.Panel({
+          layout: ui.Panel.Layout.flow('horizontal'),
+          style: {textAlign: 'center'}
+        });
+        
+        var samp_lab = ui.Label({value: 'Reference Sample: '});   
+        var x_lab = ui.Label({value: 'X Band: '});   
+        var y_lab = ui.Label({value: 'Y Band: '});
+        var scat_lab = ui.Label({
+          value: 'Spectral Distribution for Reference Data',
+          style: {
+            fontWeight: 'bold',
+            fontSize: '18px',
+            textAlign: 'center'
+          }
+        });
+        
+        var chot_bands = ui.Button('View Bands');
+        chot_bands.onClick(function(){specSp.band_candles(bands, sample_CHOT, label, label2, "Cont. HOT", colors)});
+        var clot_bands = ui.Button('View Bands');
+        clot_bands.onClick(function(){specSp.band_candles(bands, sample_CLOT, label, label2, "Cont. LOT", colors)});
+        var hhot_bands = ui.Button('View Bands');
+        hhot_bands.onClick(function(){specSp.band_candles(bands, sample_HHOT, label, label2, "Hist. HOT", colors)});
+        var hlot_bands = ui.Button('View Bands');
+        hlot_bands.onClick(function(){specSp.band_candles(bands, sample_HLOT, label, label2, "Hist. LOT", colors)});
+        
+        print(cont_lab);
+        print(cont_panel.add(sub_lab_chot).add(chot_bands).add(Chot_band_charts)
+          .add(sub_lab_clot).add(clot_bands).add(Clot_band_charts));
+        print(hist_lab);
+        print(hist_panel.add(sub_lab_hhot).add(hhot_bands).add(Hhot_band_charts)
+          .add(sub_lab_hlot).add(hlot_bands).add(Hlot_band_charts));
+        print(scat_lab);
+        print("Select any two bands from any sampled composite to view"+
+          "\nthe spectral relationships between landcover classes.");
+        print(scatter_panel.add(samp_lab).add(Sample_scat).add(x_lab).add(bandX_drop)
+          .add(y_lab).add(bandY_drop).add(scat_button));
+      });
+      print(step_1a_button);
+    }
+    doSeparability();
   });
-            
-            
-  var scatter_panel = ui.Panel({
-                    layout: ui.Panel.Layout.flow('horizontal'),
-                    style: {textAlign: 'center'
-                      }
-                    });
-                                
-                                
-  var samp_lab = ui.Label({value: 'Reference Sample: '});   
-  var x_lab = ui.Label({value: 'X Band: '});   
-  var y_lab = ui.Label({value: 'Y Band: '});
-  var scat_lab = ui.Label({
-                        value: 'Spectral Distribution for Reference Data',
-                        style: {
-                                  fontWeight: 'bold',
-                                  fontSize: '18px',
-                                  textAlign: 'center'
-                              }
-                  });
-
-  var chot_bands = ui.Button('View Bands');
-  chot_bands.onClick(function(){specSp.band_candles(bands, sample_CHOT, label, label2, "Cont. HOT", colors.getInfo())});
-  var clot_bands = ui.Button('View Bands');
-  clot_bands.onClick(function(){specSp.band_candles(bands, sample_CLOT, label, label2, "Cont. LOT", colors.getInfo())});
-  var hhot_bands = ui.Button('View Bands');
-  hhot_bands.onClick(function(){specSp.band_candles(bands, sample_HHOT, label, label2, "Hist. HOT", colors.getInfo())});
-  var hlot_bands = ui.Button('View Bands');
-  hlot_bands.onClick(function(){specSp.band_candles(bands, sample_HLOT, label, label2, "Hist. LOT", colors.getInfo())});
-
-
-  print(cont_lab);
-  print(cont_panel.add(sub_lab_chot).add(chot_bands).add(Chot_band_charts)
-                  .add(sub_lab_clot).add(clot_bands).add(Clot_band_charts));
-  print(hist_lab);
-  print(hist_panel.add(sub_lab_hhot).add(hhot_bands).add(Hhot_band_charts)
-                  .add(sub_lab_hlot).add(hlot_bands).add(Hlot_band_charts));
-  print(scat_lab);
-  print("Select any two bands from any sampled composite to view"+
-        "\nthe spectral relationships between landcover classes.");
-  print(scatter_panel.add(samp_lab).add(Sample_scat).add(x_lab).add(bandX_drop)
-                     .add(y_lab).add(bandY_drop).add(scat_button));
-  });
-  print(step_1a_button);
-});
-print(step_1_button);
-
-
+  print(step_1_button);
+}
 
 ///////////////////////////////////////
 ///     Section 3: Classification   ///
@@ -707,126 +766,142 @@ print(step_1_button);
 // all of the standard quantitative classification accuracy metrics are 
 // printed to the cosnole.
 
-
-var step_2_button = ui.Button('Sec. 3.) Classification');
-
-
-var trees = 1000;
-var splits = 1; 
-var leafpop = 1;
-var bag = 0.75;
-var nodes = null; 
-var seeds = 0; 
-
-
-step_2_button.onClick(function(){
+function setupStep2() {
+  var step_2_button = ui.Button('Sec. 3.) Classification');
   
-  print(ui.Label({value:'Module 2: Section 3',
-                  style:{fontWeight: 'bold',
-                         fontSize: '18px',
-                         textAlign: 'center'}
-                }));
-  print('Select the bands to be used for classification:');
-
-
-  // Quickly re-select the indices from Module 1
-
-  // Generate the empty index list
-  var indx = ee.List([]);
+  var trees = 1000;
+  var splits = 1;
+  var leafpop = 1;
+  var bag = 0.75;
+  var nodes = null;
+  var seeds = 0;
   
-  // List of reference indices
-  var OG_band_list = ui.data.ActiveList(Chot.bandNames().getInfo());
-
-  // Create checkboxes 
-  OG_band_list.forEach(function(x){
-    var ind_box = ui.Checkbox(x, false);
-    ind_box.onChange(function(checked) {
-    // Add/remove the index to the list
-    if (checked === true){indx = indx.add(x);
-    } else {indx = indx.remove(x);}}); 
-    print(ind_box);
-  });
-  
-  // Print instructions
-  print('Print the band/index list to review \nclassification inputs selected');
-
-  var button2 = ui.Button({
-    label: 'View Band/Index Input',
-    onClick: function() {
-      alert('Classification Band/Index Input:' +
-              ee.String.encodeJSON(indx.distinct()).replace('"', ' ', 'g' ).replace(',', '\n', 'g' ).replace('{', '\n', 'g' )
-                            .replace('}', '', 'g' ).getInfo());
-      return ee.List(indx);
+  step_2_button.onClick(function() {
+    print(ui.Label({value:'Module 2: Section 3',
+                    style:{fontWeight: 'bold',
+                           fontSize: '18px',
+                           textAlign: 'center'}
+                  }));
+    print('Select the bands to be used for classification:');
+    // Generate the empty index list
+    var classification_indx = [];
+    for (var bi = 0; bi < blist.length; bi++) {
+      classification_indx.push(blist[bi]);
+    }
+    
+    function makeBandCheckboxOnChange(bindex) {
+      return function(checked) {
+        // Add/remove the index to the list
+        if (checked === true) {
+          classification_indx[bindex] = blist[bindex];
+        } else {
+          classification_indx[bindex] = "";
+        }
+      };
+    }
+    
+    // Create checkboxes
+    for (var i = 0; i < blist.length; i++) {
+      var ind_box = ui.Checkbox(blist[i], true);
+      ind_box.onChange(makeBandCheckboxOnChange(i)); 
+      print(ind_box);
+    }
+    
+    // Print instructions
+    print('Print the band/index list to review \nclassification inputs selected');
+    
+    var button2 = ui.Button({
+      label: 'View Band/Index Input',
+      onClick: function() {
+        var alertText = 'Classification Band/Index Input:\n';
+        for (var i = 0; i < classification_indx.length; i++) {
+          var name = classification_indx[i];
+          if (name !== "") {
+            alertText = alertText + name + "\n";
+          }
+        }
+        alert(alertText);
       }
     });
-  print(button2);
-
-
-  var step_2a_button = ui.Button('Start Classification');
-  step_2a_button.onClick(function(){
-
-
-    // Update the image masks
-    Chot = Chot.updateMask(final_mask);
-    Clot = Clot.updateMask(final_mask);
-    Hhot = Hhot.updateMask(final_mask);
-    Hlot = Hlot.updateMask(final_mask);
-          
-    // Training polygons
-    var t_poly_c = ee.FeatureCollection(class_ref_cont);
-    var t_poly_h = ee.FeatureCollection(class_ref_hist);
-    // Isolate the bands to use in the classification
-    var bands = ee.List(indx);
+    print(button2);
     
-    print('Console will populate with accuracy metrics. The Tasks tab'+
-          '\nwill turn yellow when the classifications are complete and'+
-          '\nready to export to the asset folder. The classification(s)'+
-          '\nwill be automatically added to the map viewer to explore.');
-    
-    // Classification using RF
-    var expanded_colors = ee.Dictionary(t_poly_c.distinct(label).sort(label).aggregate_array(label).iterate(function(next, carry){
-      carry = ee.Dictionary(carry);
-      var pos = ee.Number(carry.get('position'));
-      var color = ee.List(carry.get('colors')).get(pos);
-      var prev = ee.Number(carry.get('prev'));
-      var out = ee.List(carry.get('output'));
-      var diff = ee.Number(ee.Algorithms.If(pos.gt(0), ee.Number(next).subtract(prev), ee.Number(1)));
-      out = out.cat(ee.List.repeat(color, diff));
-      carry = carry.set('prev', ee.Number(next));
-      carry = carry.set('output', out);
-      carry = carry.set('position', pos.add(1));
-      return carry;
-    }, ee.Dictionary({position: ee.Number(0), prev: ee.Number(-1), colors: colors, output: ee.List([])}))).get('output');
-    
-    // Contemporary
-    if (HOT_cont_out === true) { RFclass.ChotClassify(Chot, 
+    var step_2a_button = ui.Button('Start Classification');
+    step_2a_button.onClick(function(){
+      // Update the image masks
+      Chot = Chot.updateMask(final_mask);
+      Clot = Clot.updateMask(final_mask);
+      Hhot = Hhot.updateMask(final_mask);
+      Hlot = Hlot.updateMask(final_mask);
+            
+      // Training polygons
+      var t_poly_c = ee.FeatureCollection(class_ref_cont);
+      var t_poly_h = ee.FeatureCollection(class_ref_hist);
+      // Isolate the bands to use in the classification
+      var filtered = [];
+      for (var j = 0; j < classification_indx.length; j++) {
+        var name = classification_indx[j];
+        if (name !== "") {
+          filtered.push(name);
+        }
+      }
+      var bands = ee.List(filtered);
+      
+      print('Console will populate with accuracy metrics. The Tasks tab'+
+            '\nwill turn yellow when the classifications are complete and'+
+            '\nready to export to the asset folder. The classification(s)'+
+            '\nwill be automatically added to the map viewer to explore.');
+      t_poly_c.distinct(label).sort(label).aggregate_array(label).evaluate(function(class_ids, failure) {
+        if (!class_ids) {
+          print(failure);
+          return;
+        }
+        
+        var prev = -1;
+        var expanded = [];
+        var pos = 0;
+        for (var i = 0; i < class_ids.length; i++) {
+          var color = colors[pos];
+          if (pos > 0) {
+            var diff = class_ids[i] - prev;
+            for (var j = 0; j < diff; j++) {
+              expanded.push(color);
+            }
+          } else {
+            expanded.push(color);
+          }
+          pos = pos + 1;
+        }
+        
+        // Contemporary
+        if (HOT_cont_out === true) { RFclass.ChotClassify(Chot, 
+                                      t_poly_c, label, bands, ROI, trees, 
+                                      splits, leafpop, bag, nodes, seeds, expanded);}
+        if (LOT_cont_out === true) { RFclass.ClotClassify(Clot, 
+                                      t_poly_c, label, bands, ROI, trees, 
+                                      splits, leafpop, bag, nodes, seeds, expanded);}
+        if (combo_cont_out === true) { RFclass.CcomClassify(Chot, 
+                                      Clot, t_poly_c, label, bands, ROI, trees, 
+                                      splits, leafpop, bag, nodes, seeds, expanded);}
+                                   
+        // Historical
+        if (HOT_hist_out === true) { RFclass.HhotClassify(Hhot, 
+                                    class_ref_type, use_cont_spec, Chot, t_poly_h, 
                                     t_poly_c, label, bands, ROI, trees, 
-                                    splits, leafpop, bag, nodes, seeds, expanded_colors);}
-    if (LOT_cont_out === true) { RFclass.ClotClassify(Clot, 
+                                    splits, leafpop, bag, nodes, seeds, expanded);}
+        if (LOT_hist_out === true) { RFclass.HlotClassify(Hlot, 
+                                    class_ref_type, use_cont_spec, Clot, t_poly_h, 
                                     t_poly_c, label, bands, ROI, trees, 
-                                    splits, leafpop, bag, nodes, seeds, expanded_colors);}
-    if (combo_cont_out === true) { RFclass.CcomClassify(Chot, 
-                                    Clot, t_poly_c, label, bands, ROI, trees, 
-                                    splits, leafpop, bag, nodes, seeds, expanded_colors);}
-                                 
-    // Historical
-    if (HOT_hist_out === true) { RFclass.HhotClassify(Hhot, 
-                                  class_ref_type, use_cont_spec, Chot, t_poly_h, 
-                                  t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds, expanded_colors);}
-    if (LOT_hist_out === true) { RFclass.HlotClassify(Hlot, 
-                                  class_ref_type, use_cont_spec, Clot, t_poly_h, 
-                                  t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds, expanded_colors);}
-    if (combo_hist_out === true) { RFclass.HcomClassify(Hhot,
-                                  Hlot, class_ref_type, use_cont_spec, Chot, Clot,
-                                  t_poly_h, t_poly_c, label, bands, ROI, trees, 
-                                  splits, leafpop, bag, nodes, seeds, expanded_colors);}
-
-   });
-  print(step_2a_button);
-});
-print(step_2_button);
+                                    splits, leafpop, bag, nodes, seeds, expanded);}
+        if (combo_hist_out === true) { RFclass.HcomClassify(Hhot,
+                                    Hlot, class_ref_type, use_cont_spec, Chot, Clot,
+                                    t_poly_h, t_poly_c, label, bands, ROI, trees, 
+                                    splits, leafpop, bag, nodes, seeds, expanded);}
+      });
+     });
+    print(step_2a_button);
+  });
+  print(step_2_button);
+}
 
 /*
 At the end of the workflow, the user should have started exporting:
