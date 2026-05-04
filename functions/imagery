@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 22 April 2026
+Last update: 3 May 2026
 
 */
 
@@ -89,24 +89,30 @@ exports.should_use_sar_water_mask = function(cont_start_year, cont_months, hist_
 
 // Sentinel-1 SAR water mask
 exports.get_sar_water_mask = function(roi, start_year, end_year, months) {
+  var vv = filterPolarisation(roi, start_year, end_year, months, 'VV', -16);
+  var vh = filterPolarisation(roi, start_year, end_year, months, 'VH', -25);
+  return [vv[0].add(vh[0]).unmask(1).eq(2), vv[1].merge(vh[1])];
+};
+
+function filterPolarisation(roi, start_year, end_year, months, polarisation, backscatter) {
   var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
     .filterBounds(roi)
     .filterDate(start_year + '-01-01', (end_year + 1) + '-01-01')
-    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', polarisation))
     .filter(ee.Filter.eq('instrumentMode', 'IW'))
     .filter(ee.Filter.eq('resolution_meters', 10))
     .map(function(image) {
-      var vv = image.select('VV');
+      var vv = image.select(polarisation);
       var posEdge = vv.gte(1.0);
       var negEdge = vv.lte(-30.0);
       var maskedImage = image.mask().and(negEdge.not()).and(posEdge.not());
       return image.updateMask(maskedImage);
-  });
+    });
   s1 = filterMonths(s1, months);
-  s1 = s1.map(maskAngLT452).map(maskAngGT30).select('VV');
-  s1 = s1.map(leeFilter).map(classifyWater);
+  s1 = s1.map(maskAngLT452).map(maskAngGT30).select(polarisation);
+  s1 = s1.map(leeFilter).map(produceWaterClassificationFunc(polarisation, backscatter));
   return [s1.reduce(ee.Reducer.sum()).gt(1).add(1).eq(1), s1];
-};
+}
 
 // the old, pre-SAR water mask, still used for older imagery
 exports.water_mask = function(hist_img, cont_img, combo_water_mask){
@@ -460,9 +466,11 @@ function leeFilter(image) {
   return image.addBands(output, null, true);
 }
 
-function classifyWater(img) {
-  var vv = img.select('VV');
-  return vv.lt(-17).rename('Water');
+function produceWaterClassificationFunc(polarisation, backscatter) {
+  return function(img) {
+    var polar = img.select(polarisation);
+    return polar.lt(backscatter).rename('Water');
+  };
 }
 
 /** (mask out angles >= 45.23993) */
