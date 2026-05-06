@@ -865,9 +865,10 @@ step_1_button.onClick(function() {
         print(step_4_button);
       }
       
-      print("Measuring the AOI, if it's not massive we'll count your images!");
+      var maxAOIHectares = 2500000;
+      print("Measuring the AOI, if it's not massive\n(> " + maxAOIHectares.toLocaleString('en-GB') + " hectares)\nwe'll count your images!");
       print("If it is massive, you'll move on to Section 4 soon...");
-      ROI.area().divide(10000).lt(2500000).evaluate(function(nm, fail) {
+      ROI.area().divide(10000).lt(maxAOIHectares).evaluate(function(nm, fail) {
         if (nm && nm > 0) {
           notMassive = true;
           print("Counting historical and contemporary images...");
@@ -889,6 +890,7 @@ step_1_button.onClick(function() {
             doStepFour();
           });
         } else {
+          print("We consider your AOI to be massive.");
           doStepFour();
         }
       });
@@ -1011,10 +1013,16 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
         );
       }
       
+      if (notMassive) {
+        print("Your AOI is not massive so we'll count the images\navailable for water masking.");
+      } else {
+        print("Your AOI is massive, so we'll skip counting images\navailable for water masking.");
+      }
+      
       var waterMask = ee.Image(1);
       if (remove_water === true) {
-        print("Counting historical and contemporary water mask images...");
         if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
+          print("We're using SAR-1 radar for your water mask!");
           var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months);
           var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months);
           
@@ -1032,6 +1040,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           }
           
           if (notMassive) {
+            print("Counting historical and contemporary SAR-1 water mask images...");
             ee.List([ee.String(sar_hist_images.size()), ee.String(sar_cont_images.size())]).evaluate(function(sarCounts, failure) {
               if (sarCounts) {
                 waterImagesDescription();
@@ -1044,6 +1053,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           waterMask = sar_water_mask;
         } else {
           // Use low tide images to create water mask
+          print("We're using optical MNDWI techniques for your water mask\nbecause your dates are prior to SAR-1 availability.");
           var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
           var clot_water_mosaic = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
           var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
@@ -1051,6 +1061,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           waterMask = imagery.water_mask(hlot_water_mosaic, clot_water_mosaic, combo_water_mask);
           
           if (notMassive) {
+            print("Counting historical and contemporary optical water mask images...");
             ee.List([ee.String(hlot_water.size()), ee.String(clot_water.size())]).evaluate(function(optCounts, failure) {
               if (optCounts) {
                 waterImagesDescription();
