@@ -1053,7 +1053,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           waterMask = sar_water_mask;
         } else {
           // Use low tide images to create water mask
-          print("We're using optical MNDWI techniques for your water mask\nbecause your dates are prior to SAR-1 availability.");
+          print("We're using optical MNDWI techniques for your water mask\nbecause your dates are prior to SAR-1 availability:\n10/2014");
           var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
           var clot_water_mosaic = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
           var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
