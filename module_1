@@ -861,7 +861,7 @@ step_1_button.onClick(function() {
       // Prepare the next section to appear after an evaluate call below
       function doStepFour() {
         var step_4_button = ui.Button('Section 4: Calculate the Spectral Indices');
-        step_4_button.onClick(produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, notMassive));
+        step_4_button.onClick(produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, notMassive));
         print(step_4_button);
       }
       
@@ -903,7 +903,7 @@ alert('First we will select the months of interest\n(for Contemporary & Historic
 print(months_step_button);
 
 
-function produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, notMassive) {
+function produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, notMassive) {
   return function() {
     ///////////////
     // Section 4 //
@@ -1045,10 +1045,10 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
         } else {
           // Use low tide images to create water mask
           var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-          clot_water = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+          var clot_water_mosaic = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
           var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-          hlot_water = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-          waterMask = imagery.water_mask(hlot_water, clot_water, combo_water_mask);
+          var hlot_water_mosaic = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+          waterMask = imagery.water_mask(hlot_water_mosaic, clot_water_mosaic, combo_water_mask);
           
           if (notMassive) {
             ee.List([ee.String(hlot_water.size()), ee.String(clot_water.size())]).evaluate(function(optCounts, failure) {
