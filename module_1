@@ -844,8 +844,8 @@ step_1_button.onClick(function() {
       visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide');
       visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide');
       
-      // chop off mndwi, inv_mndwi, day, month and year bands
-      var bnames = Chot.bandNames().slice(0, -5);
+      // chop off mndwi, inv_mndwi, date bands
+      var bnames = Chot.bandNames().slice(0, -3);
       Chot = Chot.select(bnames);
       Clot = Clot.select(bnames);
       Hhot = Hhot.select(bnames);
