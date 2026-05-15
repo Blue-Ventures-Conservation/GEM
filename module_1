@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 2 May 2026
+Last updated: 14 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -861,7 +861,7 @@ step_1_button.onClick(function() {
       // Prepare the next section to appear after an evaluate call below
       function doStepFour() {
         var step_4_button = ui.Button('Section 4: Calculate the Spectral Indices');
-        step_4_button.onClick(produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, notMassive));
+        step_4_button.onClick(produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, notMassive));
         print(step_4_button);
       }
       
@@ -905,7 +905,7 @@ alert('First we will select the months of interest\n(for Contemporary & Historic
 print(months_step_button);
 
 
-function produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, notMassive) {
+function produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, notMassive) {
   return function() {
     ///////////////
     // Section 4 //
@@ -1023,8 +1023,8 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
       if (remove_water === true) {
         if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
           print("We're using SAR-1 radar for your water mask!");
-          var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months);
-          var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months);
+          var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months, tidalArea);
+          var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months, tidalArea);
           
           var sar_cont_water = sar_cont_result[0];
           var sar_cont_images = sar_cont_result[1];
