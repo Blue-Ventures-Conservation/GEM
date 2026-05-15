@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 14 May 2026
+Last update: 15 May 2026
 
 */
 
@@ -318,15 +318,13 @@ function collect_sentinel2(cloud_mask, roi, tidal_area, filter) {
     var optical = image.select(names).divide(10000);
     return image.addBands(optical, null, true);
   });
-  // we shouldn't ever need shore_reflectance calculations for sentinel-2
-  // as we will always use SAR
-  // images = shore_reflectance(roi, images, tidal_area, s2_scale);
+  images = shore_reflectance(roi, images, tidal_area, s2_scale);
   images = images.map(datePixels);
 
   // Sentinel-2 just uses CloudScore+ for both mild/aggressive
   images = s2_cloud_mask(images);
 
-  return images.select(names.cat(['day', 'month', 'year']));
+  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'day', 'month', 'year']));
 }
 
 // cloud masking
