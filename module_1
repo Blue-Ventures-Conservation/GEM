@@ -402,7 +402,7 @@ var combo_water_mask = true;
 
 2.G) Topographic Thresholds
      To threshold the data, the user has several options: 1.) The known mangrove
-     extent can be used to extract the 99th percentile for slope and elevation,
+     extent can be used to extract the maximum value for slope and elevation,
      this is then used to generate a topographic mask for the input data. OR 2.) 
      The user may enter their own thresholds for both slope and elevation. NOTE: If
      the user elects to have the data automatically thresholded ('true') then the
