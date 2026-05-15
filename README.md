@@ -140,7 +140,7 @@ personal Earth Engine ‘Asset’ folder).
 
 #### Module 1: Defining the Region of Interest (ROI) and Compositing Imagery
 
->https://code.earthengine.google.com/b1dc21da484306fd599b8fa65a405792?noload=true
+>https://code.earthengine.google.com/2e857d93746d7c3fc070c49db35764b5?noload=true
 
 #### Module 2: Spectral Separability, Classifications, and Accuracy Assessment
 
