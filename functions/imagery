@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 3 May 2026
+Last update: 14 May 2026
 
 */
 
@@ -88,13 +88,13 @@ exports.should_use_sar_water_mask = function(cont_start_year, cont_months, hist_
 };
 
 // Sentinel-1 SAR water mask
-exports.get_sar_water_mask = function(roi, start_year, end_year, months) {
-  var vv = filterPolarisation(roi, start_year, end_year, months, 'VV', -16);
-  var vh = filterPolarisation(roi, start_year, end_year, months, 'VH', -25);
+exports.get_sar_water_mask = function(roi, start_year, end_year, months, tidal_area) {
+  var vv = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VV', -16);
+  var vh = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VH', -25);
   return [vv[0].add(vh[0]).unmask(1).eq(2), vv[1].merge(vh[1])];
 };
 
-function filterPolarisation(roi, start_year, end_year, months, polarisation, backscatter) {
+function filterPolarisation(roi, start_year, end_year, months, tidal_area, polarisation, backscatter) {
   var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
     .filterBounds(roi)
     .filterDate(start_year + '-01-01', (end_year + 1) + '-01-01')
@@ -111,7 +111,19 @@ function filterPolarisation(roi, start_year, end_year, months, polarisation, bac
   s1 = filterMonths(s1, months);
   s1 = s1.map(maskAngLT452).map(maskAngGT30).select(polarisation);
   s1 = s1.map(leeFilter).map(produceWaterClassificationFunc(polarisation, backscatter));
-  return [s1.reduce(ee.Reducer.sum()).gt(1).add(1).eq(1), s1];
+  s1 = s1.map(function(img) {
+    var count = ee.Image(img).reduceRegion({
+      reducer: ee.Reducer.count(),
+      geometry: tidal_area,
+      scale: 100,
+      maxPixels: 1e15,
+      bestEffort: true,
+      tileScale: 1
+    }).get("Water");
+    img = img.set("Land", ee.Algorithms.If(count, ee.Number(count).multiply(-1), -999999));
+    return img.addBands(img.metadata("Land"));
+  });
+  return [s1.qualityMosaic("Land").select("Water").neq(1), s1];
 }
 
 // the old, pre-SAR water mask, still used for older imagery
@@ -306,13 +318,15 @@ function collect_sentinel2(cloud_mask, roi, tidal_area, filter) {
     var optical = image.select(names).divide(10000);
     return image.addBands(optical, null, true);
   });
-  images = shore_reflectance(roi, images, tidal_area, s2_scale);
+  // we shouldn't ever need shore_reflectance calculations for sentinel-2
+  // as we will always use SAR
+  // images = shore_reflectance(roi, images, tidal_area, s2_scale);
   images = images.map(datePixels);
 
   // Sentinel-2 just uses CloudScore+ for both mild/aggressive
   images = s2_cloud_mask(images);
 
-  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'day', 'month', 'year']));
+  return images.select(names.cat(['day', 'month', 'year']));
 }
 
 // cloud masking
@@ -402,7 +416,7 @@ function shore_reflectance(roi, images, tidal_area, scale) {
                     scale: 100,
                     maxPixels: 1e15,
                     bestEffort: true,
-                    tileScale: 16 
+                    tileScale: 1
                     }).get(mndwi);
     num = ee.Algorithms.If(num, num, -1);
     return img.set(mndwi, ee.Number(num));
