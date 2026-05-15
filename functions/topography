@@ -72,7 +72,7 @@ exports.topo_mask_func = function(dtm, mangroves, mang_topo, elevation, slope){
       print("Max known mangrove elevation: " + vals[0]);
       print("Max known mangrove slope: " + vals[1]);
     } else {
-      print(failure);
+      print("Could not calculate 99.99th percentile elevation and slope:\n" + failure);
     }
   });
   
