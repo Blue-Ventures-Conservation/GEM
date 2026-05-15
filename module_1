@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 14 May 2026
+Last updated: 15 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -402,7 +402,7 @@ var combo_water_mask = true;
 
 2.G) Topographic Thresholds
      To threshold the data, the user has several options: 1.) The known mangrove
-     extent can be used to extract the maximum value for slope and elevation,
+     extent can be used to extract the 99.99th percentile value for slope and elevation,
      this is then used to generate a topographic mask for the input data. OR 2.) 
      The user may enter their own thresholds for both slope and elevation. NOTE: If
      the user elects to have the data automatically thresholded ('true') then the
@@ -831,18 +831,67 @@ step_1_button.onClick(function() {
       var false_colour_bands = ['NIR','SWIR1','Red'];
       var vis = {bands: false_colour_bands, min: 0, max: 0.27};
       
-      function visualize_imagery(img, buttonLabel, layerLabel) {
+      function pixelPercentages(img, scale, label) {
+        var dict = ee.Dictionary(img.select('date').reduceRegion({
+          reducer: ee.Reducer.frequencyHistogram(),
+          geometry: ROI,
+          scale: 100,
+          maxPixels: 1e15,
+          bestEffort: true,
+        }).get('date'));
+        
+        var keys = dict.keys();
+        keys = keys.map(function(key) {
+          key = ee.String(key);
+          var year = key.slice(0, 4);
+          var month = key.slice(4, 6);
+          var day = key.slice(6, 8);
+          return day.cat("/").cat(month).cat("/").cat(year);
+        });
+        
+        var denom = ee.Number(dict.values().reduce(ee.Reducer.sum()));
+        var vals = dict.values();
+        vals = vals.map(function(val) {
+          // negative, so that sorting goes the right direction
+          return ee.Number(val).divide(denom).multiply(-1000000).round().divide(10000);
+        });
+        
+        keys = keys.sort(vals);
+        vals = vals.sort().map(function(val) {
+          return ee.Number(val).multiply(-1);
+        });
+        
+        print("Calculating " + label + " pixel percentages by date...");
+        ee.List([keys, vals]).evaluate(function(kv, failure) {
+          if (kv) {
+            var keys = kv[0];
+            var vals = kv[1];
+            var toPrint = label + " Pixel Percentages:\n";
+            for (var i = 0; i < keys.length; i++) {
+              var key = keys[i];
+              var val = vals[i];
+              toPrint = toPrint + key + " makes up " + val + "% of " + label + "\n";
+            }
+            print(toPrint);
+          } else {
+            print("Could not calculate " + label + " pixel percentages: " + failure);
+          }
+        });
+      }
+      
+      function visualize_imagery(img, buttonLabel, layerLabel, scale) {
         var add_imagery = ui.Button(buttonLabel);
         add_imagery.onClick(function() {
-           Map.addLayer(img, vis, layerLabel);
+            pixelPercentages(img, scale, layerLabel);
+            Map.addLayer(img, vis, layerLabel);
         });
         print(add_imagery);
       }
       
-      visualize_imagery(hhot_vis, 'Add Historical High Tide Imagery', 'Historical High Tide');
-      visualize_imagery(hlot_vis, 'Add Historical Low Tide Imagery', 'Historical Low Tide');
-      visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide');
-      visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide');
+      visualize_imagery(hhot_vis, 'Add Historical High Tide Imagery', 'Historical High Tide', imagery_scale);
+      visualize_imagery(hlot_vis, 'Add Historical Low Tide Imagery', 'Historical Low Tide', imagery_scale);
+      visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide', imagery_scale);
+      visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide', imagery_scale);
       
       // chop off mndwi, inv_mndwi, date bands
       var bnames = Chot.bandNames().slice(0, -3);
