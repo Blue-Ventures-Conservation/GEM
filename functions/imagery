@@ -88,13 +88,13 @@ exports.should_use_sar_water_mask = function(cont_start_year, cont_months, hist_
 };
 
 // Sentinel-1 SAR water mask
-exports.get_sar_water_mask = function(roi, start_year, end_year, months, tidal_area) {
-  var vv = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VV', -16);
-  var vh = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VH', -25);
+exports.get_sar_water_mask = function(roi, start_year, end_year, months, tidal_area, label) {
+  var vv = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VV', -19, label);
+  var vh = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VH', -25, label);
   return [vv[0].add(vh[0]).unmask(1).eq(2), vv[1].merge(vh[1])];
 };
 
-function filterPolarisation(roi, start_year, end_year, months, tidal_area, polarisation, backscatter) {
+function filterPolarisation(roi, start_year, end_year, months, tidal_area, polarisation, backscatter, label) {
   var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
     .filterBounds(roi)
     .filterDate(start_year + '-01-01', (end_year + 1) + '-01-01')
@@ -111,6 +111,7 @@ function filterPolarisation(roi, start_year, end_year, months, tidal_area, polar
   s1 = filterMonths(s1, months);
   s1 = s1.map(maskAngLT452).map(maskAngGT30).select(polarisation);
   s1 = s1.map(leeFilter).map(produceWaterClassificationFunc(polarisation, backscatter));
+  s1 = s1.map(datePixels);
   s1 = s1.map(function(img) {
     var count = ee.Image(img).reduceRegion({
       reducer: ee.Reducer.count(),
@@ -123,7 +124,10 @@ function filterPolarisation(roi, start_year, end_year, months, tidal_area, polar
     img = img.set("Land", ee.Algorithms.If(count, ee.Number(count).multiply(-1), -999999));
     return img.addBands(img.metadata("Land"));
   });
-  return [s1.qualityMosaic("Land").select("Water").neq(1), s1];
+  var s1_collection = s1;
+  s1 = s1.qualityMosaic("Land");
+  exports.pixelPercentages(s1, roi, 100, label + " SAR " + polarisation + " Polarised Water Mask");
+  return [s1.select("Water").neq(1), s1_collection];
 }
 
 // the old, pre-SAR water mask, still used for older imagery
@@ -499,14 +503,58 @@ var maskAngGT30 = function(image) {
 };
 
 function datePixels(img) {
-	var segs = ee.List(ee.String(img.get('system:index')).trim().split("_").iterate(function(item, prev) {
-	return ee.Algorithms.If(ee.String(item).length().gt(1), ee.List(prev).add(item), prev);
-	}, ee.List([])));
-	// true when Landsat, false implies Sentinel-2
-	var str = ee.String(ee.Algorithms.If(ee.String(segs.get(0)).length().eq(4), segs.get(2), ee.String(segs.get(0)).split('T').get(0)));
+	var str = ee.String(ee.String(img.get('system:index')).match("20[1-3][0-9]{5}").get(0));
 	var year = ee.Number.parse(str.slice(0, 4));
 	var month = ee.Number.parse(str.slice(4, 6));
 	var day = ee.Number.parse(str.slice(6, 8));
 	var date = ee.Date.fromYMD(year, month, day);
 	return img.addBands(ee.Image(date.get('year').multiply(100).add(date.get('month')).multiply(100).add(date.get('day'))).rename(['date']).cast({'date':'long'}));
+}
+
+exports.pixelPercentages = function(img, roi, scale, label) {
+  var dict = ee.Dictionary(img.select('date').reduceRegion({
+    reducer: ee.Reducer.frequencyHistogram(),
+    geometry: roi,
+    scale: 100,
+    maxPixels: 1e15,
+    bestEffort: true,
+  }).get('date'));
+  
+  var keys = dict.keys();
+  keys = keys.map(function(key) {
+    key = ee.String(key);
+    var year = key.slice(0, 4);
+    var month = key.slice(4, 6);
+    var day = key.slice(6, 8);
+    return day.cat("/").cat(month).cat("/").cat(year);
+  });
+  
+  var denom = ee.Number(dict.values().reduce(ee.Reducer.sum()));
+  var vals = dict.values();
+  vals = vals.map(function(val) {
+    // negative, so that sorting goes the right direction
+    return ee.Number(val).divide(denom).multiply(-1000000).round().divide(10000);
+  });
+  
+  keys = keys.sort(vals);
+  vals = vals.sort().map(function(val) {
+    return ee.Number(val).multiply(-1);
+  });
+  
+  print("Calculating " + label + " pixel percentages by date...");
+  ee.List([keys, vals]).evaluate(function(kv, failure) {
+    if (kv) {
+      var keys = kv[0];
+      var vals = kv[1];
+      var toPrint = label + " Pixel Percentages:\n";
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var val = vals[i];
+        toPrint = toPrint + key + " makes up " + val + "% of " + label + "\n";
+      }
+      print(toPrint);
+    } else {
+      print("Could not calculate " + label + " pixel percentages: " + failure);
+    }
+  });
 }
