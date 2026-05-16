@@ -9,9 +9,13 @@ dtm: determines whether the user will use the GEE JAXA topographic dataset
 topo_mask_func: the topographic data is used to generate a pixel masck, based
                 on elevation and slope thresholds.
 
-Last update: 15 May 2026
+Last update: 16 May 2026
 
 */
+
+var elevSlopeThresh = 99.99;
+exports.elevationAndSlopeThresholdPercentile = elevSlopeThresh;
+
 exports.dtm = function(topo, topo_path){
   // topo is true/false user identified boolean value 
   var topo_t = function(){
@@ -45,7 +49,7 @@ exports.topo_mask_func = function(dtm, mangroves, mang_topo, elevation, slope){
   //extract slope and elevation max from known mangrove extent
   var mang_elv = dtm.select('elev').updateMask(mangroves)
                   .reduceRegion({
-                    reducer: ee.Reducer.percentile({percentiles: [99.99]}),
+                    reducer: ee.Reducer.percentile({percentiles: [elevSlopeThresh]}),
                     geometry: mangroves.geometry(),
                     scale: 30,
                     maxPixels: 1e12,
@@ -54,7 +58,7 @@ exports.topo_mask_func = function(dtm, mangroves, mang_topo, elevation, slope){
 
   var mang_slope = dtm.select('slope').updateMask(mangroves)
                    .reduceRegion({
-                    reducer: ee.Reducer.percentile({percentiles: [99.99]}),
+                    reducer: ee.Reducer.percentile({percentiles: [elevSlopeThresh]}),
                     geometry: mangroves.geometry(),
                     scale: 30,
                     maxPixels: 1e12,
@@ -66,13 +70,13 @@ exports.topo_mask_func = function(dtm, mangroves, mang_topo, elevation, slope){
   var el_img = ee.Image.constant(mang_elv.get('elev'));
   var slp_img = ee.Image.constant(mang_slope.get('slope'));
   
-  print("Fetching 99.99th percentile elevation and\nslope for known mangrove extent...");
+  print("Fetching " + elevSlopeThresh + "th percentile elevation and\nslope for known mangrove extent...");
   ee.List([el_val, slp_val]).evaluate(function(vals, failure) {
     if (vals) {
       print("Max known mangrove elevation: " + vals[0]);
       print("Max known mangrove slope: " + vals[1]);
     } else {
-      print("Could not calculate 99.99th percentile elevation and slope:\n" + failure);
+      print("Could not calculate " + elevSlopeThresh + "th percentile elevation and slope:\n" + failure);
     }
   });
   
