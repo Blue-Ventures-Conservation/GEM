@@ -89,7 +89,7 @@ exports.should_use_sar_water_mask = function(cont_start_year, cont_months, hist_
 
 // Sentinel-1 SAR water mask
 exports.get_sar_water_mask = function(roi, start_year, end_year, months, tidal_area, label) {
-  return get_sar_water_mask_with_backscatters(roi, start_year, end_year, months, tidal_area, label, -19, -25);
+  return exports.get_sar_water_mask_with_backscatters(roi, start_year, end_year, months, tidal_area, label, -19, -25);
 };
 
 exports.get_sar_water_mask_with_backscatters = function(roi, start_year, end_year, months, tidal_area, label, vvBackscatter, vhBackscatter) {
