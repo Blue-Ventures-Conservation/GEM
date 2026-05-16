@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 15 May 2026
+Last update: 16 May 2026
 
 */
 
@@ -118,7 +118,7 @@ function filterPolarisation(roi, start_year, end_year, months, tidal_area, polar
       scale: 100,
       maxPixels: 1e15,
       bestEffort: true,
-      tileScale: 1
+      tileScale: 0.5
     }).get("Water");
     img = img.set("Land", ee.Algorithms.If(count, ee.Number(count).multiply(-1), -999999));
     return img.addBands(img.metadata("Land"));
@@ -280,7 +280,7 @@ function collect_landsat(cloud_mask, roi, tidal_area, filter) {
     images = mild_landsat_cloud_mask(images);
   }
   
-  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'day', 'month', 'year']));
+  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'date']));
 }
 
 var etm_coeffs = {
@@ -324,7 +324,7 @@ function collect_sentinel2(cloud_mask, roi, tidal_area, filter) {
   // Sentinel-2 just uses CloudScore+ for both mild/aggressive
   images = s2_cloud_mask(images);
 
-  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'day', 'month', 'year']));
+  return images.select(names.cat([exports.mod_water_index, exports.inverse_mod_water_index, 'date']));
 }
 
 // cloud masking
@@ -508,5 +508,5 @@ function datePixels(img) {
 	var month = ee.Number.parse(str.slice(4, 6));
 	var day = ee.Number.parse(str.slice(6, 8));
 	var date = ee.Date.fromYMD(year, month, day);
-	return img.addBands(ee.Image([date.get('day'), date.get('month'), date.get('year')]).rename(['day', 'month', 'year']).cast({'day':'byte', 'month':'byte', 'year':'short'}));
+	return img.addBands(ee.Image(date.get('year').multiply(100).add(date.get('month')).multiply(100).add(date.get('day'))).rename(['date']).cast({'date':'long'}));
 }
