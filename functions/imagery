@@ -89,8 +89,12 @@ exports.should_use_sar_water_mask = function(cont_start_year, cont_months, hist_
 
 // Sentinel-1 SAR water mask
 exports.get_sar_water_mask = function(roi, start_year, end_year, months, tidal_area, label) {
-  var vv = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VV', -19, label);
-  var vh = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VH', -25, label);
+  return get_sar_water_mask_with_backscatters(roi, start_year, end_year, months, tidal_area, label, -19, -25);
+};
+
+exports.get_sar_water_mask_with_backscatters = function(roi, start_year, end_year, months, tidal_area, label, vvBackscatter, vhBackscatter) {
+  var vv = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VV', vvBackscatter, label);
+  var vh = filterPolarisation(roi, start_year, end_year, months, tidal_area, 'VH', vhBackscatter, label);
   return [vv[0].add(vh[0]).unmask(1).eq(2), vv[1].merge(vh[1])];
 };
 
