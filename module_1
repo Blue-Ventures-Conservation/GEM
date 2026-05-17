@@ -1083,7 +1083,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           
           var sar_water_mask = null;
           if (combo_water_mask) {
-            sar_water_mask = sar_cont_water.add(sar_hist_water).gt(1);
+            sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
           } else {
             sar_water_mask = sar_hist_water;
           }
