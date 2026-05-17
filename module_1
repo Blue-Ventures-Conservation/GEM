@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 16 May 2026
+Last updated: 17 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -1083,7 +1083,7 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
           
           var sar_water_mask = null;
           if (combo_water_mask) {
-            sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
+            sar_water_mask = sar_cont_water.add(sar_hist_water).gt(1);
           } else {
             sar_water_mask = sar_hist_water;
           }
