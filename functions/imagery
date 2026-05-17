@@ -161,7 +161,7 @@ exports.water_mask = function(hist_img, cont_img, combo_water_mask){
     var hist_water = MNDWI_hist.add(NDWI_hist).gt(1);
     
     // unify the images, select values greater than 1
-    return cont_water.add(hist_water).gt(1);
+    return cont_water.add(hist_water).gte(1);
   } else {
     var single_water = hist_img.expression('(B2 - B5)/(B2 + B5)', {
         'B2': hist_img.select('Green'),
