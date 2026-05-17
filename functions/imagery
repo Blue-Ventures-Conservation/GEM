@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 16 May 2026
+Last update: 17 May 2026
 
 */
 
@@ -161,7 +161,7 @@ exports.water_mask = function(hist_img, cont_img, combo_water_mask){
     var hist_water = MNDWI_hist.add(NDWI_hist).gt(1);
     
     // unify the images, select values greater than 1
-    return cont_water.add(hist_water).gte(1);
+    return cont_water.add(hist_water).gt(1);
   } else {
     var single_water = hist_img.expression('(B2 - B5)/(B2 + B5)', {
         'B2': hist_img.select('Green'),
@@ -561,4 +561,4 @@ exports.pixelPercentages = function(img, roi, scale, label) {
       print("Could not calculate " + label + " pixel percentages: " + failure);
     }
   });
-}
+};
