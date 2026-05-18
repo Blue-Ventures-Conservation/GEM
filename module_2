@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 2 May 2026
+Last updated: 18 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -379,7 +379,15 @@ function setup_colors() {
     onClick: function() {
       var alertText = "Land Cover Color List:\n";
       for (var i = 0; i < lc_names.length; i++) {
-        alertText = alertText + lc_names[i] + ": " + colors[i] + "\n";
+        var color = colors[i];
+        if (color == "limegreen") {
+          color = "green";
+        } else if(color == "saddlebrown") {
+          color = "brown";
+        } else if (color == "burlywood") {
+          color = "lightbrown";
+        }
+        alertText = alertText + lc_names[i] + ": " + color + "\n";
       }
       alert(alertText);
     }
@@ -852,16 +860,16 @@ function setupStep2() {
             '\nwill be automatically added to the map viewer to explore.');
       t_poly_c.distinct(label).sort(label).aggregate_array(label).evaluate(function(class_ids, failure) {
         if (!class_ids) {
-          print(failure);
+          print("Could not fetch numeric class IDs, classification cannot proceed.\nError message from Google: " + failure);
           return;
         }
         
         var prev = -1;
         var expanded = [];
-        var pos = 0;
         for (var i = 0; i < class_ids.length; i++) {
-          var color = colors[pos];
-          if (pos > 0) {
+          var color = colors[i];
+          var next = class_ids[i];
+          if (i > 0) {
             var diff = class_ids[i] - prev;
             for (var j = 0; j < diff; j++) {
               expanded.push(color);
@@ -869,7 +877,7 @@ function setupStep2() {
           } else {
             expanded.push(color);
           }
-          pos = pos + 1;
+          prev = next;
         }
         
         // Contemporary
