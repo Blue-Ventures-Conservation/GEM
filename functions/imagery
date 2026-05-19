@@ -507,7 +507,8 @@ var maskAngGT30 = function(image) {
 };
 
 function datePixels(img) {
-	var str = ee.String(ee.String(img.get('system:index')).match("(19[7-9]|20[0-3])[0-9]{5}").get(0));
+  var matches = ee.String(img.get('system:index')).match("(19[7-9]|20[0-3])[0-9]{5}");
+  var str = ee.String(ee.Algorithms.If(matches.size().gt(0), matches.get(0), "19700101"));
 	var year = ee.Number.parse(str.slice(0, 4));
 	var month = ee.Number.parse(str.slice(4, 6));
 	var day = ee.Number.parse(str.slice(6, 8));
