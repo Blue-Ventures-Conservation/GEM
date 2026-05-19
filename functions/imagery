@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 17 May 2026
+Last update: 19 May 2026
 
 */
 
@@ -507,7 +507,7 @@ var maskAngGT30 = function(image) {
 };
 
 function datePixels(img) {
-	var str = ee.String(ee.String(img.get('system:index')).match("20[1-3][0-9]{5}").get(0));
+	var str = ee.String(ee.String(img.get('system:index')).match("(19[7-9]|20[0-3])[0-9]{5}").get(0));
 	var year = ee.Number.parse(str.slice(0, 4));
 	var month = ee.Number.parse(str.slice(4, 6));
 	var day = ee.Number.parse(str.slice(6, 8));
