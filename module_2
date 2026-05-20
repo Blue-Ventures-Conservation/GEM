@@ -700,16 +700,32 @@ function setupStep1() {
           onChange: function(key) {
             scat_samp = ref_samp[key];
           }});
+        
+        function reduceScatter(target, data, bx, by) {
+          var labels = ee.List(prop_labels);
+          
+          // First, we'll remove values that are very close to another.
+          data = data.map(function(elem) {
+            var feat = ee.Feature(elem);
+            return feat.set("roundx", ee.Number(feat.get(bx)).multiply(1000).round().divide(1000), "roundy", ee.Number(feat.get(by)).multiply(1000).round().divide(1000));
+          }).distinct(labels.cat(["roundx", "roundy"]));
+          
+          // Then, if we're still over 5000, we randomly pick
+          // more features to remove.
+          // Add 20 here because close to 5000, an exact cutoff value
+          // is not guaranteed to actually reduce the size, due to randomness.
+          var filterCutoff = ee.Number(target).divide(data.size().add(20));
+          return data.randomColumn("rand", Date.now()).filter(ee.Filter.lt("rand", filterCutoff)).map(function(elem) {
+            var feat = ee.Feature(elem);
+            return feat.select(labels.cat([bx, by]));
+          });
+        }
         var scat_button = ui.Button('View Scatter Plot');
         scat_button.onClick(function(){
           var data = ee.FeatureCollection(scat_samp[1]).filter(ee.Filter.inList(label2, clz));
-          var plotPts = data.size();
-          // We cannot plot more than 5000 points.
-          // Add 20 here because close to 5000, an exact cutoff value
-          // is not guaranteed to actually reduce the size, due to randomness.
-          var filterCutoff = ee.Number(5000).divide(plotPts.add(20));
-          data = ee.Algorithms.If(plotPts.gt(5000), data.randomColumn("rand", Date.now()).filter(
-            ee.Filter.lt("rand", filterCutoff)), data);
+          // We cannot plot more than 5000 points, so we need to reduce in that scenario.
+          var maxPts = 5000;
+          data = ee.Algorithms.If(data.size().gt(maxPts), reduceScatter(maxPts, data, bandX, bandY), data);
           
           var samp_title = scat_samp[0];
           var Sc_chart =  ui.Chart.feature.groups(ee.FeatureCollection(data), bandX, bandY, label2)
