@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 18 May 2026
+Last updated: 20 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -703,10 +703,13 @@ function setupStep1() {
         var scat_button = ui.Button('View Scatter Plot');
         scat_button.onClick(function(){
           var data = ee.FeatureCollection(scat_samp[1]).filter(ee.Filter.inList(label2, clz));
-          data = ee.Algorithms.If(data.size().gte(5000), ee.FeatureCollection(data.map(function(elem) {
-            var feat = ee.Feature(elem);
-            return feat.set(bandX, ee.Number(feat.get(bandX)).multiply(100).round().divide(100), bandY, ee.Number(feat.get(bandY)).multiply(100).round().divide(100));
-          })).distinct(ee.List(prop_labels).add(bandX).add(bandY)), data);
+          var plotPts = data.size();
+          // We cannot plot more than 5000 points.
+          // Add 20 here because close to 5000, an exact cutoff value
+          // is not guaranteed to actually reduce the size, due to randomness.
+          var filterCutoff = ee.Number(5000).divide(plotPts.add(20));
+          data = ee.Algorithms.If(plotPts.gt(5000), data.randomColumn("rand", Date.now()).filter(
+            ee.Filter.lt("rand", filterCutoff)), data);
           
           var samp_title = scat_samp[0];
           var Sc_chart =  ui.Chart.feature.groups(ee.FeatureCollection(data), bandX, bandY, label2)
