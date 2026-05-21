@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 17 May 2026
+Last updated: 20 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -34,8 +34,8 @@ composites and 4.) create a unified mask to remove water pixels or pixels
 associated with extreme topography from classification. This module outputs up to
 four image composites (depending on user preference: high- and  low-tide for 
 both a historical and contemporary temporal window), a final mask, representing 
-unified water, slope, and elevation, and a vector polygon encompassing the area 
-of focus (AOF) to use throughout the GEM workflow. 
+unified water, elevation, and a vector polygon encompassing the area of focus
+(AOF) to use throughout the GEM workflow. 
 
 GEM Module 1 is broken down into 5 sections: 
 
@@ -54,11 +54,11 @@ GEM Module 1 is broken down into 5 sections:
     Section 4: Uses the Landsat/S2 composites and the index list from Section 1, Step 2
                to calculate selected spectral indices.
 
-    Section 5: Creates the composite masks, removing water (if desired) and areas beyond 
-               the topographic (i.e., elevation and slope) thresholds. The user has the 
-               option to view a combined water and topography mask, or view each mask 
-               separately. It is in Section 5 that the mask and AOF may be modified to 
-               search for fringe mangroves if the user selects that option.
+    Section 5:  Creates the composite masks, removing water (if desired) and areas beyond 
+                the topographic (i.e., elevation) thresholds. The user has the option
+                to view a combined water and topography mask, or view each mask 
+                separately. It is in Section 5 that the mask and AOF may be modified to 
+                search for fringe mangroves if the user selects that option.
 
 After pressing the ‘Run’ button at the top of the script editor, a grey button will 
 populate in the ‘Console’ to “Begin Workflow”. Shift your attention to the ‘Console’, 
@@ -100,40 +100,40 @@ all visible on your screen before proceeding ***
 
 
 1) USER DEFINED DATA SETS
-     In this first section the user must determine what data they would 
-     like to use within GEM. For each input, two options are usually presented:
-     use GEM's default data or upload external user-selected data. Additionally,
-     if the user would like, they may file a request to Google to add a specific 
-     data set into the 'Earth Engine Data Catalog'. To submit a data request 
-     follow the below link:
-     
-          https://developers.google.com/earth-engine/help#dataset_requests
-          Note: This will likely not be a very quick service/response. 
+    In this first section the user must determine what data they would 
+    like to use within GEM. For each input, two options are usually presented:
+    use GEM's default data or upload external user-selected data. Additionally,
+    if the user would like, they may file a request to Google to add a specific 
+    data set into the 'Earth Engine Data Catalog'. To submit a data request 
+    follow the below link:
+    
+        https://developers.google.com/earth-engine/help#dataset_requests
+        Note: This will likely not be a very quick service/response. 
 
 1.A) Set Preliminary AOI
-     There are two options here: upload a shapefile representing the rough AOI, or 
-     coarsely defining their area of interest (AOI) using the drawing tools located
-     in the upper left corner of the 'Map' to roughly define the part of the world
-     to further investigate. The current methodology only supports the use of the
-     ‘Draw a shape’ or ‘Draw a rectangle’ drawing tools at this time.
-     Note: this is not going to be the AOF used in the data processing, this coarse
-     AOI is to simply help GEM select the target data. The geometry that you create
-     must be renamed to "coarse_roi"; this can be done by clicking the newly drawn
-     geometry in the script's 'Imports' (located at the top of the script).
+    There are two options here: upload a shapefile representing the rough AOI, or 
+    coarsely defining their area of interest (AOI) using the drawing tools located
+    in the upper left corner of the 'Map' to roughly define the part of the world
+    to further investigate. The current methodology only supports the use of the
+    ‘Draw a shape’ or ‘Draw a rectangle’ drawing tools at this time.
+    Note: this is not going to be the AOF used in the data processing, this coarse
+    AOI is to simply help GEM select the target data. The geometry that you create
+    must be renamed to "coarse_roi"; this can be done by clicking the newly drawn
+    geometry in the script's 'Imports' (located at the top of the script).
 
 1.B) Set Exclusion Areas
-
-     Define areas within your AOI to exclude from imagery and subsequent analysis.
-
-     You can add areas to be excluded from the analysis (for example: dams and their
-     pools/lakes/reservoirs, urban areas or rice paddies) by uploading your own
-     shapefile as a table asset to GEE, or by drawing shapes on the map and then
-     adding them to this object in the same format as for the 'exclude_geo', as shown
-     in the example below:
-     
-          var exclusion_geometries = [
-            exclude_geo,
-          ];
+    
+    Define areas within your AOI to exclude from imagery and subsequent analysis.
+    
+    You can add areas to be excluded from the analysis (for example: dams and their
+    pools/lakes/reservoirs, urban areas or rice paddies) by uploading your own
+    shapefile as a table asset to GEE, or by drawing shapes on the map and then
+    adding them to this object in the same format as for the 'exclude_geo', as shown
+    in the example below:
+    
+        var exclusion_geometries = [
+          exclude_geo,
+        ];
 */
 
 var exclusion_geometries = [
@@ -143,33 +143,33 @@ var exclusion_geometries = [
 
 /*
 1.C) Force usage of Landsat. It may be that you specifically want to use Landsat or
-     that the composites generated by the much higher resolution Sentinel-2 imagery
-     are simply too large (their size can exceed 450MB).
+    that the composites generated by the much higher resolution Sentinel-2 imagery
+    are simply too large (their size can exceed 450MB).
     
-     Change the value of the parameter below to 'true' to tell GEM to only use Landsat
-     imagery.
+    Change the value of the parameter below to 'true' to tell GEM to only use Landsat
+    imagery.
 */
 
 var force_landsat = false;
 
 /*
 1.D) Known Mangrove Extent
-     The currently known mangrove extent for the study area will play a key role
-     in the further identification of methodological variables (such as slope 
-     and elevation thresholds). GEM defaults to using a unified mangrove extent layer
-     which combines the Global Mangrove Forests Distribution v1 (2000) with all Global
-     Mangrove Watch (GMW) maps. Alternatively, the user may upload an alternative
-     ‘known mangrove’ asset which has been uploaded to the user’s account. If the user
-     uses an uploaded dataset they will be prompted to reference the asset path once the
-     workflow begins; after 'Running' the script.
-     
-     To upload an asset follow the instructions found here:
-          https://developers.google.com/earth-engine/guides/asset_manager
-     
-     Enter:
-          var kmx = null; (to use GEM's default unified known mangrove extent layer)
-          var kmx = "path/to/your/asset"; (to map to the user's 'known mangrove extent'
-          raster asset)
+    The currently known mangrove extent for the study area will play a key role
+    in the further identification of methodological variables (such as elevation
+    thresholds). GEM defaults to using a unified mangrove extent layer which
+    combines the Global Mangrove Forests Distribution v1 (2000) with all Global
+    Mangrove Watch (GMW) maps. Alternatively, the user may upload an alternative
+    ‘known mangrove’ asset which has been uploaded to the user’s account. If the user
+    uses an uploaded dataset they will be prompted to reference the asset path once the
+    workflow begins; after 'Running' the script.
+    
+    To upload an asset follow the instructions found here:
+        https://developers.google.com/earth-engine/guides/asset_manager
+    
+    Enter:
+        var kmx = null; (to use GEM's default unified known mangrove extent layer)
+        var kmx = "path/to/your/asset"; (to map to the user's 'known mangrove extent'
+        raster asset)
 */
 
 var kmx = null;
@@ -177,19 +177,19 @@ var kmx = null;
 /*
 
 1.E) Coastline Data
-     The coastline is a very important data set for this workflow. It will be 
-     used to define the finalised AOF, as well as to aid in the determination of the
-     tidal conditions for each of the Landsat/S2 images which are to be processed. 
-     GEM's default coastline layer is the S2Coast-2023 Global 10-meter Resolution
-     Coastline Dataset, the first global coastline dataset produced at 10-meter
-     resolution. Alternatively, the user may upload their own coastline data as an
-     asset and bring it into the workflow by copying in its asset path into the
-     'cst_path' variable below.
-     
-     Enter:
-          var cst = true; (the S2Coast-2023 coastline dataset)
-          var cst = false; (to map to the user's uploaded 'coastline' asset)
-                            ^--- Must enter an asset path
+    The coastline is a very important data set for this workflow. It will be 
+    used to define the finalised AOF, as well as to aid in the determination of the
+    tidal conditions for each of the Landsat/S2 images which are to be processed. 
+    GEM's default coastline layer is the S2Coast-2023 Global 10-meter Resolution
+    Coastline Dataset, the first global coastline dataset produced at 10-meter
+    resolution. Alternatively, the user may upload their own coastline data as an
+    asset and bring it into the workflow by copying in its asset path into the
+    'cst_path' variable below.
+    
+    Enter:
+        var cst = true; (the S2Coast-2023 coastline dataset)
+        var cst = false; (to map to the user's uploaded 'coastline' asset)
+                          ^--- Must enter an asset path
 */
 
 var cst = true; 
@@ -197,19 +197,20 @@ var cst_path = 'users/yanchojo/gadm36_mmr_0_shore';
 
 /*
 1.F) Topographic Data 
-     Another important variable is the topographic input. The topographic data will
-     be used to set elevation and slope thresholds before the classification is
-     executed. GEM's default topographic data is the DeltaDTM Global coastal digital
-     terrain model (Pronk et al, 2024), which specifically focuses on low-lying coastal
-     areas below 30 m above Mean Sea Level). Areas beyond DeltaDTM's coverage (i.e.
-     those at >30 m elevation) refer to the JAXA-ALOS satellite radar DSM (30 m). As is
-     the case with the other important data inputs, the user has the choice to upload
-     their own data by filling in the 'topo_path' variable below.
-     
-     Enter:
-          var topo = true; (to use the combined DeltaDTM & GEE JAXA-ALOS satellite radar DTM + DSM (30 m))
-          var topo = false; (to map to the user's uploaded 'topographic' asset)
-                              ^--- Must enter an asset path
+    Another important variable is the topographic input. The topographic data will
+    be used to set the elevation threshold before the classification is executed.
+    
+    GEM's default topographic data is the FABDEM (Forest And Buildings
+    removed Copernicus 30m Digital Elevation Model). Please see:
+    https://gee-community-catalog.org/projects/fabdem/
+    
+    As is the case with the other important data inputs, the user has the choice
+    to upload their own data by filling in the 'topo_path' variable below.
+    
+    Enter:
+        var topo = true; (to use FABDEM (30 m))
+        var topo = false; (to map to the user's uploaded 'topographic' asset)
+                            ^--- Must enter an asset path
 */
 
 var topo = true;
@@ -217,21 +218,21 @@ var topo_path = 'users/yanchojo/topo';
 
 /*
 1.G) Optional Inclusion of Error-Prone Landsat 7 Data
-     The majority of the Landsat 7 collection has been affected by the Scan Line 
-     Corrector (SLC) failure on 31 May 2003. This causes missing data values for 
-     about 22% of each scene. While the remaining pixels provide high-quality data,
-     the missing data values can potentially create artifacts in the output Landsat
-     composites.
-     
-     GEM automatically uses Landsat 7 data from before the failure. This flag only
-     changes whether data after the failure is included.
-     
-     To include or exclude Landsat 7 from after 31 May 2003, toggle the variable
-     'ls_7_in'; between 'true' (to include) and 'false' (to exclude).
-     
-     Enter:
-          var ls_7_in = true; (to include the error-prone Landsat 7 data)
-          var ls_7_in = false; (to exclude the error-prone Landsat 7 data)
+    The majority of the Landsat 7 collection has been affected by the Scan Line 
+    Corrector (SLC) failure on 31 May 2003. This causes missing data values for 
+    about 22% of each scene. While the remaining pixels provide high-quality data,
+    the missing data values can potentially create artifacts in the output Landsat
+    composites.
+    
+    GEM automatically uses Landsat 7 data from before the failure. This flag only
+    changes whether data after the failure is included.
+    
+    To include or exclude Landsat 7 from after 31 May 2003, toggle the variable
+    'ls_7_in'; between 'true' (to include) and 'false' (to exclude).
+    
+    Enter:
+        var ls_7_in = true; (to include the error-prone Landsat 7 data)
+        var ls_7_in = false; (to exclude the error-prone Landsat 7 data)
 */
 var ls_7_in = false;
 
@@ -250,22 +251,22 @@ var ls_7_in = false;
 
 
 2.A) Contemporary Years
-     Define the contemporary year window. These years will bookend the data 
-     selected. The years selected are completely up to the user's discretion. Be 
-     sure that the two dates are entered in the correct order. See example 
-     below. Note: If a single year is desired, put the same year for both 
-     variables.
-     
-     If the start year is 2019 or later for both contemporary and historical years,
-     GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.
-     
-     When using Sentinel-2 imagery, you may prefer to set the start and end
-     years to be the same to reduce the number of imagery. This may help
-     if you are seeing Too May Concurrent Agreggations errors.
-     
-     Enter:
-          var contemporary_start_year = 2014; (Older Contemporary year)
-          var Contemporary_end_year = 2018; (More recent Contemporary year)
+    Define the contemporary year window. These years will bookend the data 
+    selected. The years selected are completely up to the user's discretion. Be 
+    sure that the two dates are entered in the correct order. See example 
+    below. Note: If a single year is desired, put the same year for both 
+    variables.
+    
+    If the start year is 2019 or later for both contemporary and historical years,
+    GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.
+    
+    When using Sentinel-2 imagery, you may prefer to set the start and end
+    years to be the same to reduce the number of imagery. This may help
+    if you are seeing Too May Concurrent Agreggations errors.
+    
+    Enter:
+        var contemporary_start_year = 2014; (Older Contemporary year)
+        var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
 var contemporary_start_year = 2024;
@@ -273,21 +274,21 @@ var contemporary_end_year = 2024;
 
 /*
 2.B) Historical Years
-     Define the historical year window. These years will bookend the data 
-     selected. The years selected are completely up to the user's discretion. Be 
-     sure that the two dates are entered in the correct order. See example below.
-     Note: If a single year is desired, put the same year for both variables.
+    Define the historical year window. These years will bookend the data 
+    selected. The years selected are completely up to the user's discretion. Be 
+    sure that the two dates are entered in the correct order. See example below.
+    Note: If a single year is desired, put the same year for both variables.
     
-     If the start year is 2019 or later for both contemporary and historical years,
-     GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.
-     
-     When using Sentinel-2 imagery, you may prefer to set the start and end
-     years to be the same to reduce the number of imagery. This may help
-     if you are seeing Too May Concurrent Agreggations errors.
-  
-     Enter:
-          var historical_start_year = 2012; (Older Historical year)
-          var historical_end_year = 2014; (More recent Historical year)
+    If the start year is 2019 or later for both contemporary and historical years,
+    GEM defaults to producing Sentinel-2 composites. Otherwise Landsat is the default.
+    
+    When using Sentinel-2 imagery, you may prefer to set the start and end
+    years to be the same to reduce the number of imagery. This may help
+    if you are seeing Too May Concurrent Agreggations errors.
+    
+    Enter:
+        var historical_start_year = 2012; (Older Historical year)
+        var historical_end_year = 2014; (More recent Historical year)
 */
 
 var historical_start_year = 2020;
@@ -295,14 +296,14 @@ var historical_end_year = 2020;
 
 /*
 2.C) Cloud Cover limit  
-     The cloud cover limit is a whole number percentage that will be used to 
-     filter the Landsat image collection. The cloud cover limit will filter the
-     metadata of each image, using the USGS calculated  cloud cover in the Tier
-     1 products. 
-     (https://www.usgs.gov/core-science-systems/nli/landsat/cfmask-algorithm)
+    The cloud cover limit is a whole number percentage that will be used to 
+    filter the Landsat image collection. The cloud cover limit will filter the
+    metadata of each image, using the USGS calculated  cloud cover in the Tier
+    1 products. 
+    (https://www.usgs.gov/core-science-systems/nli/landsat/cfmask-algorithm)
     
-     Enter:
-          var cloud_cover = 10; (%, 0-100, Integer)
+    Enter:
+        var cloud_cover = 10; (%, 0-100, Integer)
 
 */
 
@@ -310,19 +311,19 @@ var cloud_cover = 15;
 
 /*
 2.D) Cloud Mask - Landsat Only
-     There are two options available to mask out clouds for Landsat. There is a mild cloud
-     masking option where the clouds are removed using the USGS/NASA bit (Landsat)
-     classification quality band and a mild spectral erosion to remove cloud artefacts.
-     There is also an aggressive cloud masking option. For Landsat, this method removes
-     pixels based on how 'white' they are in the visible spectrum bands. The thermal band
-     also plays a role in removing residual clouds. These identified clouds are also
-     spectrally eroded.
-     
-     For Sentinel-2, cloud masking is always CloudScore+ (cs_pdf >= 0.85), regardless of the value set here.
-     
-     Enter Below:
-        var cloud_mask = 'mild';        (To apply a mild cloud mask)
-        var cloud_mask = 'aggressive';  (To apply an aggressive cloud mask)
+    There are two options available to mask out clouds for Landsat. There is a mild cloud
+    masking option where the clouds are removed using the USGS/NASA bit (Landsat)
+    classification quality band and a mild spectral erosion to remove cloud artefacts.
+    There is also an aggressive cloud masking option. For Landsat, this method removes
+    pixels based on how 'white' they are in the visible spectrum bands. The thermal band
+    also plays a role in removing residual clouds. These identified clouds are also
+    spectrally eroded.
+    
+    For Sentinel-2, cloud masking is always CloudScore+ (cs_pdf >= 0.85), regardless of the value set here.
+    
+    Enter Below:
+      var cloud_mask = 'mild';        (To apply a mild cloud mask)
+      var cloud_mask = 'aggressive';  (To apply an aggressive cloud mask)
 
 */
 
@@ -368,19 +369,19 @@ var min_avg = 0.5;
 
 /*
 2.F) Water Mask
-     The GEM offers the option to mask out water pixels using SAR based methods
-     for time ranges after October 2014.
-     
-     For time peirods earlier than that cutoff, GEM instead uses the modified 
-     normalized difference water index (MNDWI). The MNDWI is calculated for the 
-     entire ROI and water pixels are removed based on a threshold established 
-     in the original paper by Dr. H. Xu (2006). If water pixels are not masked, 
-     the classification references areas (CRAs) must take this into account in some 
-     fashion (e.g., the user must define a “water” class in their CRAs).
-
-     Enter:
-          var remove_water = true; (mask out the water pixels using MNDWI)
-          var remove_water = false; (water pixels will NOT be masked)
+    The GEM offers the option to mask out water pixels using SAR based methods
+    for time ranges after October 2014.
+    
+    For time peirods earlier than that cutoff, GEM instead uses the modified 
+    normalized difference water index (MNDWI). The MNDWI is calculated for the 
+    entire ROI and water pixels are removed based on a threshold established 
+    in the original paper by Dr. H. Xu (2006). If water pixels are not masked, 
+    the classification references areas (CRAs) must take this into account in some 
+    fashion (e.g., the user must define a “water” class in their CRAs).
+    
+    Enter:
+        var remove_water = true; (mask out the water pixels using MNDWI)
+        var remove_water = false; (water pixels will NOT be masked)
     
     If the water pixels are to be masked, the user has the option to either mask
     pixels which are water in both the historical and contemporary imagery, or to
@@ -389,10 +390,10 @@ var min_avg = 0.5;
     combined mask will be best, to not erroneously mask non-water pixels. 
     
     Enter:
-          var combo_water_mask = true; (mask only pixels identified as 
-                                        water in historical and contemporary data)
-          var combo_water_mask = false;  (mask only pixels identified as 
-                                          water in historical data)
+        var combo_water_mask = true; (mask only pixels identified as 
+                                      water in historical and contemporary data)
+        var combo_water_mask = false;  (mask only pixels identified as 
+                                        water in historical data)
 */
 
 var remove_water = true;
@@ -401,64 +402,67 @@ var combo_water_mask = true;
 /*
 
 2.G) Topographic Thresholds
-     To threshold the data, the user has several options: 1.) The known mangrove
-     extent can be used to extract the 99.99th percentile value for slope and elevation,
-     this is then used to generate a topographic mask for the input data. OR 2.) 
-     The user may enter their own thresholds for both slope and elevation. NOTE: If
-     the user elects to have the data automatically thresholded ('true') then the
-     numbers entered here for the slope and elevation threshold will have no impact
-     on the generation of the topographic mask.
+    To threshold the data, the user has several options: 1.) The known mangrove
+    extent, along with the user-defined elevation percentile, can be used to
+    extract an upper value for elevation, this is then used to generate a
+    topographic mask for the input data. OR 2.) The user may enter their own
+    threshold for elevation.
+    
+    NOTE: If the user elects to have the data automatically thresholded:
+                      ('mang_topo = true')
+    then the number entered here for elevationThreshold will have no impact on
+    the generation of the topographic mask.
 
-     Enter:
-          var mang_topo = true; (use the known mangrove extent to determine
-                                 the 99th percentiles for slope and elevation, 
-                                 and use these to automatically generate a 
-                                 topographic mask.)
-          var mang_topo = false; (use the user defined thresholds to 
-                                  generate the topographic mask.)
-     
-     The user defined topographic thresholds: (discarded if mang_topo = true)
-     
-     Enter:
-          var elevation = 39; (meters, meters above sea level)
-          var slope = 16; (%, percent change in slope)
+    Enter:
+        var mang_topo = true; (use the known mangrove extent, along with
+          the user-defined elevation percentile, to determine the elevation
+          threshold and use this to automatically generate a topographic mask.)
+        
+        var mang_topo = false; (use the user-defined elevationThreshold to
+          generate the topographic mask.)
+    
+    
+    The user-defined topographic threshold, Enter:
+        var elevation = 39; (meters above sea level, discarded if mang_topo = true)
 */
 
 var mang_topo = true;
-var elevation = 39;
-var slope = 16;
+var elevationPercentile = 99.5;
+
+// This only matters when mang_topo = false.
+var elevationThreshold = 39; // (discarded if mang_topo = true)
 
 /*
 2.H) Inland Fringing Mangroves
-     Studies have shown that inland stands of mangroves may be found at low-lying
-     elevations which are far from the coastline. For a comprehensive investigation,
-     these exclaves must attempt to be captured. To do so, the ROI can be expanded 
-     to 2x to account for low-lying elevations beyond the initial determination.
-     
-     Example: If the ROI is determined to be a 25 km buffer of the coastline (in
-              Section 2), if 'var inland_mang = true', the final mask will be expanded 
-              to include all pixels between 25 and 50 km which also fall within the
-              topographic thresholds set with the 2.H parameters above.
-
-     Enter:
-          var inland_mang = true; (true, double the ROI)
-          var inland_mang = false; (false, retain original ROI)
+    Studies have shown that inland stands of mangroves may be found at low-lying
+    elevations which are far from the coastline. For a comprehensive investigation,
+    these exclaves must attempt to be captured. To do so, the ROI can be expanded 
+    to 2x to account for low-lying elevations beyond the initial determination.
+    
+    Example: If the ROI is determined to be a 25 km buffer of the coastline (in
+            Section 2), if 'var inland_mang = true', the final mask will be expanded 
+            to include all pixels between 25 and 50 km which also fall within the
+            topographic thresholds set with the 2.G parameters above.
+    
+    Enter:
+        var inland_mang = true; (true, double the ROI)
+        var inland_mang = false; (false, retain original ROI)
 */
 
 var inland_mang = false;
 
 /*
 2.I) Spectral Indices
-     There are numerous mangrove-specific, vegetation-specific, and 
-     environmental indices which can be used to aid the classification. Below is
-     the included list of indices which the user may select from. The user will 
-     be prompted in the console (after clicking the "Begin Workflow" button) to
-     select any index which they would like to include for each dataset moving 
-     forward. Note: Some indices, like the submerged mangrove recognition index 
-     (SMRI) require both high and low tide imagery. This will be indicated with 
-     (l) for low and (h) for high inputs.
-     
-     
+    There are numerous mangrove-specific, vegetation-specific, and 
+    environmental indices which can be used to aid the classification. Below is
+    the included list of indices which the user may select from. The user will 
+    be prompted in the console (after clicking the "Begin Workflow" button) to
+    select any index which they would like to include for each dataset moving 
+    forward. Note: Some indices, like the submerged mangrove recognition index 
+    (SMRI) require both high and low tide imagery. This will be indicated with 
+    (l) for low and (h) for high inputs.
+    
+    
     ############################################################################
     #    Index    #          Calculation          #        Citation            #
     ############################################################################ 
@@ -508,15 +512,15 @@ var inland_mang = false;
     the script actually works. All further user action occurs in the ‘Console'.
     
     NOTE:
-      -Once the 'Workflow' has begun, the user will be walked through several
-       interative steps.
-      -Several intermediary outputs will be generated from GEM Module 1. 
-       These outputs MUST be exported to the user's GEE 'Assets'
-      -Work through Module 1 completely and ensure all exports have successfully
-       been added to the user 'Assets' folder before proceeding to GEM Module 2
-      -Do not change the name of the exports unless you are an advanced GIS user
-      
-                *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
+    -Once the 'Workflow' has begun, the user will be walked through several
+     interative steps.
+    -Several intermediary outputs will be generated from GEM Module 1. 
+     These outputs MUST be exported to the user's GEE 'Assets'
+    -Work through Module 1 completely and ensure all exports have successfully
+     been added to the user 'Assets' folder before proceeding to GEM Module 2
+    -Do not change the name of the exports unless you are an advanced GIS user
+    
+              *** DO NOT EDIT ANYTHING BELOW THIS LINE ***
 */
 
 
@@ -1050,7 +1054,8 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
       var kn_mang_ext = mang_img.clip(ROI);
     
       // Bring in topo data and create the mask
-      var topo_mask = topography.topo_mask_func(topography.dtm(topo, topo_path), kn_mang_ext, mang_topo, elevation, slope);
+      var slope = 39; // just a plcaeholder, slope is disabled currently
+      var topo_mask = topography.topo_mask(topo, topo_path, kn_mang_ext, mang_topo, elevationThreshold, elevationPercentile, slope);
       
       function waterImagesDescription() {
         print("If your water mask and final mask are incomplete,\n"+
