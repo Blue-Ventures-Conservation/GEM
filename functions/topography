@@ -1,96 +1,104 @@
 /*
 
-This is the topography module, which is part of the BVC GEM v1.2 library.
-Two funtions:
+This is the topography module, which is part of the BVC GEM v2 library.
 
-dtm: determines whether the user will use the GEE JAXA topographic dataset
-        or the user prefers to ingest their own raster-based topographic data
+topo_mask: the topographic data is used to generate a pixel mask, based
+        on elevations.
 
-topo_mask_func: the topographic data is used to generate a pixel masck, based
-                on elevation and slope thresholds.
-
-Last update: 16 May 2026
+Last update: 20 May 2026
 
 */
 
-var elevSlopeThresh = 99.99;
-exports.elevationAndSlopeThresholdPercentile = elevSlopeThresh;
+var slopeEnabled = false;
 
-exports.dtm = function(topo, topo_path){
-  // topo is true/false user identified boolean value 
-  var topo_t = function(){
-    // when 'TRUE' the topo data from GEE will be ingested
+// this is the current elevation model in use
+function fabdemTopoMask(mangroves, mang_topo, elevation, elevationPercentile, slope) {
+  var fabdem = ee.ImageCollection("projects/sat-io/open-datasets/FABDEM");
+  var dem = fabdem.mosaic().setDefaultProjection('EPSG:3857', null, 30).rename('elev');
+  return handleTopo(dem, mangroves, mang_topo, elevation, elevationPercentile, slope, "FABDEM");
+}
+
+// currently unused, kept for posterity
+function deltaDTMTopoMask(mangroves, mang_topo, elevation, elevationPercentile, slope) {
     var elev = ee.ImageCollection('JAXA/ALOS/AW3D30/V4_1').select('DSM');
     var proj = elev.first().select(0).projection();
     var dsm = elev.mosaic().toFloat().rename("elev");
     var dtm = ee.Image("projects/sat-io/open-datasets/DELTARES/deltadtm_v1");
     dtm = dtm.updateMask(dtm.neq(10)).toFloat().rename('elev');
     var combined = ee.ImageCollection([dsm, dtm]).mosaic().setDefaultProjection(proj);
-    return combined;
-  };
-  
-  var topo_f = function(topo_path){
-    // when false the users topo data will be brought in
-    return ee.Image(topo_path).rename('elev');
-  }; 
-  
-  var dtm = ee.Algorithms.If(topo, topo_t(), topo_f(topo_path));
-  
-  var slp_img = ee.Terrain.slope(ee.Image(dtm).select('elev'))
-                .double().rename('slope');
-  
-  dtm = ee.Image(dtm).addBands(slp_img);
-  
-  return dtm;
+    return handleTopo(combined, mangroves, mang_topo, elevation, elevationThreshold, slope, "DTM + ALOS DSM");
+}
+
+exports.topo_mask = function(topo, topo_path, mangroves, mang_topo, elevation, elevationPercentile, slope) {
+  if (topo === true) {
+    return fabdemTopoMask(mangroves, mang_topo, elevation, elevationPercentile, slope);
+  } else {
+    return handleTopo(ee.Image(topo_path).rename('elev'), mangroves, mang_topo, elevation, elevationPercentile, slope, "User Provided Elevation Model");
+  }
 };
 
-exports.topo_mask_func = function(dtm, mangroves, mang_topo, elevation, slope){
-  dtm = ee.Image(dtm);
-  //extract slope and elevation max from known mangrove extent
-  var mang_elv = dtm.select('elev').updateMask(mangroves)
-                  .reduceRegion({
-                    reducer: ee.Reducer.percentile({percentiles: [elevSlopeThresh]}),
-                    geometry: mangroves.geometry(),
-                    scale: 30,
-                    maxPixels: 1e12,
-                    bestEffort: true
-                    });
-
-  var mang_slope = dtm.select('slope').updateMask(mangroves)
-                   .reduceRegion({
-                    reducer: ee.Reducer.percentile({percentiles: [elevSlopeThresh]}),
-                    geometry: mangroves.geometry(),
-                    scale: 30,
-                    maxPixels: 1e12,
-                    bestEffort: true
-                    });
-                    
-  var el_val = mang_elv.get('elev');
-  var slp_val = mang_slope.get('slope');
-  var el_img = ee.Image.constant(mang_elv.get('elev'));
-  var slp_img = ee.Image.constant(mang_slope.get('slope'));
+function handleTopo(img, mangroves, mang_topo, elevation, elevationPercentile, slope, label) {
+  var model = ee.Image(img);
   
-  print("Fetching " + elevSlopeThresh + "th percentile elevation and\nslope for known mangrove extent...");
-  ee.List([el_val, slp_val]).evaluate(function(vals, failure) {
-    if (vals) {
-      print("Max known mangrove elevation: " + vals[0]);
-      print("Max known mangrove slope: " + vals[1]);
-    } else {
-      print("Could not calculate " + elevSlopeThresh + "th percentile elevation and slope:\n" + failure);
-    }
-  });
-  
-  var topo_mask = null;
-  if (mang_topo === true){
-    topo_mask = dtm.select('elev').lte(el_img)
-                        .and(dtm.select('slope').lte(slp_img)).double();
-  } else {
-    topo_mask = dtm.select('elev').lte(elevation)
-                        .and(dtm.select('slope').lte(slope)).double();
+  if(slopeEnabled === true) {
+    model = model.addBands(ee.Terrain.slope(model.select('elev')).double().rename('slope'));
   }
   
-  return topo_mask;
-};
+  //extract slope and elevation max from known mangrove extent
+  var mang_elv = model.select('elev').updateMask(mangroves)
+    .reduceRegion({
+      reducer: ee.Reducer.percentile({percentiles: [elevationPercentile]}),
+      geometry: mangroves.geometry(),
+      scale: 30,
+      maxPixels: 1e12,
+      bestEffort: true
+  });
+
+  var mang_slope = model.select('slope').updateMask(mangroves)
+   .reduceRegion({
+      reducer: ee.Reducer.percentile({percentiles: [elevationPercentile]}),
+      geometry: mangroves.geometry(),
+      scale: 30,
+      maxPixels: 1e12,
+      bestEffort: true
+  });
+  
+  var el_img = ee.Image.constant(elevation);
+  var slp_img = ee.Image.constant(slope);
+  
+  if (mang_topo === true) {
+    var el_val = mang_elv.get('elev');
+    var slp_val = mang_slope.get('slope');
+    el_img = ee.Image.constant(el_val);
+    slp_img = ee.Image.constant(slp_val);
+    
+    var fetchStr = "\n";
+    var toFetch = ee.List([el_val]);
+    if (slopeEnabled) {
+      fetchStr = " and\nslope ";
+      toFetch = toFetch.add(slp_val);
+    }
+    
+    print("Fetching " + elevationPercentile + "th percentile elevation" + fetchStr + "for known mangrove extent...");
+    toFetch.evaluate(function(vals, failure) {
+      if (vals) {
+        print(label + " " + elevationPercentile + "th percentile known mangrove elevation: " + vals[0]);
+        if (slopeEnabled) {
+          print(label + " " + elevationPercentile + "th percentile known mangrove slope: " + vals[1]);
+        }
+      } else {
+        print("Could not calculate " + elevationPercentile + " percentile elevation" + fetchStr + failure);
+      }
+    });
+  }
+  
+  var topo_mask = model.select('elev').lte(el_img);
+  if (slopeEnabled) {
+    topo_mask = topo_mask.and(model.select('slope').lte(slp_img));
+  }
+  
+  return topo_mask.double();
+}
 
 
 
