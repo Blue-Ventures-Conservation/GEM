@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 20 May 2026
+Last updated: 24 May 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -269,8 +269,8 @@ var ls_7_in = false;
         var Contemporary_end_year = 2018; (More recent Contemporary year)
 */
 
-var contemporary_start_year = 2024;
-var contemporary_end_year = 2024;
+var contemporary_start_year = 2025;
+var contemporary_end_year = 2025;
 
 /*
 2.B) Historical Years
@@ -670,8 +670,8 @@ step_1_button.onClick(function() {
   }).filter(ee.Filter.gt('count', 10)).geometry().simplify(75);
   
   // List of reference indices
-  var suggestedIndices = ['MNDWI','CMRI','MMRI','SAVI'];
-  var OG_band_list = ui.data.ActiveList(['MNDWI','CMRI','MMRI','SAVI','SR','NDVI','NDWI',
+  var suggestedIndices = ['MNDWI','CMRI','MMRI','SAVI','NDVI'];
+  var OG_band_list = ui.data.ActiveList(['MNDWI','CMRI','MMRI','SAVI','NDVI','SR','NDWI',
   'OSAVI','EVI','MRI','SMRI','LSWI','NDTI']);
   
   // Generate the empty index list
