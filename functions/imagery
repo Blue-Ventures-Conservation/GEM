@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 19 May 2026
+Last update: 1 June 2026
 
 */
 
@@ -402,11 +402,7 @@ function s2_cloud_mask(images) {
 // Tidal functions
 
 function shore_reflectance(roi, images, tidal_area, scale) {
-  // import the PLASAT dataset and create an land mask
-  var land_mask = ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR')
-    .filter(ee.Filter.date('2018-01-01', '2019-01-01'))
-    .mosaic().clip(roi)
-    .select('qa').eq(50);
+  var lmask = palsar_land_mask(roi);
     
   var mndwi = exports.mod_water_index;
   var ndwi = exports.water_index;
@@ -416,7 +412,7 @@ function shore_reflectance(roi, images, tidal_area, scale) {
     var num = ee.Image(img).expression('(B2 - B5)/(B2 + B5)', {
       'B2': img.select(ls_human_bands[1]),
       'B5': img.select(ls_human_bands[4])
-      }).rename([mndwi]).updateMask(land_mask).reduceRegion({ 
+      }).rename([mndwi]).updateMask(lmask).reduceRegion({ 
                     reducer: ee.Reducer.mean(),
                     geometry: tidal_area,
                     scale: 100,
@@ -516,6 +512,20 @@ function datePixels(img) {
 	return img.addBands(ee.Image(date.get('year').multiply(100).add(date.get('month')).multiply(100).add(date.get('day'))).rename(['date']).cast({'date':'long'}));
 }
 
+function palsar_land_mask(roi) {
+  return ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR')
+    .filter(ee.Filter.date('2018-01-01', '2019-01-01'))
+    .mosaic().clip(roi)
+    .select('qa').eq(50);
+}
+
+function palsar_water_mask(roi) {
+    return ee.ImageCollection('JAXA/ALOS/PALSAR/YEARLY/SAR')
+    .filter(ee.Filter.date('2018-01-01', '2019-01-01'))
+    .mosaic().clip(roi)
+    .select('qa').neq(50);
+}
+
 exports.pixelPercentages = function(img, roi, scale, label) {
   var dict = ee.Dictionary(img.select('date').reduceRegion({
     reducer: ee.Reducer.frequencyHistogram(),
@@ -562,4 +572,34 @@ exports.pixelPercentages = function(img, roi, scale, label) {
       print("Could not calculate " + label + " pixel percentages: " + failure);
     }
   });
+};
+
+exports.filter_high_reflectance = function(roi, images, percentile) {
+  images = ee.ImageCollection(images);
+  var wmask = palsar_water_mask(roi);
+  var reflsum = "refl_sum";
+  
+  images = images.map(function(img) {
+    img = ee.Image(img);
+    var blue = img.select("Blue");
+    var green = img.select("Green");
+    var red = img.select("Red");
+    var num = blue.add(green).add(red).rename(reflsum).updateMask(wmask).reduceRegion({
+        reducer: ee.Reducer.mean(),
+        geometry: wmask.geometry(),
+        scale: 100,
+        maxPixels: 1e15,
+        bestEffort: true,
+        tileScale: 1
+    }).get(reflsum);
+    num = ee.Algorithms.If(num, num, -1);
+    return img.set(reflsum, ee.Number(num));
+  });
+  
+  var list = images.aggregate_array(reflsum).sort();
+  var listSize = list.size();
+  var i = listSize.multiply(percentile / 100).floor();
+  var threshold = ee.Number(list.get(i));
+  
+  return images.filter(ee.Filter.lt(reflsum, threshold));
 };
