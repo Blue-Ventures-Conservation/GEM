@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 24 May 2026
+Last updated: 1 June 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -365,7 +365,7 @@ var cloud_mask = 'mild';
         var min_avg = -1; (MNDWI filter value)
 */
 
-var min_avg = 0.5;
+var min_avg = -1;
 
 /*
 2.F) Water Mask
@@ -813,6 +813,8 @@ step_1_button.onClick(function() {
       var hist_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, historical_start_year, historical_end_year, historical_months, cloud_mask, tidalArea);
       var cont_imagery = cont_result[0];
       var hist_imagery = hist_result[0];
+      cont_imagery = imagery.filter_high_reflectance(ROI, cont_imagery, 70);
+      hist_imagery = imagery.filter_high_reflectance(ROI, hist_imagery, 70);
       var imagery_scale = cont_result[1];
       
       if (force_ls) {
