@@ -14,12 +14,6 @@ Mr. Court Fowler (courtland.fowler@blueventures.org).
 Developed on:  3 June 2020
 Last updated: 1 June 2026
 
-Throughout this tool you will find references to the user name 'yanchojo'. This 
-is Mr. Yancho's (the primary developer) personal Google account. Future 
-iterations of the Google Earth Engine Mangrove Mapping Methodology (GEM)
-will be hosted by a Blue Ventures Conservation Google account.
-
-
 
 
 ///////////////////////////////////////////////
@@ -619,7 +613,7 @@ months_step_button.onClick(function() {
 var step_1_button = ui.Button('Begin Workflow');
 step_1_button.onClick(function() {
   // Print step label
-  print(ui.Label({value:'Module 1: Setion 1, Step 1',
+  print(ui.Label({value:'Module 1: Section 1, Step 1',
                   style:{fontWeight: 'bold',
                          fontSize: '18px',
                          textAlign: 'center'}
@@ -726,9 +720,9 @@ step_1_button.onClick(function() {
                          textAlign: 'center'}
                 }));
     print('Use the calculated known mangrove extent areas, displayed'+
-          '\nbelow in table and graphical format, to elect a region of'+
-          '\ninterest (ROI) buffer distance that encompasses, at a '+
-          '\nminimum, all of the currently known mangroves.');
+          '\nbelow in table and graphical format, to select a area of'+
+          '\ninterest (AOI) buffer distance that encompasses all (or'+
+          '\nvery nearly all e.g. 99.9%) of the currently known mangroves.');
     
     var indx_list = indx;
 
@@ -795,7 +789,7 @@ step_1_button.onClick(function() {
       print('Four buttons appear below, indicating'+
             '\nto add either the contemporary'+
             '\nor historical, high or low tide' +
-            '\nimagery to the map.'+
+            '\ncomposites to the map.'+
             '\n\nClick the buttons to view the imagery!');
       Map.clear(); // Reset the map
       if (inland_mang === true) {
@@ -921,8 +915,8 @@ step_1_button.onClick(function() {
       }
       
       var maxAOIHectares = 2500000;
-      print("Measuring the AOI, if it's not massive\n(> " + maxAOIHectares.toLocaleString('en-GB') + " hectares)\nwe'll count your images!");
-      print("If it is massive, you'll move on to Section 4 soon...");
+      print("Measuring the AOI, if it is not very large\n(> " + maxAOIHectares.toLocaleString('en-GB') + " hectares)\nGEM will count your images.");
+      print("If your AOI is very large, GEM will skip counting images and move on to Section 4 soon...");
       ROI.area().divide(10000).lt(maxAOIHectares).evaluate(function(nm, fail) {
         if (nm && nm > 0) {
           notMassive = true;
