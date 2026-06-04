@@ -366,7 +366,7 @@ var min_avg = -1;
     The GEM offers the option to mask out water pixels using SAR based methods
     for time ranges after October 2014.
     
-    For time peirods earlier than that cutoff, GEM instead uses the modified 
+    For time periods earlier than that cutoff, GEM instead uses the modified 
     normalized difference water index (MNDWI). The MNDWI is calculated for the 
     entire ROI and water pixels are removed based on a threshold established 
     in the original paper by Dr. H. Xu (2006). If water pixels are not masked, 
@@ -870,7 +870,7 @@ step_1_button.onClick(function() {
             for (var i = 0; i < keys.length; i++) {
               var key = keys[i];
               var val = vals[i];
-              toPrint = toPrint + key + " makes up " + val + "% of " + label + "\n";
+              toPrint = toPrint + key + ": " + val + "% + "\n";
             }
             print(toPrint);
           } else {
