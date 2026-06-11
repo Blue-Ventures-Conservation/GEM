@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 1 June 2026
+Last updated: 10 June 2026
 
 
 
@@ -807,9 +807,15 @@ step_1_button.onClick(function() {
       var hist_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, historical_start_year, historical_end_year, historical_months, cloud_mask, tidalArea);
       var cont_imagery = cont_result[0];
       var hist_imagery = hist_result[0];
-      cont_imagery = imagery.filter_high_reflectance(ROI, cont_imagery, 70);
-      hist_imagery = imagery.filter_high_reflectance(ROI, hist_imagery, 70);
       var imagery_scale = cont_result[1];
+      
+      var high_refl_percentile = 70;
+      if (imagery_scale >= 30) {
+        high_refl_percentile = 85;
+      }
+      
+      cont_imagery = imagery.filter_high_reflectance(ROI, cont_imagery, high_refl_percentile);
+      hist_imagery = imagery.filter_high_reflectance(ROI, hist_imagery, high_refl_percentile);
       
       if (force_ls) {
         print("Using Landsat at " + imagery_scale + "m scale");
