@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 1 June 2026
+Last update: 16 June 2026
 
 */
 
@@ -339,22 +339,19 @@ function collect_sentinel2(cloud_mask, roi, tidal_area, filter) {
 
 function mild_landsat_cloud_mask(images) {
   return images.map(function(img){
-    // Bits 3 and 5 are cloud shadow and cloud, respectively.
-    var cloudShadowBitMask = (1 << 3);
-    var cloudsBitMask = (1 << 5);
-    // Get the pixel QA band.
     var qa = img.select(ls_qa_pixel);
-    // Both flags should be set to zero, indicating clear conditions.
-    var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
-      .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+    // Cloud (Bit 3), Dilated Cloud (Bit 1), and Cloud Shadow (Bit 4)
+    var mask = qa.bitwiseAnd(1 << 3).eq(0)
+                  .and(qa.bitwiseAnd(1 << 1).eq(0))
+                  .and(qa.bitwiseAnd(1 << 4).eq(0));
     
     // Define a kernel.
     var kernel = ee.Kernel.gaussian({radius: 10});
     
-    // Perform an erosion followed by a dilation, display.
-    var opened = mask.focal_min({kernel: kernel, iterations: 1});
+    // Perform an erosion followed by a dilation.
+    mask = mask.focal_min({kernel: kernel, iterations: 1});
     
-    return img.updateMask(opened);
+    return img.updateMask(mask);
   });
 }
 
