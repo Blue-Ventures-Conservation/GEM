@@ -15,7 +15,6 @@ Developed on:  3 June 2020
 Last updated: 10 June 2026
 
 
-
 ///////////////////////////////////////////////
 //////////////  Before  Running  //////////////
 ///////////////////////////////////////////////
@@ -811,7 +810,7 @@ step_1_button.onClick(function() {
       
       var high_refl_percentile = 70;
       if (imagery_scale >= 30) {
-        high_refl_percentile = 70;
+        high_refl_percentile = 85;
       }
       
       cont_imagery = imagery.filter_high_reflectance(ROI, cont_imagery, high_refl_percentile);
