@@ -4,7 +4,7 @@ This is the Random Forest image classification module, which is part
 of the BVC GEM v1.2 library. It is used to classify the composite
 imagery for the area of interest.
 
-Last update: 2 May 2026
+Last update: 19 August 2026
 
 */
 
@@ -173,14 +173,14 @@ function classify(name, img, t_poly, label, bands, ROI, trees, splits, leafpop, 
     // function, we need to iterate over the matrix and remove all rows and
     // columns that represent sequential class IDs that we didn't actually use.
     var confList = trained_classifier.confusionMatrix().array().toList();
+    var order = order.filter(ee.Filter.lt('item', confList.size()));
     var result = ee.List(order.iterate(function(rowIndx, previous) {
       var plist = ee.List(previous);
       var conf = ee.List(plist.get(0));
       var ord = ee.List(plist.get(1));
       var matrix = ee.List(plist.get(2));
       
-      var row = ee.List(confList.get(rowIndx));
-      
+      var row = ee.List(conf.get(rowIndx));
       var matrixRow = ee.List(ord.iterate(function(colIndx, prev) {
         var p = ee.List(prev);
         var r = ee.List(p.get(0));
