@@ -12,7 +12,8 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 10 June 2026
+Last updated: 28 September 2026
+
 
 
 ///////////////////////////////////////////////
@@ -624,8 +625,6 @@ step_1_button.onClick(function() {
   print('Select the indices to be calculated in Section 4');
   print('We have pre-selected our suggested mangrove indices.');
   
-  // Create the coastline from the coarse ROI
-  var coast = coastline.coast_In(cst, cst_path, coarse_roi);
   Map.centerObject(coarse_roi);
   
   // Filter month lists to remove empty values
@@ -712,27 +711,64 @@ step_1_button.onClick(function() {
   // drop-down menu.
   
   var step_2_button = ui.Button('Section 2: Determine ROI');
-  step_2_button.onClick(function(){
+  step_2_button.onClick(function() {
     print(ui.Label({value:'Module 1: Section 2',
                   style:{fontWeight: 'bold',
                          fontSize: '18px',
                          textAlign: 'center'}
                 }));
-    print('Use the calculated known mangrove extent areas, displayed'+
-          '\nbelow in table and graphical format, to select a area of'+
-          '\ninterest (AOI) buffer distance that encompasses all (or'+
-          '\nvery nearly all e.g. 99.9%) of the currently known mangroves.');
     
     var indx_list = indx;
+    
+    // Create the coastline from the coarse ROI
+    var coast = coastline.coast_In(cst, cst_path, coarse_roi);
+    
+    print("Checking to see if your area of interest (AOI) intersects a coastline...");
+    
+    var coastOrROI = ee.Geometry.MultiPoint([]);
+    var hasCoast = true;
+    coast.coordinates().size().evaluate(function(coastPoints, failure) {
+      if (coastPoints !== undefined) {
+        if (coastPoints > 0) {
+          coastOrROI = coast;
+          print("Your AOI intersects a coastline. GEM will attempt\ncoastline buffering of known mangroves\nand water/topographic masking.");
+        } else {
+          coastOrROI = coarse_roi;
+          hasCoast = false;
+          print("It appears your AOI does not intersect a coastline.\nGEM will attempt buffering of known mangroves around\nyour AOI, "+
+          "but will skip water/topographic masking. Additionally,\nit is likely that the high and low tide composites will\nbe very similar if not identical.");
+        }
+        perform_step_2(contemporary_months, historical_months, mang_img, indx_list, tidalArea, coastOrROI, hasCoast);
+      } else {
+        print("Could not verify whether or not your AOI contains any coastline: " + failure);
+      }
+    });
+  });
+  print(step_2_button);
+});
+print(step_1_button);
+});
+alert('First we will select the months of interest\n(for Contemporary & Historical year ranges)');
+print(months_step_button);
 
-    // Buffer the known mangrove extent using the coastline
-    var mang_buff_img = mangrove_buff.mang_buff(coast, mang_img, coarse_roi, exclusion_geometries);
+function perform_step_2(contemporary_months, historical_months, mang_img, indx_list, tidalArea, coastOrROI, hasCoast) {
+  // Buffer the known mangrove extent using the coastline
+  var mang_buff_img = mangrove_buff.mang_buff(coastOrROI, mang_img, coarse_roi, exclusion_geometries);
 
-    // Create a table of the mangrove area
-    var buffer_table = mangrove_buff.areaTable(mang_buff_img, coarse_roi, exclusion_geometries);
-
+  // Create a table of the mangrove area
+  var buffer_table = mangrove_buff.areaTable(mang_buff_img, coarse_roi, exclusion_geometries);
+  
+  var ROI = ee.Geometry(coastOrROI);
+  var buff_dist = ee.Number(0);
+  
+  function performBuffering() {
+    // Have the user set the buffer distance and create buffered ROI
+    print('Use the calculated known mangrove extent areas, displayed'+
+      '\nbelow in table and graphical format, to select an AOI buffer'+
+      '\ndistance that encompasses all (or very nearly all e.g. 99.9%)'+
+      '\nof the currently known mangroves.');
     // Graphically display mangrove area table
-    var buffer_chart = mangrove_buff.areaChart(buffer_table); 
+    var buffer_chart = mangrove_buff.areaChart(buffer_table);
     
     // Add the mangrove buffer layers to the map
     Map.addLayer(mang_buff_img.select('35'), {palette: ['CC0000']}, '35km buffer');
@@ -745,12 +781,10 @@ step_1_button.onClick(function() {
     // Print the chart and table to the console
     print("Mangrove Area by Buffer", buffer_table);
     print(buffer_chart);
-    // Have the user set the buffer distance and create ROI
-    var ROI = ee.Geometry(coast);
-    var buff_dist = ee.Number(0);
+    
     // List of buffers to choose from
     var buffers = {
-     '1 km': [1000], '2.5 km': [2500], '5 km': [5000], '7.5 km': [7500],
+     '0 km': [0], '1 km': [1000], '2.5 km': [2500], '5 km': [5000], '7.5 km': [7500],
      '10 km': [10000], '12.5 km': [12500], '15 km': [15000], '17.5 km': [17500],
      '20 km': [20000], '22.5 km': [22500], '25 km': [25000], '27.5 km': [27500],
      '30 km': [30000], '32.5 km': [32500], '35 km': [35000], '37.5 km': [37500],
@@ -760,8 +794,8 @@ step_1_button.onClick(function() {
     var select_ROI = ui.Select({
       items: Object.keys(buffers),
       onChange: function(key) {
-      ROI = coast.buffer(buffers[key][0]).intersection(coarse_roi);
-      buff_dist = ee.Number(buffers[key][0]);
+        ROI = coastOrROI.buffer(buffers[key][0]).intersection(coarse_roi);
+        buff_dist = ee.Number(buffers[key][0]);
       }
     });
 
@@ -769,288 +803,337 @@ step_1_button.onClick(function() {
     select_ROI.setPlaceholder('Choose an ROI Buffer...');
     // Add drop down to console
     print(select_ROI);
-    
-    ///////////////
-    // Section 3 //
-    ///////////////
-    // The variables from Setion 1 are used to generate the image composites
-    // which will be used through out the rest of the GEM. image 
-    // composites will be added to the GUI map viewer.
-    
-    // Prepare the imagery
+  }
+  
+  var hasMangroves = true;
+  
+  function noMangrovesInAOI() {
+    hasMangroves = false;
+    print('GEM does not detect any mangroves in your AOI.'+
+      '\nAnalysis can continue, but GEM will skip buffering'+
+      '\nof known mangrove extents and water/topographic masking.');
+  }
+  
+  function setupStepThree() {
     var step_3_button = ui.Button('Section 3: Prepare Imagery for Processing');
-    step_3_button.onClick(function(){
-      print(ui.Label({value:'Module 1: Section 3',
-                  style:{fontWeight: 'bold',
-                         fontSize: '18px',
-                         textAlign: 'center'}
-                }));
-      print('Four buttons appear below, indicating'+
-            '\nto add either the contemporary'+
-            '\nor historical, high or low tide' +
-            '\ncomposites to the map.'+
-            '\n\nClick the buttons to view the imagery!');
-      Map.clear(); // Reset the map
-      if (inland_mang === true) {
-        ROI = ROI.buffer(buff_dist);
-      }
-      for (var i = 0; i < exclusion_geometries.length; i++) {
-        ROI = ROI.difference(exclusion_geometries[i]);
-      }
-      
-      Map.addLayer(ROI, {color: '1E266F'}, "ROI"); // Add ROI to map
-      
-      // Create hist./cont. image collections
-      var force_ls = force_landsat || !imagery.should_use_s2(contemporary_start_year, contemporary_months, historical_start_year, historical_months);
-      var cont_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, contemporary_start_year, contemporary_end_year, contemporary_months, cloud_mask, tidalArea);
-      var hist_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, historical_start_year, historical_end_year, historical_months, cloud_mask, tidalArea);
-      var cont_imagery = cont_result[0];
-      var hist_imagery = hist_result[0];
-      var imagery_scale = cont_result[1];
-      
-      var high_refl_percentile = 70;
-      if (imagery_scale >= 30) {
-        high_refl_percentile = 85;
-      }
-      
-      cont_imagery = imagery.filter_high_reflectance(ROI, cont_imagery, high_refl_percentile);
-      hist_imagery = imagery.filter_high_reflectance(ROI, hist_imagery, high_refl_percentile);
-      
-      if (force_ls) {
-        print("Using Landsat at " + imagery_scale + "m scale");
-      } else {
-        print("Using Sentinel-2 at " + imagery_scale + "m scale");
-      }
-      
-      // Build the contemporary BAP composites
-      var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
-      var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
-      // Build the historical BAP composites
-      var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.mod_water_index).clip(ROI);
-      var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-      
-      var hhot_vis = Hhot;
-      var hlot_vis = Hlot;
-      var chot_vis = Chot;
-      var clot_vis = Clot;
-      var false_colour_bands = ['NIR','SWIR1','Red'];
-      var vis = {bands: false_colour_bands, min: 0, max: 0.27};
-      
-      function pixelPercentages(img, scale, label) {
-        var dict = ee.Dictionary(img.select('date').reduceRegion({
-          reducer: ee.Reducer.frequencyHistogram(),
-          geometry: ROI,
-          scale: 100,
-          maxPixels: 1e15,
-          bestEffort: true,
-        }).get('date'));
-        
-        var keys = dict.keys();
-        keys = keys.map(function(key) {
-          key = ee.String(key);
-          var year = key.slice(0, 4);
-          var month = key.slice(4, 6);
-          var day = key.slice(6, 8);
-          return day.cat("/").cat(month).cat("/").cat(year);
-        });
-        
-        var denom = ee.Number(dict.values().reduce(ee.Reducer.sum()));
-        var vals = dict.values();
-        vals = vals.map(function(val) {
-          // negative, so that sorting goes the right direction
-          return ee.Number(val).divide(denom).multiply(-1000000).round().divide(10000);
-        });
-        
-        keys = keys.sort(vals);
-        vals = vals.sort().map(function(val) {
-          return ee.Number(val).multiply(-1);
-        });
-        
-        print("Calculating " + label + " pixel percentages by date...");
-        ee.List([keys, vals]).evaluate(function(kv, failure) {
-          if (kv) {
-            var keys = kv[0];
-            var vals = kv[1];
-            var toPrint = label + " Pixel Percentages:\n";
-            for (var i = 0; i < keys.length; i++) {
-              var key = keys[i];
-              var val = vals[i];
-              toPrint = toPrint + key + ": " + val + "% " + "\n";
-            }
-            print(toPrint);
-          } else {
-            print("Could not calculate " + label + " pixel percentages: " + failure);
-          }
-        });
-      }
-      
-      function visualize_imagery(img, buttonLabel, layerLabel, scale) {
-        var add_imagery = ui.Button(buttonLabel);
-        add_imagery.onClick(function() {
-            pixelPercentages(img, scale, layerLabel);
-            Map.addLayer(img, vis, layerLabel);
-        });
-        print(add_imagery);
-      }
-      
-      visualize_imagery(hhot_vis, 'Add Historical High Tide Imagery', 'Historical High Tide', imagery_scale);
-      visualize_imagery(hlot_vis, 'Add Historical Low Tide Imagery', 'Historical Low Tide', imagery_scale);
-      visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide', imagery_scale);
-      visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide', imagery_scale);
-      
-      // chop off mndwi, inv_mndwi, date bands
-      var bnames = Chot.bandNames().slice(0, -3);
-      Chot = Chot.select(bnames);
-      Clot = Clot.select(bnames);
-      Hhot = Hhot.select(bnames);
-      Hlot = Hlot.select(bnames);
-      
-      // If the AOI is bigger than 2.5 million hectares (a limit we have arrived at
-      // experimentally), we typically start to run into timeouts. The strategy is then to
-      // avoid asking GEE any questions about this imagery via evaluate calls, and to just
-      // move to exporting. This should help keep things moving for users and avoid errors
-      // that may seem quite opaque to them otherwise.
-      var notMassive = false;
-      
-      // Prepare the next section to appear after an evaluate call below
-      function doStepFour() {
-        var step_4_button = ui.Button('Section 4: Calculate the Spectral Indices');
-        step_4_button.onClick(produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, notMassive));
-        print(step_4_button);
-      }
-      
-      var maxAOIHectares = 2500000;
-      print("Measuring the AOI, if it is not very large\n(> " + maxAOIHectares.toLocaleString('en-GB') + " hectares)\nGEM will count your images.");
-      print("If your AOI is very large, GEM will skip counting images and move on to Section 4 soon...");
-      ROI.area().divide(10000).lt(maxAOIHectares).evaluate(function(nm, fail) {
-        if (nm && nm > 0) {
-          notMassive = true;
-          print("Counting historical and contemporary images...");
-          print('After calculating the number of historical'+
-            '\nand contemporary images, the button to'+
-            '\nproceed to Section 4 will appear.');
-          print('These calculations should let you know'+
-            '\nwhether your inputs to module 1 are'+
-            '\nproducing enough imagery to create' +
-            '\nsolid composites for both historical' +
-            '\nand contemporary time periods.');
-          ee.List([ee.String(ee.ImageCollection(hist_imagery).size()), ee.String(ee.ImageCollection(cont_imagery).size())]).evaluate(function(sizes, failure) {
-            if (sizes) {
-              print('No. Historical Images: ' + sizes[0]);
-              print('No. Contemporary Images: ' + sizes[1]);
-            } else {
-              print(failure);
-            }
-            doStepFour();
-          });
-        } else {
-          print("We consider your AOI to be massive.");
-          doStepFour();
-        }
-      });
+    step_3_button.onClick(function() {
+      perform_step_3(contemporary_months, historical_months, ROI, mang_img, indx_list, tidalArea, hasCoast, hasMangroves);
     });
     print(step_3_button);
+  }
+  
+  print("Checking to see if any known mangroves exist within your AOI...");
+  
+  ee.Number(buffer_table.values().reduce(ee.Reducer.sum())).evaluate(function(areaSum, failure) {
+    if (areaSum !== undefined) {
+      if (areaSum > 0) {
+        performBuffering();
+        setupStepThree();
+      } else {
+        noMangrovesInAOI();
+        setupStepThree();
+      }
+    } else {
+      print("Could not calculate mangrove area in your AOI: " + failure);
+    }
   });
-  print(step_2_button);
-});
-print(step_1_button);
-});
-alert('First we will select the months of interest\n(for Contemporary & Historical year ranges)');
-print(months_step_button);
+}
 
-
-function produce_step_4_button_on_click(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, notMassive) {
-  return function() {
-    ///////////////
-    // Section 4 //
-    ///////////////
-    // The indices variables selected in Section 1 are calculated. Once 
-    // calculated, the user will be prompted to export the imagery
-    // to their GEE asset folder. 
-    
-    // Calculation of the spectral indices
-    print(ui.Label({value:'Module 1: Section 4',
+function perform_step_3(contemporary_months, historical_months, ROI, mang_img, indx_list, tidalArea, hasCoast, hasMangroves) {
+  ///////////////
+  // Section 3 //
+  ///////////////
+  // The variables from Setion 1 are used to generate the image composites
+  // which will be used through out the rest of the GEM. image 
+  // composites will be added to the GUI map viewer.
+  // Prepare the next section to appear after an evaluate call below
+  print(ui.Label({value:'Module 1: Section 3',
               style:{fontWeight: 'bold',
                      fontSize: '18px',
                      textAlign: 'center'}
             }));
-    print('When the indices have been calculated, four images'+
-        '\nalong with their indices will be prepared for export.'+
-        '\nThe task tab will turn yellow.'+
-        '\n'+
-        '\nOnce the task tab turns yellow, click the tab and click'+
-        '\non Run for each item that has populated the Tasks tab.'+
-        '\nBe sure that the export is directed to your asset folder.');
-    
-    // Add indices.
-    var cont_indxs = indx_mod.add_indices(indx_list, Chot, Clot);
-    var hist_indxs = indx_mod.add_indices(indx_list, Hhot, Hlot);
-    
-    Chot = ee.Image(cont_indxs[0]).float();
-    Clot = ee.Image(cont_indxs[1]).float();
-    Hhot = ee.Image(hist_indxs[0]).float();
-    Hlot = ee.Image(hist_indxs[1]).float();
-    
-    var export_max_pixels = 1e13;
-   
-    // Export Imagery with indices as bands
-    Export.image.toAsset({
-        image: ee.Image(Chot),
-        description: 'HOT_Img_contemporary',
-        region: ROI,
-        scale: imagery_scale,
-        maxPixels: export_max_pixels
-      });
+  print('Four buttons appear below, indicating'+
+        '\nto add either the contemporary'+
+        '\nor historical, high or low tide' +
+        '\ncomposites to the map.'+
+        '\n\nClick the buttons to view the imagery!');
+  Map.clear(); // Reset the map
+  if (inland_mang === true) {
+    ROI = ROI.buffer(buff_dist);
+  }
+  for (var i = 0; i < exclusion_geometries.length; i++) {
+    ROI = ROI.difference(exclusion_geometries[i]);
+  }
   
-    Export.image.toAsset({
-        image: ee.Image(Clot),
-        description: 'LOT_Img_contemporary',
-        region: ROI,
-        scale: imagery_scale,
-        maxPixels: export_max_pixels
-      });
+  Map.addLayer(ROI, {color: '1E266F'}, "ROI"); // Add ROI to map
   
-    Export.image.toAsset({
-        image: ee.Image(Hhot),
-        description: 'HOT_Img_historical',
-        region: ROI,
-        scale: imagery_scale,
-        maxPixels: export_max_pixels
-      });
+  // Create hist./cont. image collections
+  var force_ls = force_landsat || !imagery.should_use_s2(contemporary_start_year, contemporary_months, historical_start_year, historical_months);
+  var cont_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, contemporary_start_year, contemporary_end_year, contemporary_months, cloud_mask, tidalArea);
+  var hist_result = imagery.get_imagery(force_ls, ls_7_in, ROI, cloud_cover, historical_start_year, historical_end_year, historical_months, cloud_mask, tidalArea);
+  var cont_imagery = cont_result[0];
+  var hist_imagery = hist_result[0];
+  var imagery_scale = cont_result[1];
   
-    Export.image.toAsset({
-        image: ee.Image(Hlot),
-        description: 'LOT_Img_historical',
-        region: ROI,
-        scale: imagery_scale,
-        maxPixels: export_max_pixels
-      });
+  var high_refl_percentile = 70;
+  if (imagery_scale >= 30) {
+    high_refl_percentile = 85;
+  }
   
-    ///////////////
-    // Section 5 //
-    ///////////////
-    // Section 5 will create the masks, and ultimately the final mask
-    // for the classification(s). The exports will automatically populate  
-    // the task tab. Just like the imagery it should be exported to each 
-    // user's asset folder.
+  cont_imagery = imagery.filter_high_reflectance(ROI, cont_imagery, high_refl_percentile);
+  hist_imagery = imagery.filter_high_reflectance(ROI, hist_imagery, high_refl_percentile);
+  
+  if (force_ls) {
+    print("Using Landsat at " + imagery_scale + "m scale");
+  } else {
+    print("Using Sentinel-2 at " + imagery_scale + "m scale");
+  }
+  
+  // Build the contemporary BAP composites
+  var Chot = ee.ImageCollection(cont_imagery).qualityMosaic('MNDWI').clip(ROI);
+  var Clot = ee.ImageCollection(cont_imagery).qualityMosaic('inv_MNDWI').clip(ROI);
+  // Build the historical BAP composites
+  var Hhot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.mod_water_index).clip(ROI);
+  var Hlot = ee.ImageCollection(hist_imagery).qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+  
+  var hhot_vis = Hhot;
+  var hlot_vis = Hlot;
+  var chot_vis = Chot;
+  var clot_vis = Clot;
+  var false_colour_bands = ['NIR','SWIR1','Red'];
+  var vis = {bands: false_colour_bands, min: 0, max: 0.27};
+  
+  function pixelPercentages(img, scale, label) {
+    var dict = ee.Dictionary(img.select('date').reduceRegion({
+      reducer: ee.Reducer.frequencyHistogram(),
+      geometry: ROI,
+      scale: 100,
+      maxPixels: 1e15,
+      bestEffort: true,
+    }).get('date'));
     
-    // section 5 button
-    var step_5_button = ui.Button('Section 5: Prepare Image Mask');
-    step_5_button.onClick(function() {
-      print(ui.Label({value:'Module 1: Section 5',
-              style:{fontWeight: 'bold',
-                     fontSize: '18px',
-                     textAlign: 'center'}
-            }));
-      print('When the final mask has been prepared the task tab'+
-          '\nwill turn yellow, prompting for export. The final mask'+
-          '\nand the other intermediary outputs can be viewed in the'+
-          '\npanel by clicking on the corresponding button.'+
-          '\n'+
-          '\nOnce all the of intermediary outputs have begun to export'+
-          '\nGEM Module 1 is complete. Proceed to GEM Module 2'+
-          '\nafter all outputs have successfully been exported and'+
-          '\nadded to the asset GEE asset folder.');
+    var keys = dict.keys();
+    keys = keys.map(function(key) {
+      key = ee.String(key);
+      var year = key.slice(0, 4);
+      var month = key.slice(4, 6);
+      var day = key.slice(6, 8);
+      return day.cat("/").cat(month).cat("/").cat(year);
+    });
+    
+    var denom = ee.Number(dict.values().reduce(ee.Reducer.sum()));
+    var vals = dict.values();
+    vals = vals.map(function(val) {
+      // negative, so that sorting goes the right direction
+      return ee.Number(val).divide(denom).multiply(-1000000).round().divide(10000);
+    });
+    
+    keys = keys.sort(vals);
+    vals = vals.sort().map(function(val) {
+      return ee.Number(val).multiply(-1);
+    });
+    
+    print("Calculating " + label + " pixel percentages by date...");
+    ee.List([keys, vals]).evaluate(function(kv, failure) {
+      if (kv) {
+        var keys = kv[0];
+        var vals = kv[1];
+        var toPrint = label + " Pixel Percentages:\n";
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var val = vals[i];
+          toPrint = toPrint + key + ": " + val + "% " + "\n";
+        }
+        print(toPrint);
+      } else {
+        print("Could not calculate " + label + " pixel percentages: " + failure);
+      }
+    });
+  }
+  
+  function visualize_imagery(img, buttonLabel, layerLabel, scale) {
+    var add_imagery = ui.Button(buttonLabel);
+    add_imagery.onClick(function() {
+        pixelPercentages(img, scale, layerLabel);
+        Map.addLayer(img, vis, layerLabel);
+    });
+    print(add_imagery);
+  }
+  
+  visualize_imagery(hhot_vis, 'Add Historical High Tide Imagery', 'Historical High Tide', imagery_scale);
+  visualize_imagery(hlot_vis, 'Add Historical Low Tide Imagery', 'Historical Low Tide', imagery_scale);
+  visualize_imagery(chot_vis, 'Add Contemporary High Tide Imagery', 'Contemporary High Tide', imagery_scale);
+  visualize_imagery(clot_vis, 'Add Contemporary Low Tide Imagery', 'Contemporary Low Tide', imagery_scale);
+  
+  // chop off mndwi, inv_mndwi, date bands
+  var bnames = Chot.bandNames().slice(0, -3);
+  Chot = Chot.select(bnames);
+  Clot = Clot.select(bnames);
+  Hhot = Hhot.select(bnames);
+  Hlot = Hlot.select(bnames);
+  
+  // If the AOI is bigger than 2.5 million hectares (a limit we have arrived at
+  // experimentally), we typically start to run into timeouts. The strategy is then to
+  // avoid asking GEE any questions about this imagery via evaluate calls, and to just
+  // move to exporting. This should help keep things moving for users and avoid errors
+  // that may seem quite opaque to them otherwise.
+  var notMassive = false;
+  
+  // Prepare the next section to appear after an evaluate call below
+  function setupStepFour() {
+    var step_4_button = ui.Button('Section 4: Calculate the Spectral Indices');
+    step_4_button.onClick(function() {
+      perform_step_4(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, hasCoast, hasMangroves, notMassive);
+    });
+    print(step_4_button);
+  }
+  
+  var maxAOIHectares = 2500000;
+  print("Measuring the AOI, if it is not very large\n(> " + maxAOIHectares.toLocaleString('en-GB') + " hectares)\nGEM will count your images.");
+  print("If your AOI is very large, GEM will skip counting images and move on to Section 4 soon...");
+  ROI.area().divide(10000).lt(maxAOIHectares).evaluate(function(nm, fail) {
+    if (nm && nm > 0) {
+      notMassive = true;
+      print("Counting historical and contemporary images...");
+      print('After calculating the number of historical'+
+        '\nand contemporary images, the button to'+
+        '\nproceed to Section 4 will appear.');
+      print('These calculations should let you know'+
+        '\nwhether your inputs to module 1 are'+
+        '\nproducing enough imagery to create' +
+        '\nsolid composites for both historical' +
+        '\nand contemporary time periods.');
+      ee.List([ee.String(ee.ImageCollection(hist_imagery).size()), ee.String(ee.ImageCollection(cont_imagery).size())]).evaluate(function(sizes, failure) {
+        if (sizes) {
+          print('No. Historical Images: ' + sizes[0]);
+          print('No. Contemporary Images: ' + sizes[1]);
+        } else {
+          print(failure);
+        }
+        setupStepFour();
+      });
+    } else {
+      print("We consider your AOI to be massive.");
+      setupStepFour();
+    }
+  });
+}
+
+function perform_step_4(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, hasCoast, hasMangroves, notMassive) {
+  ///////////////
+  // Section 4 //
+  ///////////////
+  // The indices variables selected in Section 1 are calculated. Once 
+  // calculated, the user will be prompted to export the imagery
+  // to their GEE asset folder.
+  // Calculation of the spectral indices
+  print(ui.Label({value:'Module 1: Section 4',
+            style:{fontWeight: 'bold',
+                   fontSize: '18px',
+                   textAlign: 'center'}
+          }));
+  print('When the indices have been calculated, four images'+
+      '\nalong with their indices will be prepared for export.'+
+      '\nThe task tab will turn yellow.'+
+      '\n'+
+      '\nOnce the task tab turns yellow, click the tab and click'+
+      '\non Run for each item that has populated the Tasks tab.'+
+      '\nBe sure that the export is directed to your asset folder.');
+  
+  // Add indices.
+  var cont_indxs = indx_mod.add_indices(indx_list, Chot, Clot);
+  var hist_indxs = indx_mod.add_indices(indx_list, Hhot, Hlot);
+  
+  Chot = ee.Image(cont_indxs[0]).float();
+  Clot = ee.Image(cont_indxs[1]).float();
+  Hhot = ee.Image(hist_indxs[0]).float();
+  Hlot = ee.Image(hist_indxs[1]).float();
+  
+  var export_max_pixels = 1e13;
+ 
+  // Export Imagery with indices as bands
+  Export.image.toAsset({
+      image: ee.Image(Chot),
+      description: 'HOT_Img_contemporary',
+      region: ROI,
+      scale: imagery_scale,
+      maxPixels: export_max_pixels
+    });
+
+  Export.image.toAsset({
+      image: ee.Image(Clot),
+      description: 'LOT_Img_contemporary',
+      region: ROI,
+      scale: imagery_scale,
+      maxPixels: export_max_pixels
+    });
+
+  Export.image.toAsset({
+      image: ee.Image(Hhot),
+      description: 'HOT_Img_historical',
+      region: ROI,
+      scale: imagery_scale,
+      maxPixels: export_max_pixels
+    });
+
+  Export.image.toAsset({
+      image: ee.Image(Hlot),
+      description: 'LOT_Img_historical',
+      region: ROI,
+      scale: imagery_scale,
+      maxPixels: export_max_pixels
+    });
+
+  ///////////////
+  // Section 5 //
+  ///////////////
+  // Section 5 will create the masks, and ultimately the final mask
+  // for the classification(s). The exports will automatically populate  
+  // the task tab. Just like the imagery it should be exported to each 
+  // user's asset folder.
+  
+  // section 5 button
+  var step_5_button = ui.Button('Section 5: Prepare Image Mask');
+  step_5_button.onClick(function() {
+    print(ui.Label({value:'Module 1: Section 5',
+            style:{fontWeight: 'bold',
+                   fontSize: '18px',
+                   textAlign: 'center'}
+          }));
+    print('When the final mask has been prepared the task tab'+
+      '\nwill turn yellow, prompting for export. The final mask'+
+      '\nand the other intermediary outputs can be viewed in the'+
+      '\npanel by clicking on the corresponding button.'+
+      '\n'+
+      '\nOnce all the of intermediary outputs have begun to export'+
+      '\nGEM Module 1 is complete. Proceed to GEM Module 2'+
+      '\nafter all outputs have successfully been exported and'+
+      '\nadded to the asset GEE asset folder.');
+      
+    function waterImagesDescription() {
+      print("If your water mask and final mask are incomplete,\n"+
+        "review below the number of contemporary and historical\n"+
+        "low-tide images available for the water mask.\n\n"+
+        "There must be enough images to cover your entire ROI -\n"+
+        "if not enough, widen the months and/or years windows\n"+
+        "to filter in more imagery.");
+    }
+    
+    // Create Panel
+    var mask_panel = ui.Panel({
+      layout: ui.Panel.Layout.flow('vertical'),
+      style: {width: '300px'}
+    });
+    
+    function createConstantMask() {
+      return ee.Image(1).eq(1).rename('Water').reproject({
+        crs: 'EPSG:3857',
+        scale: imagery_scale
+      });
+    }
+    
+    var final_mask = createConstantMask();
+    if (hasMangroves === true && hasCoast === true) {
       // Clip the known mangrove extent
       var kn_mang_ext = mang_img.clip(ROI);
     
@@ -1058,23 +1141,13 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
       var slope = 39; // just a plcaeholder, slope is disabled currently
       var topo_mask = topography.topo_mask(topo, topo_path, kn_mang_ext, mang_topo, elevationThreshold, elevationPercentile, slope);
       
-      function waterImagesDescription() {
-        print("If your water mask and final mask are incomplete,\n"+
-          "review below the number of contemporary and historical\n"+
-          "low-tide images available for the water mask.\n\n"+
-          "There must be enough images to cover your entire ROI -\n"+
-          "if not enough, widen the months and/or years windows\n"+
-          "to filter in more imagery."
-        );
-      }
-      
       if (notMassive) {
         print("Your AOI is not massive so we'll count the images\navailable for water masking.");
       } else {
         print("Your AOI is massive, so we'll skip counting images\navailable for water masking.");
       }
       
-      var waterMask = ee.Image(1);
+      var waterMask = createConstantMask();
       if (remove_water === true) {
         if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
           print("We're using SAR-1 radar for your water mask!");
@@ -1128,9 +1201,6 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
         }
       }
       
-      // Combine the topo and water masks
-      var final_mask = waterMask.multiply(topo_mask).eq(1);
-      
       // Add buttons to view the mask outputs
       var topo_mask_butt = ui.Button('View Topo Mask?');
           topo_mask_butt.onClick(function(){
@@ -1138,44 +1208,43 @@ function produce_step_4_button_on_click(contemporary_months, historical_months, 
       var water_mask_butt = ui.Button('View water Mask?');
           water_mask_butt.onClick(function(){
             Map.addLayer(ee.Image(waterMask.clip(ROI)), {}, 'Water Mask');});
-      var final_mask_butt = ui.Button('View Final Mask?');
-          final_mask_butt.onClick(function(){
-            Map.addLayer(ee.Image(final_mask.clip(ROI)), {}, 'Final Mask');});
-      
-      // Export final mask
-      Export.image.toAsset({
-          image: final_mask,
-          description: 'Final_mask',
-          region: ROI,
-          scale: imagery_scale,
-          maxPixels: export_max_pixels
-        });
-        
-      // Prepare final ROI for export
-      var ROI_out = ee.FeatureCollection(ee.Feature(ROI, {name: 'ROI'}));
-      // Export final ROI
-      Export.table.toAsset({
-        collection: ROI_out,
-        description: "ROI",
-        assetId: 'ROI'
-        });
-          
-      // Create Panel
-      var mask_panel = ui.Panel({
-        layout: ui.Panel.Layout.flow('vertical'),
-        style: {width: '300px'}
-        });
-        
+            
       // Add buttons to the panel
       mask_panel.add(topo_mask_butt);
       mask_panel.add(water_mask_butt);
-      mask_panel.add(final_mask_butt);
       
-      // Add the panel to the map
-      ui.root.add(mask_panel);
+      // Combine the topo and water masks
+      final_mask = waterMask.multiply(topo_mask).eq(1);
+    }
+    
+    var final_mask_butt = ui.Button('View Final Mask?');
+        final_mask_butt.onClick(function(){
+          Map.addLayer(ee.Image(final_mask.clip(ROI)), {}, 'Final Mask');});
+          
+    mask_panel.add(final_mask_butt);
+    
+    // Export final mask
+    Export.image.toAsset({
+        image: final_mask,
+        description: 'Final_mask',
+        region: ROI,
+        scale: imagery_scale,
+        maxPixels: export_max_pixels
+      });
+      
+    // Prepare final ROI for export
+    var ROI_out = ee.FeatureCollection(ee.Feature(ROI, {name: 'ROI'}));
+    // Export final ROI
+    Export.table.toAsset({
+      collection: ROI_out,
+      description: "ROI",
+      assetId: 'ROI'
     });
-    print(step_5_button);
-  };
+    
+    // Add the panel to the map
+    ui.root.add(mask_panel);
+  });
+  print(step_5_button);
 }
 
 
