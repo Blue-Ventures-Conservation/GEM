@@ -723,22 +723,19 @@ step_1_button.onClick(function() {
     // Create the coastline from the coarse ROI
     var coast = coastline.coast_In(cst, cst_path, coarse_roi);
     
-    print("Checking to see if your area of interest (AOI) intersects a coastline...");
+    print("Checking to see if your area of interest (AOI)\nintersects a coastline...");
     
     var coastOrROI = ee.Geometry.MultiPoint([]);
-    var hasCoast = true;
     coast.coordinates().size().evaluate(function(coastPoints, failure) {
       if (coastPoints !== undefined) {
         if (coastPoints > 0) {
           coastOrROI = coast;
-          print("Your AOI intersects a coastline. GEM will attempt\ncoastline buffering of known mangroves\nand water/topographic masking.");
+          print("Your AOI intersects a coastline.\nGEM should be able to get a good separation\nbetween high and low tide composites.");
         } else {
           coastOrROI = coarse_roi;
-          hasCoast = false;
-          print("It appears your AOI does not intersect a coastline.\nGEM will attempt buffering of known mangroves around\nyour AOI, "+
-          "but will skip water/topographic masking. Additionally,\nit is likely that the high and low tide composites will\nbe very similar if not identical.");
+          print("It appears your AOI does not intersect a coastline.\nIt is likely that the high and low tide composites will\nbe very similar if not identical.");
         }
-        perform_step_2(contemporary_months, historical_months, mang_img, indx_list, tidalArea, coastOrROI, hasCoast);
+        perform_step_2(contemporary_months, historical_months, mang_img, indx_list, tidalArea, coastOrROI);
       } else {
         print("Could not verify whether or not your AOI contains any coastline: " + failure);
       }
@@ -751,7 +748,7 @@ print(step_1_button);
 alert('First we will select the months of interest\n(for Contemporary & Historical year ranges)');
 print(months_step_button);
 
-function perform_step_2(contemporary_months, historical_months, mang_img, indx_list, tidalArea, coastOrROI, hasCoast) {
+function perform_step_2(contemporary_months, historical_months, mang_img, indx_list, tidalArea, coastOrROI) {
   // Buffer the known mangrove extent using the coastline
   var mang_buff_img = mangrove_buff.mang_buff(coastOrROI, mang_img, coarse_roi, exclusion_geometries);
 
@@ -805,24 +802,21 @@ function perform_step_2(contemporary_months, historical_months, mang_img, indx_l
     print(select_ROI);
   }
   
-  var hasMangroves = true;
-  
   function noMangrovesInAOI() {
-    hasMangroves = false;
     print('GEM does not detect any mangroves in your AOI.'+
       '\nAnalysis can continue, but GEM will skip buffering'+
-      '\nof known mangrove extents and water/topographic masking.');
+      '\nof known mangrove extents.');
   }
   
   function setupStepThree() {
     var step_3_button = ui.Button('Section 3: Prepare Imagery for Processing');
     step_3_button.onClick(function() {
-      perform_step_3(contemporary_months, historical_months, ROI, mang_img, indx_list, tidalArea, hasCoast, hasMangroves);
+      perform_step_3(contemporary_months, historical_months, ROI, mang_img, indx_list, tidalArea);
     });
     print(step_3_button);
   }
   
-  print("Checking to see if any known mangroves exist within your AOI...");
+  print("Checking to see if any known mangroves\nexist within your AOI...");
   
   ee.Number(buffer_table.values().reduce(ee.Reducer.sum())).evaluate(function(areaSum, failure) {
     if (areaSum !== undefined) {
@@ -839,7 +833,7 @@ function perform_step_2(contemporary_months, historical_months, mang_img, indx_l
   });
 }
 
-function perform_step_3(contemporary_months, historical_months, ROI, mang_img, indx_list, tidalArea, hasCoast, hasMangroves) {
+function perform_step_3(contemporary_months, historical_months, ROI, mang_img, indx_list, tidalArea) {
   ///////////////
   // Section 3 //
   ///////////////
@@ -983,7 +977,7 @@ function perform_step_3(contemporary_months, historical_months, ROI, mang_img, i
   function setupStepFour() {
     var step_4_button = ui.Button('Section 4: Calculate the Spectral Indices');
     step_4_button.onClick(function() {
-      perform_step_4(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, hasCoast, hasMangroves, notMassive);
+      perform_step_4(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, notMassive);
     });
     print(step_4_button);
   }
@@ -1019,7 +1013,7 @@ function perform_step_3(contemporary_months, historical_months, ROI, mang_img, i
   });
 }
 
-function perform_step_4(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, hasCoast, hasMangroves, notMassive) {
+function perform_step_4(contemporary_months, historical_months, ROI, mang_img, imagery_scale, indx_list, Chot, Clot, Hhot, Hlot, cont_imagery, hist_imagery, tidalArea, notMassive) {
   ///////////////
   // Section 4 //
   ///////////////
@@ -1132,90 +1126,89 @@ function perform_step_4(contemporary_months, historical_months, ROI, mang_img, i
       });
     }
     
-    var final_mask = createConstantMask();
-    if (hasMangroves === true && hasCoast === true) {
-      // Clip the known mangrove extent
-      var kn_mang_ext = mang_img.clip(ROI);
+    // Clip the known mangrove extent
+    var kn_mang_ext = mang_img.clip(ROI);
+  
+    // Bring in topo data and create the mask
+    var slopeEnabled = false;
+    var slope = 16; // just a placeholder, slope is disabled currently
+    var slopePercentile = elevationPercentile; // just a placeholder, slope is disabled currently
+    var topo_mask = topography.topo_mask(topo, topo_path, kn_mang_ext, mang_topo, elevationThreshold, elevationPercentile, slopeEnabled, slope, slopePercentile);
     
-      // Bring in topo data and create the mask
-      var slope = 39; // just a plcaeholder, slope is disabled currently
-      var topo_mask = topography.topo_mask(topo, topo_path, kn_mang_ext, mang_topo, elevationThreshold, elevationPercentile, slope);
-      
-      if (notMassive) {
-        print("Your AOI is not massive so we'll count the images\navailable for water masking.");
-      } else {
-        print("Your AOI is massive, so we'll skip counting images\navailable for water masking.");
-      }
-      
-      var waterMask = createConstantMask();
-      if (remove_water === true) {
-        if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
-          print("We're using SAR-1 radar for your water mask!");
-          var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months, tidalArea, "Historical");
-          var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months, tidalArea, "Contemporary");
-          
-          var sar_cont_water = sar_cont_result[0];
-          var sar_cont_images = sar_cont_result[1];
-          
-          var sar_hist_water = sar_hist_result[0];
-          var sar_hist_images = sar_hist_result[1];
-          
-          var sar_water_mask = null;
-          if (combo_water_mask) {
-            sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
-          } else {
-            sar_water_mask = sar_hist_water;
-          }
-          
-          if (notMassive) {
-            print("Counting historical and contemporary SAR-1 water mask images...");
-            ee.List([ee.String(sar_hist_images.size()), ee.String(sar_cont_images.size())]).evaluate(function(sarCounts, failure) {
-              if (sarCounts) {
-                waterImagesDescription();
-                print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + sarCounts[0]);
-                print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + sarCounts[1]);
-              }
-            });
-          }
-          
-          waterMask = sar_water_mask;
+    if (notMassive) {
+      print("Your AOI is not massive so we'll count the images\navailable for water masking.");
+    } else {
+      print("Your AOI is massive, so we'll skip counting images\navailable for water masking.");
+    }
+    
+    var waterMask = createConstantMask();
+    if (remove_water === true) {
+      if (imagery.should_use_sar_water_mask(contemporary_start_year, contemporary_months, historical_start_year, historical_months)) {
+        print("We're using SAR-1 radar for your water mask!");
+        var sar_hist_result = imagery.get_sar_water_mask(ROI, historical_start_year, historical_end_year, historical_months, tidalArea, "Historical");
+        var sar_cont_result = imagery.get_sar_water_mask(ROI, contemporary_start_year, contemporary_end_year, contemporary_months, tidalArea, "Contemporary");
+        
+        var sar_cont_water = sar_cont_result[0];
+        var sar_cont_images = sar_cont_result[1];
+        
+        var sar_hist_water = sar_hist_result[0];
+        var sar_hist_images = sar_hist_result[1];
+        
+        var sar_water_mask = null;
+        if (combo_water_mask) {
+          sar_water_mask = sar_cont_water.add(sar_hist_water).gte(1);
         } else {
-          // Use low tide images to create water mask
-          print("We're using optical MNDWI techniques for your water mask\nbecause your dates are prior to SAR-1 availability:\n10/2014");
-          var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-          var clot_water_mosaic = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-          var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
-          var hlot_water_mosaic = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
-          waterMask = imagery.water_mask(hlot_water_mosaic, clot_water_mosaic, combo_water_mask);
-          
-          if (notMassive) {
-            print("Counting historical and contemporary optical water mask images...");
-            ee.List([ee.String(hlot_water.size()), ee.String(clot_water.size())]).evaluate(function(optCounts, failure) {
-              if (optCounts) {
-                waterImagesDescription();
-                print('No. Historical Low-Tide Images for Water Mask: ' + optCounts[0]);
-                print('No. Contemporary Low-Tide Images for Water Mask: ' + optCounts[1]);
-              }
-            });
-          }
+          sar_water_mask = sar_hist_water;
+        }
+        
+        if (notMassive) {
+          print("Counting historical and contemporary SAR-1 water mask images...");
+          ee.List([ee.String(sar_hist_images.size()), ee.String(sar_cont_images.size())]).evaluate(function(sarCounts, failure) {
+            if (sarCounts) {
+              waterImagesDescription();
+              print('No. Historical Sentinel-1 SAR Images for Water Mask: ' + sarCounts[0]);
+              print('No. Contemporary Sentinel-1 SAR Images for Water Mask: ' + sarCounts[1]);
+            }
+          });
+        }
+        
+        waterMask = sar_water_mask;
+      } else {
+        // Use low tide images to create water mask
+        print("We're using optical MNDWI techniques for your water mask\nbecause your dates are prior to SAR-1 availability:\n10/2014");
+        var clot_water = cont_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
+        var clot_water_mosaic = clot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+        var hlot_water = hist_imagery.filter(ee.Filter.gte(imagery.mod_water_index, min_avg));
+        var hlot_water_mosaic = hlot_water.qualityMosaic(imagery.inverse_mod_water_index).clip(ROI);
+        waterMask = imagery.water_mask(hlot_water_mosaic, clot_water_mosaic, combo_water_mask);
+        
+        if (notMassive) {
+          print("Counting historical and contemporary optical water mask images...");
+          ee.List([ee.String(hlot_water.size()), ee.String(clot_water.size())]).evaluate(function(optCounts, failure) {
+            if (optCounts) {
+              waterImagesDescription();
+              print('No. Historical Low-Tide Images for Water Mask: ' + optCounts[0]);
+              print('No. Contemporary Low-Tide Images for Water Mask: ' + optCounts[1]);
+            }
+          });
         }
       }
-      
-      // Add buttons to view the mask outputs
-      var topo_mask_butt = ui.Button('View Topo Mask?');
-          topo_mask_butt.onClick(function(){
-            Map.addLayer(ee.Image(topo_mask.clip(ROI)), {}, 'Topographic Mask');});
-      var water_mask_butt = ui.Button('View water Mask?');
-          water_mask_butt.onClick(function(){
-            Map.addLayer(ee.Image(waterMask.clip(ROI)), {}, 'Water Mask');});
-            
-      // Add buttons to the panel
-      mask_panel.add(topo_mask_butt);
-      mask_panel.add(water_mask_butt);
-      
-      // Combine the topo and water masks
-      final_mask = waterMask.multiply(topo_mask).eq(1);
     }
+    
+    // Add buttons to view the mask outputs
+    var topo_mask_butt = ui.Button('View Topo Mask?');
+        topo_mask_butt.onClick(function(){
+          Map.addLayer(ee.Image(topo_mask.clip(ROI)), {}, 'Topographic Mask');});
+    var water_mask_butt = ui.Button('View water Mask?');
+        water_mask_butt.onClick(function(){
+          Map.addLayer(ee.Image(waterMask.clip(ROI)), {}, 'Water Mask');});
+          
+    // Add buttons to the panel
+    mask_panel.add(topo_mask_butt);
+    mask_panel.add(water_mask_butt);
+    
+    // Combine the topo and water masks
+    var final_mask = waterMask.multiply(topo_mask).eq(1);
     
     var final_mask_butt = ui.Button('View Final Mask?');
         final_mask_butt.onClick(function(){
