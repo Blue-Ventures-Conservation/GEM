@@ -3,7 +3,7 @@
 This is the imagery module, which is part of the GEM v2 library.
 It is used to collect Landsat 4, 5, 7, 8, 9 and Sentinel 2 imagery for a region of interest.
 
-Last update: 16 June 2026
+Last update: 6 November 2026
 
 */
 
@@ -571,7 +571,13 @@ exports.pixelPercentages = function(img, roi, scale, label) {
   });
 };
 
+var haze_region = ee.FeatureCollection("projects/gem-project-378721/assets/Haze_filter_region");
 exports.filter_high_reflectance = function(roi, images, percentile) {
+  var haze_polygon = haze_region.geometry().dissolve();
+  return ee.ImageCollection(ee.Algorithms.If(haze_polygon.intersects(roi), high_reflectance_filtering(roi, images, percentile), images));
+};
+
+function high_reflectance_filtering(roi, images, percentile) {
   images = ee.ImageCollection(images);
   var wmask = palsar_water_mask(roi);
   var reflsum = "refl_sum";
@@ -599,4 +605,4 @@ exports.filter_high_reflectance = function(roi, images, percentile) {
   var threshold = ee.Number(list.get(i));
   
   return images.filter(ee.Filter.lt(reflsum, threshold));
-};
+}
