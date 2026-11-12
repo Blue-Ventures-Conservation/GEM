@@ -12,7 +12,7 @@ Questions about the code can be directed to
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 30 September 2026
+Last updated: 12 November 2026
 
 
 
@@ -545,10 +545,10 @@ var inland_mang = false;
 // Required Modules
 
 // This is where the required functions are called into the script
-var known_ext =  require('users/yanchojo/GEM_LS9_colors/:modules/known_mangroves');
+var known_ext =  require('users/courtlandfowler/gemv2:known_mangroves');
 var coastline =  require('users/courtlandfowler/gemv2:coastline');
 var topography =  require('users/courtlandfowler/gemv2:topography');
-var mangrove_buff = require('users/yanchojo/GEM_LS9_colors/:modules/mangrove_buff');
+var mangrove_buff = require('users/courtlandfowler/gemv2:mangrove_buff');
 var imagery = require('users/courtlandfowler/gemv2:imagery');
 var indx_mod = require('users/courtlandfowler/gemv2:indices');
 
