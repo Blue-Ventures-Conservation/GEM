@@ -12,7 +12,7 @@ directed to Dr. Trevor Jones, Geospatial & Blue Forests Science Adviser
 Mr. Court Fowler (courtland.fowler@blueventures.org).
 
 Developed on:  3 June 2020
-Last updated: 20 May 2026
+Last updated: 12 Novemeber 2026
 
 Throughout this tool you will find references to the user name 'yanchojo'. This 
 is Mr. Yancho's (the primary developer) personal Google account. Future 
@@ -298,8 +298,8 @@ var combo_hist_out = true;     // Combination historical Imagery
 // Functions are brought into GEM Module 2 through the require() function
 
 var RFclass = require('users/courtlandfowler/gemv2:rf_classer');
-var InCor = require('users/yanchojo/GEM_LS9_colors/:modules/input_correlation');
-var specSp = require('users/yanchojo/GEM_LS9_colors/:modules/spec_area');
+var InCor = require('users/courtlandfowler/gemv2:input_correlation');
+var specSp = require('users/courtlandfowler/gemv2:spec_area');
 var imagery = require('users/courtlandfowler/gemv2:imagery');
 
 // to allow older imagery to continue to be of use after human-readable naming implemented
